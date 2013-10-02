@@ -10,7 +10,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy import Column, Integer, String, Boolean, DATETIME, ForeignKey, text
 
-from pub import app, Base
+from pub_app import app, Base
 from utils import time_str
 
 USER_TABLE = "user"
@@ -32,10 +32,10 @@ class User(Base):
 
     __tablename__ = USER_TABLE
 
-    id = Column(Integer, primary_key=True)  # todo-lyw 如何实现unsigned功能
+    id = Column(Integer, primary_key=True)
     login_name = Column(String(32), nullable=True, server_default=None)
     password = Column(String(64), nullable=True, server_default=None)  # todo-lyw password需要flask的一个插件支持
-    login_type = Column(Integer, nullable=False, server_default='0')  # todo-lyw 如何integer长度
+    login_type = Column(Integer, nullable=False, server_default='0')
     open_id = Column(String(64), nullable=True, server_default=None)
     nick_name = Column(String(32), nullable=False, unique=True)
     sign_up_date = Column(DATETIME, nullable=False, server_default=text('NOW()'))
@@ -54,7 +54,7 @@ class User(Base):
         self.admin = admin
 
     def __repr__(self):
-        return "<User(nick_name:'%s', login_type:'%s', sign_up_date:'%s')>" % (self.nick_name, self.login_type,
+        return "<User(nick_name: '%s', login_type: '%s', sign_up_date: '%s')>" % (self.nick_name, self.login_type,
                                                                                self.sign_up_date)
 
 
@@ -136,7 +136,7 @@ class UserInfo(Base):
         self.upload_name = upload_name
 
     def __repr__(self):
-        return"<UserInfo(user_id:'%s', email:'%s')>" % (self.user_id, self.email)
+        return"<UserInfo(user_id: '%s', email: '%s')>" % (self.user_id, self.email)
 
 
 if __name__ == "__main__":
