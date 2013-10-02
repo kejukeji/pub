@@ -8,7 +8,7 @@
 """
 
 from sqlalchemy import create_engine
-from sqlalchemy import Column, Integer, String, Boolean, DATETIME, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, DATETIME, ForeignKey, text
 
 from pub import app, Base
 from utils import time_str
@@ -33,14 +33,14 @@ class User(Base):
     __tablename__ = USER_TABLE
 
     id = Column(Integer, primary_key=True)  # todo-lyw 如何实现unsigned功能
-    login_name = Column(String(32), nullable=True, default=None)
-    password = Column(String(64), nullable=True, default=None)  # todo-lyw password需要flask的一个插件支持
-    login_type = Column(Integer, nullable=False, default=0)  # todo-lyw default无法实现，以及如何integer长度
-    open_id = Column(String(64), nullable=True, default=None)
+    login_name = Column(String(32), nullable=True, server_default=None)
+    password = Column(String(64), nullable=True, server_default=None)  # todo-lyw password需要flask的一个插件支持
+    login_type = Column(Integer, nullable=False, server_default='0')  # todo-lyw 如何integer长度
+    open_id = Column(String(64), nullable=True, server_default=None)
     nick_name = Column(String(32), nullable=False, unique=True)
-    sign_up_date = Column(DATETIME, nullable=False)
-    system_message_time = Column(DATETIME, nullable=True, default=None)
-    admin = Column(Boolean, nullable=False, default=0)
+    sign_up_date = Column(DATETIME, nullable=False, server_default=text('NOW()'))
+    system_message_time = Column(DATETIME, nullable=True, server_default=text('NOW()'))
+    admin = Column(Boolean, nullable=False, server_default='0')
 
     def __init__(self, login_type, nick_name, sign_up_date=time_str.today(), login_name=None, password=None,
                  open_id=None, system_message_time=time_str.today(), admin=0):
@@ -88,26 +88,26 @@ class UserInfo(Base):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('user.id', ondelete="cascade", onupdate="cascade"), nullable=False)
-    mobile = Column(String(16), nullable=True, default=None)
-    tel = Column(String(16), nullable=True, default=None)
-    realName = Column(String(32), nullable=True, default=None)
-    sex = Column(Boolean, nullable=True, default=None)
-    birthday_type = Column(Boolean, nullable=True, default=None)
-    birthday = Column(DATETIME, nullable=True, default=None)  # string "2012-09-23 23:23:23"
-    intro = Column(String(128), nullable=True, default=None)
-    signature = Column(String(128), nullable=True, default=None)
-    ethnicity_id = Column(Integer, nullable=True, default=None)
-    company = Column(String(32), nullable=True, default=None)
-    job = Column(String(32), nullable=True, default=None)
+    mobile = Column(String(16), nullable=True, server_default=None)
+    tel = Column(String(16), nullable=True, server_default=None)
+    real_name = Column(String(32), nullable=True, server_default=None)
+    sex = Column(Boolean, nullable=True, server_default=None)
+    birthday_type = Column(Boolean, nullable=True, server_default=None)
+    birthday = Column(DATETIME, nullable=True, server_default=None)  # string "2012-09-23 23:23:23"
+    intro = Column(String(128), nullable=True, server_default=None)
+    signature = Column(String(128), nullable=True, server_default=None)
+    ethnicity_id = Column(Integer, nullable=True, server_default=None)
+    company = Column(String(32), nullable=True, server_default=None)
+    job = Column(String(32), nullable=True, server_default=None)
     email = Column(String(32), nullable=False)
-    province_id = Column(Integer, nullable=True, default=None)
-    city_id = Column(Integer, nullable=True, default=None)
-    county_id = Column(Integer, nullable=True, default=None)
-    street = Column(String(64), nullable=True, default=None)
-    base_path = Column(String(128), nullable=True, default=None)
-    rel_path = Column(String(128), nullable=True, default=None)
-    pic_name = Column(String(128), nullable=True, default=None)
-    upload_name = Column(String(128), nullable=True, default=None)
+    province_id = Column(Integer, nullable=True, server_default=None)
+    city_id = Column(Integer, nullable=True, server_default=None)
+    county_id = Column(Integer, nullable=True, server_default=None)
+    street = Column(String(64), nullable=True, server_default=None)
+    base_path = Column(String(128), nullable=True, server_default=None)
+    rel_path = Column(String(128), nullable=True, server_default=None)
+    pic_name = Column(String(128), nullable=True, server_default=None)
+    upload_name = Column(String(128), nullable=True, server_default=None)
 
     def __init__(self, user_id, email, mobile=None, tel=None, real_name=None, sex=None, birthday_type=None,
                  birthday=None, intro=None, signature=None, ethnicity_id=None, company=None, job=None, province_id=None,
