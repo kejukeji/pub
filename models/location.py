@@ -1,0 +1,95 @@
+# coding: utf-8
+
+"""
+    province city county数据库表的定义，本模块定义了Province City County类。
+    Province: Province类，省份和直辖市。
+    City: City类，省下面的事，直辖市的设置标记
+    County: County类，市下面的区县或者是直辖市的区县
+"""
+
+from sqlalchemy import create_engine
+from sqlalchemy import Column, Integer, String
+
+from pub_app import app, Base
+
+PROVINCE_TABLE = "province"
+CITY_TABLE = "city"
+COUNTY_TABLE = "county"
+
+
+class Province(Base):
+    """province表对应的类
+    id
+    name 省名
+    code 标志位
+    country 国家标志
+    """
+
+    __tablename__ = PROVINCE_TABLE
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255), nullable=False)
+    code = Column(String(4), nullable=False)
+    country = Column(String(4), nullable=True, server_default=None)
+
+    def __init__(self, name, code, country="zh"):
+        self.name = name
+        self.code = code
+        self.country = country
+
+    def __repr__(self):
+        return "<Province(name: %s)>" % self.name
+
+
+class City(Base):
+    """city表对应的类
+    id
+    name 市名
+    code 标志位
+    province_id 上级省
+    """
+
+    __tablename__ = CITY_TABLE
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255), nullable=False)
+    code = Column(String(4), nullable=False)
+    province_id = Column(Integer, nullable=False)
+
+    def __init__(self, name, code, province_id):
+        self.name = name
+        self.code = code
+        self.province_id = province_id
+
+    def __repr__(self):
+        return "<City(name: %s)>" % self.name
+
+
+class County(Base):
+    """city表对应的类
+    id
+    name 市名
+    code 标志位
+    province_id 上级省
+    """
+
+    __tablename__ = COUNTY_TABLE
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255), nullable=False)
+    code = Column(String(4), nullable=False)
+    city_id = Column(Integer, nullable=False)
+
+    def __init__(self, name, code, city_id):
+        self.name = name
+        self.code = code
+        self.city_id = city_id
+
+    def __repr__(self):
+        return "<County(name: %s)>" % self.name
+
+
+# 运行本文件，创建数据库
+if __name__ == "__main__":
+    engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], echo=True)
+    Base.metadata.create_all(engine)

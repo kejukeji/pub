@@ -139,6 +139,7 @@ class UserInfo(Base):
         return"<UserInfo(user_id: '%s', email: '%s')>" % (self.user_id, self.email)
 
 
+# 运行本文件，创建数据库
 if __name__ == "__main__":
     engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], echo=True)
     Base.metadata.create_all(engine)

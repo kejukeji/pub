@@ -8,11 +8,10 @@
 """
 
 from sqlalchemy import create_engine
-from sqlalchemy import Column, Integer, String, Boolean, DATETIME, ForeignKey, text
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.dialects.mysql import DOUBLE
 
 from pub_app import app, Base
-from utils import time_str
 
 PUB_TABLE = "pub"
 PUB_TYPE_TABLE = "pub_type"
@@ -47,7 +46,7 @@ class Pub(Base):
     recommend = Column(Boolean, nullable=False, server_default='0')
     type_list = Column(String(32), nullable=False)
     view_number = Column(Integer, nullable=False, server_default='0')
-    intro = Column(String(256), nullable=False, server_default=None)
+    intro = Column(String(256), nullable=False)
     web_url = Column(String(64), nullable=True, server_default=None)
     mobile_list = Column(String(128), nullable=True, server_default=None)
     tel_list = Column(String(128), nullable=True, server_default=None)
@@ -70,7 +69,7 @@ class Pub(Base):
         self.province_id = province_id
         self.city_id = city_id
         self.county_id = county_id
-        self.street = self
+        self.street = street
         self.recommend = recommend
         self.view_number = view_number
         self.intro = intro
@@ -84,6 +83,60 @@ class Pub(Base):
         return "<Pub(name: '%s')>" % self.name
 
 
+class PubType(Base):
+    """pub_type相对于的PubType类
+    id
+    name 酒吧类型
+    code 标志位
+    """
+
+    __tablename__ = PUB_TYPE_TABLE
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(16), nullable=False)
+    code = Column(String(4), nullable=False)
+
+    def __init__(self, name, code):
+        self.name = name
+        self.code = code
+
+    def __repr__(self):
+        return "<PubType(name: %s, code: %s)>" % (self.name, self.code)
+
+
+class PubPicture(Base):
+    """pub_picture 对应的类
+    id
+    pub_id 外键 ON DELETE CASCADE ON UPDATE CASCADE
+    base_path 酒吧图片的根路径
+    rel_path 酒吧图片的相对路径
+    pic_name 酒吧图片存储在服务器的名字
+    upload_name 上传时候图片的名字
+    """
+
+    __tablename__ = PUB_PICTURE_TABLE
+
+    id = Column(Integer, primary_key=True)
+    pub_id = Column(Integer, ForeignKey('pub.id', ondelete="cascade", onupdate="cascade"), nullable=False)
+    base_path = Column(String(128), nullable=False)
+    rel_path = Column(String(128), nullable=False)
+    pic_name = Column(String(128), nullable=False)
+    upload_name = Column(String(128), nullable=False)
+    cover = Column(Boolean, nullable=False, server_default='0')
+
+    def __init__(self, pub_id, base_path, rel_path, pic_name, upload_name, cover=0):
+        self.pub_id = pub_id
+        self.base_path = base_path
+        self.rel_path = rel_path
+        self.pic_name = pic_name
+        self.upload_name = upload_name
+        self.cover = cover
+
+    def __repr__(self):
+        return "<PubPicture(pub_id: %s, upload_name: %s)>" % (self.pub_id, self.upload_name)
+
+
+# 运行本文件，创建数据库
 if __name__ == "__main__":
     engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], echo=True)
     Base.metadata.create_all(engine)
