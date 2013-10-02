@@ -9,12 +9,15 @@
 
 from sqlalchemy import create_engine
 from sqlalchemy import Column, Integer, String, Boolean, DATETIME, ForeignKey, text
+from flask.ext.bcrypt import Bcrypt
 
 from pub_app import app, Base
 from utils import time_str
 
 USER_TABLE = "user"
 USER_INFO_TABLE = "user_info"
+
+bcrypt = Bcrypt(app)
 
 
 class User(Base):
@@ -48,14 +51,34 @@ class User(Base):
         self.nick_name = nick_name
         self.sign_up_date = sign_up_date  # string "2012-09-23 23:23:23"
         self.login_name = login_name
-        self.password = password
+
+        if password is not None:
+            self.password = bcrypt.generate_password_hash(password)
+        else:
+            self.password = password
+
         self.open_id = open_id
         self.system_message_time = system_message_time  # string "2012-09-23 23:23:23"
         self.admin = admin
 
     def __repr__(self):
         return "<User(nick_name: '%s', login_type: '%s', sign_up_date: '%s')>" % (self.nick_name, self.login_type,
-                                                                               self.sign_up_date)
+                                                                                  self.sign_up_date)
+
+    def change_password(self, old_password, password):
+        if password is None:
+            return False
+
+        if old_password is None:
+            if self.password is None:
+                self.password = bcrypt.generate_password_hash(password)
+                return True
+        else:
+            if self.password == bcrypt.generate_password_hash(old_password):
+                self.password = bcrypt.generate_password_hash(password)
+                return True
+            else:
+                return False
 
 
 class UserInfo(Base):
