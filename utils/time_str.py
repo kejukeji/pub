@@ -12,4 +12,4 @@ def today():
     比如 "2013-09-09 09:09:23"
     """
 
-    return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')

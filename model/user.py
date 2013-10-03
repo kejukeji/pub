@@ -7,15 +7,15 @@
     UserInfo: UserInfo类，主要是用户个人信息。
 """
 
-from sqlalchemy import create_engine
 from sqlalchemy import Column, Integer, String, Boolean, DATETIME, ForeignKey, text
 from flask.ext.bcrypt import Bcrypt
 
-from pub_app import app, Base
+from pub_app import app
+from database import Base, engine
 from utils import time_str
 
-USER_TABLE = "user"
-USER_INFO_TABLE = "user_info"
+USER_TABLE = 'user'
+USER_INFO_TABLE = 'user_info'
 
 bcrypt = Bcrypt(app)
 
@@ -62,7 +62,7 @@ class User(Base):
         self.admin = kwargs.pop('admin', 0)
 
     def __repr__(self):
-        return "<User(nick_name: '%s', login_type: '%s', sign_up_date: '%s')>" % (self.nick_name, self.login_type,
+        return '<User(nick_name: %s, login_type: %s, sign_up_date: %s)>' % (self.nick_name, self.login_type,
                                                                                   self.sign_up_date)
 
     def change_password(self, old_password, new_password):
@@ -125,7 +125,7 @@ class UserInfo(Base):
     __tablename__ = USER_INFO_TABLE
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey(User.id, ondelete="cascade", onupdate="cascade"), nullable=False)
+    user_id = Column(Integer, ForeignKey(User.id, ondelete='cascade', onupdate='cascade'), nullable=False)
     mobile = Column(String(16), nullable=True, server_default=None)
     tel = Column(String(16), nullable=True, server_default=None)
     real_name = Column(String(32), nullable=True, server_default=None)
@@ -171,10 +171,9 @@ class UserInfo(Base):
         self.upload_name = kwargs.pop('upload_name', None)
 
     def __repr__(self):
-        return"<UserInfo(user_id: '%s', email: '%s')>" % (self.user_id, self.email)
+        return '<UserInfo(user_id: %s, email: %s)>' % (self.user_id, self.email)
 
 
 # 运行本文件，创建数据库
-if __name__ == "__main__":
-    engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], echo=True)
+if __name__ == '__main__':
     Base.metadata.create_all(engine)

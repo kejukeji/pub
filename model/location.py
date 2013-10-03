@@ -7,14 +7,13 @@
     County: County类，市下面的区县或者是直辖市的区县
 """
 
-from sqlalchemy import create_engine
 from sqlalchemy import Column, Integer, String
 
-from pub_app import app, Base
+from database import Base, engine
 
-PROVINCE_TABLE = "province"
-CITY_TABLE = "city"
-COUNTY_TABLE = "county"
+PROVINCE_TABLE = 'province'
+CITY_TABLE = 'city'
+COUNTY_TABLE = 'county'
 
 
 class Province(Base):
@@ -32,13 +31,13 @@ class Province(Base):
     code = Column(String(4), nullable=False)
     country = Column(String(4), nullable=True, server_default=None)
 
-    def __init__(self, name, code, country="zh"):
+    def __init__(self, name, code, country='zh'):
         self.name = name
         self.code = code
         self.country = country
 
     def __repr__(self):
-        return "<Province(name: %s)>" % self.name
+        return '<Province(name: %s)>' % self.name
 
 
 class City(Base):
@@ -62,7 +61,7 @@ class City(Base):
         self.province_id = province_id
 
     def __repr__(self):
-        return "<City(name: %s)>" % self.name
+        return '<City(name: %s)>' % self.name
 
 
 class County(Base):
@@ -86,10 +85,9 @@ class County(Base):
         self.city_id = city_id
 
     def __repr__(self):
-        return "<County(name: %s)>" % self.name
+        return '<County(name: %s)>' % self.name
 
 
 # 运行本文件，创建数据库
-if __name__ == "__main__":
-    engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], echo=True)
+if __name__ == '__main__':
     Base.metadata.create_all(engine)

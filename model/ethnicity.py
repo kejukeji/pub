@@ -5,12 +5,11 @@
     Ethnicity类，民族信息
 """
 
-from sqlalchemy import create_engine
 from sqlalchemy import Column, Integer, String
 
-from pub_app import app, Base
+from database import Base, engine
 
-ETHNICITY_TABLE = "ethnicity"
+ETHNICITY_TABLE = 'ethnicity'
 
 
 class Ethnicity(Base):
@@ -31,10 +30,9 @@ class Ethnicity(Base):
         self.code = code
 
     def __repr__(self):
-        return "<Ethnicity(name: %s)>" % self.name
+        return '<Ethnicity(name: %s)>' % self.name
 
 
 # 运行本文件，创建数据库
-if __name__ == "__main__":
-    engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], echo=True)
+if __name__ == '__main__':
     Base.metadata.create_all(engine)

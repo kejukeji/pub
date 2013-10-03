@@ -8,18 +8,17 @@
     Message 用户私信
 """
 
-from sqlalchemy import create_engine
 from sqlalchemy import Column, Integer, String, Boolean, DATETIME, ForeignKey, text
 
-from pub_app import app, Base
 from utils import time_str
+from database import Base, engine
 from pub import Pub
 from user import User
 
-COLLECT_TABLE = "collect"
-COMMENT_TABLE = "comment"
-VIEW_TABLE = "view"
-MESSAGE_TABLE = "message"
+COLLECT_TABLE = 'collect'
+COMMENT_TABLE = 'comment'
+VIEW_TABLE = 'view'
+MESSAGE_TABLE = 'message'
 
 
 class Collect(Base):
@@ -43,7 +42,7 @@ class Collect(Base):
         self.time = time  # string '2012-02-02 02:02:02'
 
     def __repr__(self):
-        return "<Collect(user_id: %s, pub_id: %s, time: %s)>" % (self.user_id, self.pub_id, self.time)
+        return '<Collect(user_id: %s, pub_id: %s, time: %s)>' % (self.user_id, self.pub_id, self.time)
 
 
 class Comment(Base):
@@ -70,7 +69,7 @@ class Comment(Base):
         self.time = time
 
     def __repr__(self):
-        return "<Comment(user_id: %s, pub_id: %s, content: %s)>" % (self.user_id, self.pub_id, self.content)
+        return '<Comment(user_id: %s, pub_id: %s, content: %s)>' % (self.user_id, self.pub_id, self.content)
 
 
 class View(Base):
@@ -97,7 +96,7 @@ class View(Base):
         self.view_number = view_number
 
     def __repr__(self):
-        return "<View(user_id: %s, pub_id: %s)>" % (self.user_id, self.pub_id)
+        return '<View(user_id: %s, pub_id: %s)>' % (self.user_id, self.pub_id)
 
 
 class Message(Base):
@@ -127,11 +126,10 @@ class Message(Base):
         self.view = view
 
     def __repr__(self):
-        return "<Message(sender_id: %s, receiver_id: %s, content: %s)>" % \
+        return '<Message(sender_id: %s, receiver_id: %s, content: %s)>' % \
                (self.sender_id, self.receiver_id, self.content)
 
 
 # 运行本文件，创建数据库
-if __name__ == "__main__":
-    engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], echo=True)
+if __name__ == '__main__':
     Base.metadata.create_all(engine)

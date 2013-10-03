@@ -7,15 +7,14 @@
     PubPicture: PubPicture类，酒吧的展示图片。
 """
 
-from sqlalchemy import create_engine
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.dialects.mysql import DOUBLE
 
-from pub_app import app, Base
+from database import Base, engine
 
-PUB_TABLE = "pub"
-PUB_TYPE_TABLE = "pub_type"
-PUB_PICTURE_TABLE = "pub_picture"
+PUB_TABLE = 'pub'
+PUB_TYPE_TABLE = 'pub_type'
+PUB_PICTURE_TABLE = 'pub_picture'
 
 
 class Pub(Base):
@@ -78,7 +77,7 @@ class Pub(Base):
         self.fax = kwargs.pop('fax', None)
 
     def __repr__(self):
-        return "<Pub(name: '%s')>" % self.name
+        return '<Pub(name: %s)>' % self.name
 
 
 class PubType(Base):
@@ -99,7 +98,7 @@ class PubType(Base):
         self.code = code
 
     def __repr__(self):
-        return "<PubType(name: %s, code: %s)>" % (self.name, self.code)
+        return '<PubType(name: %s, code: %s)>' % (self.name, self.code)
 
 
 class PubPicture(Base):
@@ -115,7 +114,7 @@ class PubPicture(Base):
     __tablename__ = PUB_PICTURE_TABLE
 
     id = Column(Integer, primary_key=True)
-    pub_id = Column(Integer, ForeignKey(Pub.id, ondelete="cascade", onupdate="cascade"), nullable=False)
+    pub_id = Column(Integer, ForeignKey(Pub.id, ondelete='cascade', onupdate='cascade'), nullable=False)
     base_path = Column(String(128), nullable=False)
     rel_path = Column(String(128), nullable=False)
     pic_name = Column(String(128), nullable=False)
@@ -131,10 +130,9 @@ class PubPicture(Base):
         self.cover = cover
 
     def __repr__(self):
-        return "<PubPicture(pub_id: %s, upload_name: %s)>" % (self.pub_id, self.upload_name)
+        return '<PubPicture(pub_id: %s, upload_name: %s)>' % (self.pub_id, self.upload_name)
 
 
 # 运行本文件，创建数据库
-if __name__ == "__main__":
-    engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], echo=True)
+if __name__ == '__main__':
     Base.metadata.create_all(engine)
