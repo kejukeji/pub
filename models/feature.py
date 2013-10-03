@@ -13,6 +13,8 @@ from sqlalchemy import Column, Integer, String, Boolean, DATETIME, ForeignKey, t
 
 from pub_app import app, Base
 from utils import time_str
+from pub import Pub
+from user import User
 
 COLLECT_TABLE = "collect"
 COMMENT_TABLE = "comment"
@@ -31,8 +33,8 @@ class Collect(Base):
     __tablename__ = COLLECT_TABLE
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('user.id', ondelete='cascade', onupdate='cascade'), nullable=False)
-    pub_id = Column(Integer, ForeignKey('pub.id', ondelete='cascade', onupdate='cascade'), nullable=False)
+    user_id = Column(Integer, ForeignKey(User.id, ondelete='cascade', onupdate='cascade'), nullable=False)
+    pub_id = Column(Integer, ForeignKey(Pub.id, ondelete='cascade', onupdate='cascade'), nullable=False)
     time = Column(DATETIME, nullable=False, server_default=text('NOW()'))
 
     def __init__(self, user_id, pub_id, time=time_str.today()):
@@ -56,8 +58,8 @@ class Comment(Base):
     __tablename__ = COMMENT_TABLE
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('user.id', ondelete='set null', onupdate='cascade'), nullable=True)
-    pub_id = Column(Integer, ForeignKey('pub.id', ondelete='cascade', onupdate='cascade'), nullable=False)
+    user_id = Column(Integer, ForeignKey(User.id, ondelete='set null', onupdate='cascade'), nullable=True)
+    pub_id = Column(Integer, ForeignKey(Pub.id, ondelete='cascade', onupdate='cascade'), nullable=False)
     time = Column(DATETIME, nullable=False, server_default=text('NOW()'))
     content = Column(String(256), nullable=False)
 
@@ -83,8 +85,8 @@ class View(Base):
     __tablename__ = VIEW_TABLE
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('user.id', ondelete='cascade', onupdate='cascade'), nullable=False)
-    pub_id = Column(Integer, ForeignKey('pub.id', ondelete='cascade', onupdate='cascade'), nullable=False)
+    user_id = Column(Integer, ForeignKey(User.id, ondelete='cascade', onupdate='cascade'), nullable=False)
+    pub_id = Column(Integer, ForeignKey(Pub.id, ondelete='cascade', onupdate='cascade'), nullable=False)
     time = Column(DATETIME, nullable=False, server_default=text('NOW()'))
     view_number = Column(Integer, nullable=False, server_default='0')
 
@@ -111,8 +113,8 @@ class Message(Base):
     __tablename__ = MESSAGE_TABLE
 
     id = Column(Integer, primary_key=True)
-    sender_id = Column(Integer, ForeignKey('user.id', ondelete='set null', onupdate='cascade'), nullable=True)
-    receiver_id = Column(Integer, ForeignKey('user.id', ondelete='set null', onupdate='cascade'), nullable=True)
+    sender_id = Column(Integer, ForeignKey(User.id, ondelete='set null', onupdate='cascade'), nullable=True)
+    receiver_id = Column(Integer, ForeignKey(User.id, ondelete='set null', onupdate='cascade'), nullable=True)
     content = Column(String(256), nullable=False)
     time = Column(DATETIME, nullable=False, server_default=text('NOW()'))
     view = Column(Boolean, nullable=False, server_default='0')

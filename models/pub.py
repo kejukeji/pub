@@ -115,7 +115,7 @@ class PubPicture(Base):
     __tablename__ = PUB_PICTURE_TABLE
 
     id = Column(Integer, primary_key=True)
-    pub_id = Column(Integer, ForeignKey('pub.id', ondelete="cascade", onupdate="cascade"), nullable=False)
+    pub_id = Column(Integer, ForeignKey(Pub.id, ondelete="cascade", onupdate="cascade"), nullable=False)
     base_path = Column(String(128), nullable=False)
     rel_path = Column(String(128), nullable=False)
     pic_name = Column(String(128), nullable=False)

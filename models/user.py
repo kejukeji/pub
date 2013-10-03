@@ -113,7 +113,7 @@ class UserInfo(Base):
     __tablename__ = USER_INFO_TABLE
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('user.id', ondelete="cascade", onupdate="cascade"), nullable=False)
+    user_id = Column(Integer, ForeignKey(User.id, ondelete="cascade", onupdate="cascade"), nullable=False)
     mobile = Column(String(16), nullable=True, server_default=None)
     tel = Column(String(16), nullable=True, server_default=None)
     real_name = Column(String(32), nullable=True, server_default=None)
