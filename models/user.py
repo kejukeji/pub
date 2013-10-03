@@ -45,21 +45,21 @@ class User(Base):
     system_message_time = Column(DATETIME, nullable=True, server_default=text('NOW()'))
     admin = Column(Boolean, nullable=False, server_default='0')
 
-    def __init__(self, login_type, nick_name, sign_up_date=time_str.today(), login_name=None, password=None,
-                 open_id=None, system_message_time=time_str.today(), admin=0):
+    def __init__(self, login_type, nick_name, **kwargs):  # todo-lyw 这样传递参数比较复杂 **kargs，理解**语法
         self.login_type = login_type
         self.nick_name = nick_name
-        self.sign_up_date = sign_up_date  # string "2012-09-23 23:23:23"
-        self.login_name = login_name
+        self.sign_up_date = kwargs.pop('sign_up_date', time_str.today())  # string "2012-09-23 23:23:23"
+        self.login_name = kwargs.pop('login_name', None)
 
+        password = kwargs.pop('password', None)
         if password is not None:
             self.password = bcrypt.generate_password_hash(password)
         else:
             self.password = password
 
-        self.open_id = open_id
-        self.system_message_time = system_message_time  # string "2012-09-23 23:23:23"
-        self.admin = admin
+        self.open_id = kwargs.pop('open_id', None)
+        self.system_message_time = kwargs.pop('system_message_time', time_str.today())  # string "2012-09-23 23:23:23"
+        self.admin = kwargs.pop('admin', 0)
 
     def __repr__(self):
         return "<User(nick_name: '%s', login_type: '%s', sign_up_date: '%s')>" % (self.nick_name, self.login_type,
@@ -74,11 +74,14 @@ class User(Base):
                 self.password = bcrypt.generate_password_hash(password)
                 return True
         else:
-            if self.password == bcrypt.generate_password_hash(old_password):
+            if self.password == bcrypt.generate_password_hash(old_password):  # todo-lyw 这里使用检查函数
                 self.password = bcrypt.generate_password_hash(password)
                 return True
             else:
                 return False
+
+    def check_password(self, password):  # todo-lyw 这个函数需要写好，可以应用到change_password里面去
+        pass
 
 
 class UserInfo(Base):
@@ -132,31 +135,28 @@ class UserInfo(Base):
     pic_name = Column(String(128), nullable=True, server_default=None)
     upload_name = Column(String(128), nullable=True, server_default=None)
 
-    def __init__(self, user_id, email, mobile=None, tel=None, real_name=None, sex=None, birthday_type=None,
-                 birthday=None, intro=None, signature=None, ethnicity_id=None, company=None, job=None, province_id=None,
-                 city_id=None, county_id=None, street=None, base_path=None, rel_path=None, pic_name=None,
-                 upload_name=None):
+    def __init__(self, user_id, email, **kwargs):
         self.user_id = user_id
         self.email = email
-        self.mobile = mobile
-        self.tel = tel
-        self.real_name = real_name
-        self.sex = sex
-        self.birthday_type = birthday_type
-        self.birthday = birthday
-        self.intro = intro
-        self.signature = signature
-        self.ethnicity_id = ethnicity_id
-        self.company = company
-        self.job = job
-        self.province_id = province_id
-        self.city_id = city_id
-        self.county_id = county_id
-        self.street = street
-        self.base_path = base_path
-        self.rel_path = rel_path
-        self.pic_name = pic_name
-        self.upload_name = upload_name
+        self.mobile = kwargs.pop('mobile', None)
+        self.tel = kwargs.pop('tel', None)
+        self.real_name = kwargs.pop('real_name', None)
+        self.sex = kwargs.pop('sex', None)
+        self.birthday_type = kwargs.pop('birthday_type', None)
+        self.birthday = kwargs.pop('birthday', None)
+        self.intro = kwargs.pop('intro', None)
+        self.signature = kwargs.pop('signature', None)
+        self.ethnicity_id = kwargs.pop('ethnicity_id', None)
+        self.company = kwargs.pop('company', None)
+        self.job = kwargs.pop('job', None)
+        self.province_id = kwargs.pop('province_id', None)
+        self.city_id = kwargs.pop('city_id', None)
+        self.county_id = kwargs.pop('county_id', None)
+        self.street = kwargs.pop('street', None)
+        self.base_path = kwargs.pop('base_path', None)
+        self.rel_path = kwargs.pop('rel_path', None)
+        self.pic_name = kwargs.pop('pic_name', None)
+        self.upload_name = kwargs.pop('upload_name', None)
 
     def __repr__(self):
         return"<UserInfo(user_id: '%s', email: '%s')>" % (self.user_id, self.email)

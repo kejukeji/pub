@@ -59,9 +59,7 @@ class Pub(Base):
     longitude = Column(DOUBLE, nullable=False)
     latitude = Column(DOUBLE, nullable=False)
 
-    def __init__(self, name, type_list, longitude, latitude, province_id, city_id, county_id, street=None,
-                 recommend=0, view_number=0, intro=None, web_url=None, mobile_list=None, tel_list=None,
-                 email=None, fax=None):
+    def __init__(self, name, type_list, longitude, latitude, province_id, city_id, county_id, **kwargs):
         self.name = name
         self.type_list = type_list
         self.latitude = longitude
@@ -69,15 +67,15 @@ class Pub(Base):
         self.province_id = province_id
         self.city_id = city_id
         self.county_id = county_id
-        self.street = street
-        self.recommend = recommend
-        self.view_number = view_number
-        self.intro = intro
-        self.web_url = web_url
-        self.mobile_list = mobile_list
-        self.tel_list = tel_list
-        self.email = email
-        self.fax = fax
+        self.street = kwargs.pop('street', None)
+        self.recommend = kwargs.pop('recommend', 0)
+        self.view_number = kwargs.pop('view_number', 0)
+        self.intro = kwargs.pop('intro', None)
+        self.web_url = kwargs.pop('web_url', None)
+        self.mobile_list = kwargs.pop('mobile_list', None)
+        self.tel_list = kwargs.pop('tel_list', None)
+        self.email = kwargs.pop('email', None)
+        self.fax = kwargs.pop('fax', None)
 
     def __repr__(self):
         return "<Pub(name: '%s')>" % self.name
