@@ -37,7 +37,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True)
     login_name = Column(String(32), nullable=True, server_default=None)
-    password = Column(String(64), nullable=True, server_default=None)  # todo-lyw password需要flask的一个插件支持
+    password = Column(String(64), nullable=True, server_default=None)
     login_type = Column(Integer, nullable=False, server_default='0')
     open_id = Column(String(64), nullable=True, server_default=None)
     nick_name = Column(String(32), nullable=False, unique=True)
@@ -65,23 +65,35 @@ class User(Base):
         return "<User(nick_name: '%s', login_type: '%s', sign_up_date: '%s')>" % (self.nick_name, self.login_type,
                                                                                   self.sign_up_date)
 
-    def change_password(self, old_password, password):
-        if password is None:
+    def change_password(self, old_password, new_password):
+        """设置用户密码"""
+
+        if new_password is None:
             return False
 
         if old_password is None:
             if self.password is None:
-                self.password = bcrypt.generate_password_hash(password)
+                self.password = bcrypt.generate_password_hash(new_password)
                 return True
+            else:
+                return False
         else:
-            if self.password == bcrypt.generate_password_hash(old_password):  # todo-lyw 这里使用检查函数
-                self.password = bcrypt.generate_password_hash(password)
+            if self.check_password(old_password):
+                self.password = bcrypt.generate_password_hash(new_password)
                 return True
             else:
                 return False
 
-    def check_password(self, password):  # todo-lyw 这个函数需要写好，可以应用到change_password里面去
-        pass
+    def check_password(self, password):
+        """检查密码是否正确"""
+
+        if (password is None) and (self.password is None):
+            return True
+
+        if (password is None) or (self.password is None):
+            return False
+
+        return bcrypt.check_password_hash(self.password, password)
 
 
 class UserInfo(Base):
