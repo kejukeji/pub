@@ -34,7 +34,6 @@ class SystemMessage(Base):
         return "<SystemMessage(content: %s, time: %s)>" % (self.content, self.time)
 
 
-
 # 运行本文件，创建数据库
 if __name__ == "__main__":
     engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], echo=True)
