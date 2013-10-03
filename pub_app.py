@@ -8,8 +8,8 @@
 
 from flask import Flask
 
-from model.database import db
-from url import admin
+from models.database import db
+from urls import admin
 from develop_vars import CONFIG_FILE
 
 # 创建应用

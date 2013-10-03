@@ -14,3 +14,12 @@ engine = create_engine(SQLALCHEMY_DATABASE_URI, echo=False)
 db = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
 Base = declarative_base()  # 数据库ORM基础类
 Base.query = db.query_property()
+
+if __name__ == '__main__':
+    from models.user import *
+    from models.pub import *
+    from models.admin import *
+    from models.ethnicity import *
+    from models.feature import *
+    from models.location import *
+    Base.metadata.create_all(engine)  # todo-lyw为何这里可以创建
