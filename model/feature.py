@@ -9,8 +9,8 @@
 """
 
 from sqlalchemy import Column, Integer, String, Boolean, DATETIME, ForeignKey, text
-from sqlalchemy.ext.declarative import declarative_base
 
+from database import Base, engine
 from utils import time_str
 from pub import Pub
 from user import User
@@ -19,8 +19,6 @@ COLLECT_TABLE = 'collect'
 COMMENT_TABLE = 'comment'
 VIEW_TABLE = 'view'
 MESSAGE_TABLE = 'message'
-
-Base = declarative_base()
 
 
 class Collect(Base):
@@ -134,5 +132,4 @@ class Message(Base):
 
 # 运行本文件，创建数据库
 if __name__ == '__main__':
-    from pub_app import engine
     Base.metadata.create_all(engine)

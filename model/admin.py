@@ -5,13 +5,11 @@
 """
 
 from sqlalchemy import Column, Integer, String, DATETIME, text
-from sqlalchemy.ext.declarative import declarative_base
 
+from database import Base, engine
 from utils import time_str
 
 SYSTEM_MESSAGE_TABLE = 'system_message'
-
-Base = declarative_base()
 
 
 class SystemMessage(Base):
@@ -37,5 +35,4 @@ class SystemMessage(Base):
 
 # 运行本文件，创建数据库
 if __name__ == '__main__':
-    from pub_app import engine
     Base.metadata.create_all(engine)

@@ -9,13 +9,12 @@
 
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.dialects.mysql import DOUBLE
-from sqlalchemy.ext.declarative import declarative_base
+
+from database import Base, engine
 
 PUB_TABLE = 'pub'
 PUB_TYPE_TABLE = 'pub_type'
 PUB_PICTURE_TABLE = 'pub_picture'
-
-Base = declarative_base()
 
 
 class Pub(Base):
@@ -136,5 +135,4 @@ class PubPicture(Base):
 
 # 运行本文件，创建数据库
 if __name__ == '__main__':
-    from pub_app import engine
     Base.metadata.create_all(engine)

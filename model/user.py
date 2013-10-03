@@ -10,14 +10,12 @@
 import bcrypt
 
 from sqlalchemy import Column, Integer, String, Boolean, DATETIME, ForeignKey, text
-from sqlalchemy.ext.declarative import declarative_base
 
+from database import Base, engine
 from utils import time_str
 
 USER_TABLE = 'user'
 USER_INFO_TABLE = 'user_info'
-
-Base = declarative_base()
 
 
 class User(Base):
@@ -93,7 +91,7 @@ class User(Base):
         if (password is None) or (self.password is None):
             return False
 
-        return bcrypt.checkpw(password, self.password) == self.password
+        return bcrypt.checkpw(password, self.password)
 
 
 class UserInfo(Base):
@@ -176,5 +174,4 @@ class UserInfo(Base):
 
 # 运行本文件，创建数据库
 if __name__ == '__main__':
-    from pub_app import engine
     Base.metadata.create_all(engine)

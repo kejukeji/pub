@@ -8,13 +8,12 @@
 """
 
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
+
+from database import Base, engine
 
 PROVINCE_TABLE = 'province'
 CITY_TABLE = 'city'
 COUNTY_TABLE = 'county'
-
-Base = declarative_base()
 
 
 class Province(Base):
@@ -91,5 +90,4 @@ class County(Base):
 
 # 运行本文件，创建数据库
 if __name__ == '__main__':
-    from pub_app import engine
     Base.metadata.create_all(engine)

@@ -6,11 +6,10 @@
 """
 
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
+
+from database import Base, engine
 
 ETHNICITY_TABLE = 'ethnicity'
-
-Base = declarative_base()
 
 
 class Ethnicity(Base):
@@ -36,5 +35,4 @@ class Ethnicity(Base):
 
 # 运行本文件，创建数据库
 if __name__ == '__main__':
-    from pub_app import engine
     Base.metadata.create_all(engine)
