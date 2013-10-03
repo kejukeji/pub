@@ -7,17 +7,17 @@
     UserInfo: UserInfo类，主要是用户个人信息。
 """
 
-from sqlalchemy import Column, Integer, String, Boolean, DATETIME, ForeignKey, text
-from flask.ext.bcrypt import Bcrypt
+import bcrypt
 
-from pub_app import app
-from database import Base, engine
+from sqlalchemy import Column, Integer, String, Boolean, DATETIME, ForeignKey, text
+from sqlalchemy.ext.declarative import declarative_base
+
 from utils import time_str
 
 USER_TABLE = 'user'
 USER_INFO_TABLE = 'user_info'
 
-bcrypt = Bcrypt(app)
+Base = declarative_base()
 
 
 class User(Base):
@@ -53,7 +53,7 @@ class User(Base):
 
         password = kwargs.pop('password', None)
         if password is not None:
-            self.password = bcrypt.generate_password_hash(password)
+            self.password = bcrypt.hashpw(password, bcrypt.gensalt())
         else:
             self.password = password
 
@@ -63,7 +63,7 @@ class User(Base):
 
     def __repr__(self):
         return '<User(nick_name: %s, login_type: %s, sign_up_date: %s)>' % (self.nick_name, self.login_type,
-                                                                                  self.sign_up_date)
+                                                                            self.sign_up_date)
 
     def change_password(self, old_password, new_password):
         """设置用户密码"""
@@ -73,13 +73,13 @@ class User(Base):
 
         if old_password is None:
             if self.password is None:
-                self.password = bcrypt.generate_password_hash(new_password)
+                self.password = bcrypt.hashpw(new_password, bcrypt.gensalt())
                 return True
             else:
                 return False
         else:
             if self.check_password(old_password):
-                self.password = bcrypt.generate_password_hash(new_password)
+                self.password = bcrypt.hashpw(new_password, bcrypt.gensalt())
                 return True
             else:
                 return False
@@ -93,7 +93,7 @@ class User(Base):
         if (password is None) or (self.password is None):
             return False
 
-        return bcrypt.check_password_hash(self.password, password)
+        return bcrypt.checkpw(password, self.password) == self.password
 
 
 class UserInfo(Base):
@@ -176,4 +176,5 @@ class UserInfo(Base):
 
 # 运行本文件，创建数据库
 if __name__ == '__main__':
+    from pub_app import engine
     Base.metadata.create_all(engine)
