@@ -17,7 +17,7 @@ from .user import User
 
 COLLECT_TABLE = 'collect'
 COMMENT_TABLE = 'comment'
-VIEW_TABLE = 'view'
+CHECK_IN_TABLE = 'checkin'
 MESSAGE_TABLE = 'message'
 
 
@@ -52,6 +52,7 @@ class Comment(Base):
     pub_id 酒吧ID ON DELETE CASCADE ON UPDATE CASCADE
     time 评论时间
     content 评论内容
+    star 评论给了几颗星
     """
 
     __tablename__ = COMMENT_TABLE
@@ -61,18 +62,20 @@ class Comment(Base):
     pub_id = Column(Integer, ForeignKey(Pub.id, ondelete='cascade', onupdate='cascade'), nullable=False)
     time = Column(DATETIME, nullable=False, server_default=text('NOW()'))
     content = Column(String(256), nullable=False)
+    star = Column(Integer, nullable=False, server_default='5')
 
-    def __init__(self, user_id, pub_id, content, time=time_str.today()):
+    def __init__(self, user_id, pub_id, content, time=time_str.today(), star=5):
         self.user_id = user_id
         self.pub_id = pub_id
         self.content = content
         self.time = time
+        self.star = star
 
     def __repr__(self):
         return '<Comment(user_id: %s, pub_id: %s, content: %s)>' % (self.user_id, self.pub_id, self.content)
 
 
-class View(Base):
+class Checkin(Base):
     """view对应的类
     记录用户浏览的某一个酒吧
     user_id 用户ID ON DELETE CASCADE ON UPDATE CASCADE
@@ -81,7 +84,7 @@ class View(Base):
     view_number 用户一共浏览这个酒吧的次数
     """
 
-    __tablename__ = VIEW_TABLE
+    __tablename__ = CHECK_IN_TABLE
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey(User.id, ondelete='cascade', onupdate='cascade'), nullable=False)

@@ -15,6 +15,7 @@ from .database import Base
 PUB_TABLE = 'pub'
 PUB_TYPE_TABLE = 'pub_type'
 PUB_PICTURE_TABLE = 'pub_picture'
+PUB_TYPE_MID_TABLE = 'pub_type_mid'
 
 
 class Pub(Base):
@@ -43,7 +44,6 @@ class Pub(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(64), nullable=False)
     recommend = Column(Boolean, nullable=False, server_default='0')
-    type_list = Column(String(32), nullable=False)
     view_number = Column(Integer, nullable=False, server_default='0')
     intro = Column(String(256), nullable=False)
     web_url = Column(String(64), nullable=True, server_default=None)
@@ -58,9 +58,8 @@ class Pub(Base):
     longitude = Column(DOUBLE, nullable=False)
     latitude = Column(DOUBLE, nullable=False)
 
-    def __init__(self, name, type_list, longitude, latitude, province_id, city_id, county_id, **kwargs):
+    def __init__(self, name, longitude, latitude, province_id, city_id, county_id, **kwargs):
         self.name = name
-        self.type_list = type_list
         self.latitude = longitude
         self.latitude = latitude
         self.province_id = province_id
@@ -131,3 +130,24 @@ class PubPicture(Base):
 
     def __repr__(self):
         return '<PubPicture(pub_id: %s, upload_name: %s)>' % (self.pub_id, self.upload_name)
+
+
+class PubTypeMid(Base):
+    """pub_type_mid 对应的类
+    id
+    pub_id 外键 ON DELETE CASCADE ON UPDATE CASCADE
+    pub_type_id 外键 ON DELETE CASCADE ON UPDATE CASCADE
+    """
+
+    __tablename__ = PUB_TYPE_MID_TABLE
+
+    id = Column(Integer, primary_key=True)
+    pub_id = Column(Integer, ForeignKey(Pub.id, ondelete='cascade', onupdate='cascade'), nullable=False)
+    pub_type_id = Column(Integer, ForeignKey(PubType.id, ondelete='cascade', onupdate='cascade'), nullable=False)
+
+    def __init__(self, pub_id, pub_type_id):
+        self.pub_id = pub_id
+        self.pub_type_id = pub_type_id
+
+    def __repr__(self):
+        return '<PubTypeMid(pub_id: %s, pub_type_id: %s)>' % (self.pub_id, self.pub_type_id)
