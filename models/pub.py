@@ -10,7 +10,7 @@
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.dialects.mysql import DOUBLE
 
-from database import Base, engine
+from .database import Base
 
 PUB_TABLE = 'pub'
 PUB_TYPE_TABLE = 'pub_type'
@@ -131,8 +131,3 @@ class PubPicture(Base):
 
     def __repr__(self):
         return '<PubPicture(pub_id: %s, upload_name: %s)>' % (self.pub_id, self.upload_name)
-
-
-# 运行本文件，创建数据库
-if __name__ == '__main__':
-    Base.metadata.create_all(engine)

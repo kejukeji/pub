@@ -10,10 +10,10 @@
 
 from sqlalchemy import Column, Integer, String, Boolean, DATETIME, ForeignKey, text
 
-from database import Base, engine
+from .database import Base
 from utils import time_str
-from pub import Pub
-from user import User
+from .pub import Pub
+from .user import User
 
 COLLECT_TABLE = 'collect'
 COMMENT_TABLE = 'comment'
@@ -128,8 +128,3 @@ class Message(Base):
     def __repr__(self):
         return '<Message(sender_id: %s, receiver_id: %s, content: %s)>' % \
                (self.sender_id, self.receiver_id, self.content)
-
-
-# 运行本文件，创建数据库
-if __name__ == '__main__':
-    Base.metadata.create_all(engine)

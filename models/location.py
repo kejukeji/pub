@@ -9,7 +9,7 @@
 
 from sqlalchemy import Column, Integer, String
 
-from database import Base, engine
+from .database import Base
 
 PROVINCE_TABLE = 'province'
 CITY_TABLE = 'city'
@@ -86,8 +86,3 @@ class County(Base):
 
     def __repr__(self):
         return '<County(name: %s)>' % self.name
-
-
-# 运行本文件，创建数据库
-if __name__ == '__main__':
-    Base.metadata.create_all(engine)

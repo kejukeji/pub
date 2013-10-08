@@ -6,6 +6,11 @@
 
 """
 
+# 设置python运行环境的编码
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
+
 from flask import Flask
 
 from models.database import db
