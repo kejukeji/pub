@@ -6,6 +6,7 @@
 
 from flask.ext.admin import Admin
 
+
 from models import db
 from views import UserView, PubTypeView, PubView
 

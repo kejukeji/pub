@@ -12,10 +12,12 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 
 from flask import Flask
+from flask.ext import restful
 
 from models.database import db
 from urls import admin
 from login import login_manager, login, logout
+from restfuls import UserInfo, UserLogin, UserRegister
 from develop_vars import CONFIG_FILE
 
 # 创建应用
@@ -38,6 +40,13 @@ def close_db(exception=None):
 #: 用户登陆相关路径
 app.add_url_rule('/login', 'login', login)
 app.add_url_rule('/logout', 'logout', logout)
+
+# todo-lyw 更好的接口管理，如何放置在单独文件
+# 接口文档路径管理
+api = restful.Api(app)
+api.add_resource(UserRegister, '/restful/user/register')
+api.add_resource(UserLogin, '/restful/user/login')
+api.add_resource(UserInfo, '/restful/user/user_info')
 
 if __name__ == '__main__':
     app.run()
