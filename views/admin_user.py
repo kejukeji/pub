@@ -6,12 +6,13 @@
 
 import logging
 
-from flask.ext.admin.contrib.sqlamodel import ModelView
+from flask.ext.admin.contrib.sqla import ModelView
 from flask.ext.admin.babel import gettext
+from flask.ext.login import current_user
 from flask import flash
 
-from utils.form import form_to_dict
-from models.user import User, UserInfo
+from utils import form_to_dict
+from models import User
 
 
 class UserView(ModelView):
@@ -29,64 +30,22 @@ class UserView(ModelView):
             (2, u'QQ用户')
         ]
     }
-    column_labels = dict(login_name=u'登录名', password=u'密码', login_type=u'登陆类型', nick_name=u'昵称',
+    column_labels = dict(id=u'ID', login_name=u'登录名', password=u'密码', login_type=u'登陆类型', nick_name=u'昵称',
                          open_id=u'第三方登陆ID', sign_up_date=u'注册时间', system_message_time=u'系统消息',
                          admin=u'管理员')
-
-    def create_model(self, form):
-        """改写flask的新建model的函数"""
-
-        try:
-            model = self.model(**form_to_dict(form))
-            self.session.add(model)
-            self.session.commit()
-        except Exception, ex:
-            flash(gettext('Failed to create model. %(error)s', error=str(ex)), 'error')
-            logging.exception('Failed to create model')
-            self.session.rollback()
-            return False
-        else:
-            self.after_model_change(form, model, True)
-
-        return True
-
-    def update_model(self, form, model):
-        """改写了update函数"""
-        try:
-            model.update(**form_to_dict(form))
-            self.session.commit()
-        except Exception, ex:
-            flash(gettext('Failed to update model. %(error)s', error=str(ex)), 'error')
-            logging.exception('Failed to update model')
-            self.session.rollback()
-            return False
-        else:
-            self.after_model_change(form, model, False)
-
-        return True
+    column_descriptions = dict(
+        system_message_time=u'最后接收系统消息的时间，如果没有显示时间，表示用户禁止接收系统消息',
+        admin=u'用户是否具有管理员权限',
+        login_type=u'注册用户和第三方登录',
+        login_name=u'登录名，用户用于登录应用的名称，可以是邮箱或者是手机号',
+        nick_name=u'用户昵称，比如用户评论，显示的是用户昵称，而不是邮箱或者手机号'
+    )
 
     def __init__(self, db, **kwargs):
         super(UserView, self).__init__(User, db, **kwargs)
 
-
-class UserInfoView(ModelView):
-    """定义数据库user视图"""
-
-    page_size = 30
-    column_list = ('id', 'user_id', 'real_name', 'sex', 'mobile', 'email')
-    column_default_sort = ('id', True)
-    column_searchable_list = ('real_name',)
-    column_display_pk = True
-    column_choices = {
-        'sex': [
-            (0, u'妹纸'),
-            (1, u'帅锅')
-        ]
-    }
-    column_labels = dict(user_id=u'用户ID', mobile=u'手机号', tel=u'固话号码', real_name=u'真实姓名', sex=u'性别',
-                         birthday_type=u'生日类型', birthday=u'出生日期', intro=u'个人简介', signature=u'个性签名',
-                         ethnicity_id=u'民族ID', company=u'公司', job=u'工作', email=u'邮箱', province_id=u'省ID',
-                         city_id=u'市ID', county_id=u'区县ID', street=u'街道号描述')
+    def is_accessible(self):
+        return current_user.is_admin()
 
     def create_model(self, form):
         """改写flask的新建model的函数"""
@@ -120,5 +79,56 @@ class UserInfoView(ModelView):
 
         return True
 
-    def __init__(self, db, **kwargs):
-        super(UserInfoView, self).__init__(UserInfo, db, **kwargs)
+#class UserInfoView(ModelView):
+#    """定义数据库user视图"""
+#
+#    page_size = 30
+#    column_list = ('id', 'user_id', 'real_name', 'sex', 'mobile', 'email')
+#    column_default_sort = ('id', True)
+#    column_searchable_list = ('real_name',)
+#    column_display_pk = True
+#    column_choices = {
+#        'sex': [
+#            (0, u'妹纸'),
+#            (1, u'帅锅')
+#        ]
+#    }
+#    column_labels = dict(user_id=u'用户ID', mobile=u'手机号', tel=u'固话号码', real_name=u'真实姓名', sex=u'性别',
+#                         birthday_type=u'生日类型', birthday=u'出生日期', intro=u'个人简介', signature=u'个性签名',
+#                         ethnicity_id=u'民族ID', company=u'公司', job=u'工作', email=u'邮箱', province_id=u'省ID',
+#                         city_id=u'市ID', county_id=u'区县ID', street=u'街道号描述')
+#
+#    def __init__(self, db, **kwargs):
+#        super(UserInfoView, self).__init__(UserInfo, db, **kwargs)
+#
+#    def create_model(self, form):
+#        """改写flask的新建model的函数"""
+#
+#        try:
+#            model = self.model(**form_to_dict(form))
+#            self.session.add(model)
+#            self.session.commit()
+#        except Exception, ex:
+#            flash(gettext('Failed to create model. %(error)s', error=str(ex)), 'error')
+#            logging.exception('Failed to create model')
+#            self.session.rollback()
+#            return False
+#        else:
+#            self.after_model_change(form, model, True)
+#
+#        return True
+#
+#    def update_model(self, form, model):
+#        """改写了update函数"""
+#        try:
+#            model.update(**form_to_dict(form))
+#            self.session.commit()
+#        except Exception, ex:
+#            flash(gettext('Failed to update model. %(error)s', error=str(ex)), 'error')
+#            logging.exception('Failed to update model')
+#            self.session.rollback()
+#            return False
+#        else:
+#            self.after_model_change(form, model, False)
+#
+#        return True

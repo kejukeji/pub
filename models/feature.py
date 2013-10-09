@@ -11,7 +11,7 @@
 from sqlalchemy import Column, Integer, String, Boolean, DATETIME, ForeignKey, text
 
 from .database import Base
-from utils import time_str
+from utils import todayfstr
 from .pub import Pub
 from .user import User
 
@@ -36,7 +36,7 @@ class Collect(Base):
     pub_id = Column(Integer, ForeignKey(Pub.id, ondelete='cascade', onupdate='cascade'), nullable=False)
     time = Column(DATETIME, nullable=False, server_default=text('NOW()'))
 
-    def __init__(self, user_id, pub_id, time=time_str.today()):
+    def __init__(self, user_id, pub_id, time=todayfstr()):
         self.user_id = user_id
         self.pub_id = pub_id
         self.time = time  # string '2012-02-02 02:02:02'
@@ -64,7 +64,7 @@ class Comment(Base):
     content = Column(String(256), nullable=False)
     star = Column(Integer, nullable=False, server_default='5')
 
-    def __init__(self, user_id, pub_id, content, time=time_str.today(), star=5):
+    def __init__(self, user_id, pub_id, content, time=todayfstr(), star=5):
         self.user_id = user_id
         self.pub_id = pub_id
         self.content = content
@@ -92,7 +92,7 @@ class Checkin(Base):
     time = Column(DATETIME, nullable=False, server_default=text('NOW()'))
     view_number = Column(Integer, nullable=False, server_default='0')
 
-    def __init__(self, user_id, pub_id, time=time_str.today(), view_number=0):
+    def __init__(self, user_id, pub_id, time=todayfstr(), view_number=0):
         self.user_id = user_id
         self.pub_id = pub_id
         self.time = time
@@ -121,7 +121,7 @@ class Message(Base):
     time = Column(DATETIME, nullable=False, server_default=text('NOW()'))
     view = Column(Boolean, nullable=False, server_default='0')
 
-    def __init__(self, sender_id, receiver_id, content, time=time_str.today(), view=0):
+    def __init__(self, sender_id, receiver_id, content, time=todayfstr(), view=0):
         self.sender_id = sender_id
         self.receiver_id = receiver_id
         self.content = content

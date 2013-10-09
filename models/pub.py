@@ -11,6 +11,7 @@ from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.dialects.mysql import DOUBLE
 
 from .database import Base
+from .location import Province, City, County
 
 PUB_TABLE = 'pub'
 PUB_TYPE_TABLE = 'pub_type'
@@ -51,9 +52,9 @@ class Pub(Base):
     tel_list = Column(String(128), nullable=True, server_default=None)
     email = Column(String(32), nullable=True, server_default=None)
     fax = Column(String(16), nullable=True, server_default=None)
-    province_id = Column(Integer, nullable=False)
-    city_id = Column(Integer, nullable=False)
-    county_id = Column(Integer, nullable=False)
+    province_id = Column(Integer, ForeignKey(Province.id, ondelete='set null', onupdate='cascade'), nullable=True)
+    city_id = Column(Integer, ForeignKey(City.id, ondelete='set null', onupdate='cascade'), nullable=True)
+    county_id = Column(Integer, ForeignKey(County.id, ondelete='set null', onupdate='cascade'), nullable=True)
     street = Column(String(64), nullable=True, server_default=None)
     longitude = Column(DOUBLE, nullable=False)
     latitude = Column(DOUBLE, nullable=False)

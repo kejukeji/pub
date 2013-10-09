@@ -7,7 +7,7 @@
 import datetime
 
 
-def today():
+def todayfstr():
     """ 获取今天的时间字符串
     比如 "2013-09-09 09:09:23"
     """

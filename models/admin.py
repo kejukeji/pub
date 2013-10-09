@@ -7,7 +7,7 @@
 from sqlalchemy import Column, Integer, String, DATETIME, text
 
 from .database import Base
-from utils import time_str
+from utils import todayfstr
 
 SYSTEM_MESSAGE_TABLE = 'system_message'
 
@@ -25,7 +25,7 @@ class SystemMessage(Base):
     content = Column(String(128), nullable=False)
     time = Column(DATETIME, nullable=False, server_default=text('NOW()'))
 
-    def __init__(self, content, time=time_str.today()):
+    def __init__(self, content, time=todayfstr()):
         self.content = content
         self.time = time
 

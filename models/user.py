@@ -12,7 +12,7 @@ import bcrypt
 from sqlalchemy import Column, Integer, String, Boolean, DATETIME, ForeignKey, text
 
 from .database import Base
-from utils import time_str
+from utils import todayfstr
 
 USER_TABLE = 'user'
 USER_INFO_TABLE = 'user_info'
@@ -43,11 +43,11 @@ class User(Base):
     system_message_time = Column(DATETIME, nullable=True, server_default=text('NOW()'))
     admin = Column(Boolean, nullable=False, server_default='0')
 
-    def __init__(self, **kwargs):  # todo-lyw 这样传递参数比较复杂 **kargs，理解**语法
+    def __init__(self, **kwargs):
         self.login_type = kwargs.pop('login_type')
         self.nick_name = kwargs.pop('nick_name')
-        self.sign_up_date = kwargs.pop('sign_up_date', time_str.today())  # string "2012-09-23 23:23:23"
-        self.login_name = kwargs.pop('login_name', None)  # todo-lyw 这里没有None，只有空字符串。。。需要自己转义，还有bool不知道如何
+        self.sign_up_date = kwargs.pop('sign_up_date', todayfstr())  # string "2012-09-23 23:23:23"
+        self.login_name = kwargs.pop('login_name', None)
 
         password = kwargs.pop('password', None)
         if password is not None:
@@ -56,7 +56,7 @@ class User(Base):
             self.password = password
 
         self.open_id = kwargs.pop('open_id', None)
-        self.system_message_time = kwargs.pop('system_message_time', time_str.today())  # string "2012-09-23 23:23:23"
+        self.system_message_time = kwargs.pop('system_message_time', todayfstr())  # string "2012-09-23 23:23:23"
         self.admin = kwargs.pop('admin', 0)
 
     def __repr__(self):
@@ -66,7 +66,7 @@ class User(Base):
     def update(self, **kwargs):
         self.login_type = kwargs.pop('login_type')
         self.nick_name = kwargs.pop('nick_name')
-        self.sign_up_date = kwargs.pop('sign_up_date', time_str.today())  # string "2012-09-23 23:23:23"
+        self.sign_up_date = kwargs.pop('sign_up_date', todayfstr())  # string "2012-09-23 23:23:23"
         self.login_name = kwargs.pop('login_name', None)
 
         password = kwargs.pop('password', None)
@@ -109,6 +109,21 @@ class User(Base):
             return False
 
         return bcrypt.checkpw(password, self.password)
+
+    def is_authenticated(self):
+        return True
+
+    def is_active(self):
+        return True
+
+    def is_anonymous(self):
+        return False
+
+    def is_admin(self):
+        return bool(self.admin)
+
+    def get_id(self):
+        return self.id
 
 
 class UserInfo(Base):
@@ -162,7 +177,7 @@ class UserInfo(Base):
     pic_name = Column(String(128), nullable=True, server_default=None)
     upload_name = Column(String(128), nullable=True, server_default=None)
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs):  # todo-lyw这个赋值太复杂了，一定有简单的写法
         self.user_id = kwargs.pop('user_id')
         self.email = kwargs.pop('email')
         self.mobile = kwargs.pop('mobile', None)
