@@ -2,10 +2,12 @@
 
 from flask.ext import restful
 from flask.ext.restful import reqparse
+import werkzeug
+from werkzeug import secure_filename
 
 from models import db, User
 from models import UserInfo as UserInfoDb  # 避免和下面的类冲突
-from utils import pickler
+from utils import pickler, todayfstr
 
 
 class UserRegister(restful.Resource):
@@ -154,8 +156,186 @@ class UserLogin(restful.Resource):
             return pickler.flatten(user)
 
 
-class UserInfo(restful.Resource):
+class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True和false，设置消息使用1和0
     """获取和设置用户消息"""
 
-    def post(self, user_id):
-        pass
+    @staticmethod
+    def post(user_id):
+        parser = reqparse.RequestParser()
+        parser.add_argument('login_type', type=int, required=True, help=u'登陆必须需要login_type')
+        parser.add_argument('password', type=str, required=False)
+        parser.add_argument('open_id', type=str, required=False)
+        parser.add_argument('new_password', type=str, required=False)
+        parser.add_argument('login_name', type=str, required=False)
+        parser.add_argument('nick_name', type=str, required=False)
+        parser.add_argument('system_message_time', type=int, required=False)
+        parser.add_argument('mobile', type=str, required=False)
+        parser.add_argument('tel', type=str, required=False)
+        parser.add_argument('real_name', type=str, required=False)
+        parser.add_argument('sex', type=int, required=False)
+        parser.add_argument('birthday_type', type=int, required=False)
+        parser.add_argument('birthday', type=str, required=False)
+        parser.add_argument('intro', type=str, required=False)
+        parser.add_argument('signature', type=str, required=False)
+        parser.add_argument('ethnicity_id', type=str, required=False)
+        parser.add_argument('company', type=str, required=False)
+        parser.add_argument('job', type=str, required=False)
+        parser.add_argument('email', type=str, required=False)
+        parser.add_argument('province_id', type=str, required=False)
+        parser.add_argument('city_id', type=str, required=False)
+        parser.add_argument('county_id', type=str, required=False)
+        parser.add_argument('street', type=str, required=False)
+        parser.add_argument('head_picture', type=werkzeug.datastructures.FileStorage, location='files')
+        args = parser.parse_args()
+
+        login_type = args.get('login_type')
+        password = args.get('password', None)
+        open_id = args.get('open_id', None)
+        new_password = args.get('new_password', None)
+        login_name = args.get('login_name', None)
+        nick_name = args.get('nick_name', None)
+        system_message_time = args.get('system_message_time', None)
+        mobile = args.get('mobile', None)
+        tel = args.get('tel', None)
+        real_name = args.get('real_name', None)
+        sex = args.get('sex', None)
+        birthday_type = args.get('birthday_type', None)
+        birthday = args.get('birthday', None)
+        intro = args.get('intro', None)
+        signature = args.get('signature', None)
+        ethnicity_id = args.get('ethnicity_id', None)
+        company = args.get('company', None)
+        job = args.get('job', None)
+        email = args.get('email', None)
+        province_id = args.get('province_id', None)
+        city_id = args.get('city_id', None)
+        county_id = args.get('county_id', None)
+        street = args.get('street', None)
+        head_picture = args.get('head_picture', None)
+
+        err = {}
+
+        if login_type == 0:
+            if not password:
+                err['message'] = '注册用户获取和改变个人资料需要密码'
+                return err
+            user = User.query.filter(User.id == user_id).first()
+            if not user.check_password(password):
+                err['message'] = '密码错误'
+                return err
+            user_info = UserInfoDb.query.filter(UserInfoDb.user_id == user_id).first()
+            if login_name:
+                if User.query.filter(User.login_name == login_name).count():
+                    err['message'] = 'login_name已存在'
+                    return err
+            if nick_name:
+                if User.query.filter(User.nick_name == nick_name).count():
+                    err['message'] = 'nick_name已存在'
+                    return err
+            if head_picture:
+                pass
+            if new_password:
+                user.change_password(password, new_password)
+            if system_message_time:  # 1
+                if not user.system_message_time:
+                    user.system_message_time = todayfstr()
+            else:
+                user.system_message_time = None
+            if mobile:
+                user_info.mobile = mobile
+            if tel:
+                user_info.tel = tel
+            if real_name:
+                user_info.real_name = real_name
+            if sex:
+                user_info.sex = sex
+            if birthday_type:
+                user_info.birthday_type = birthday_type
+            if birthday:
+                user_info.birthday = birthday
+            if intro:
+                user_info.intro = intro
+            if signature:
+                user_info.signature = signature
+            if ethnicity_id:
+                user_info.ethnicity_id = ethnicity_id
+            if company:
+                user_info.company = company
+            if job:
+                user_info.job = job
+            if email:
+                user_info.email = email
+            if province_id:
+                user_info.province_id = province_id
+            if city_id:
+                user_info.city_id = city_id
+            if county_id:
+                user_info.county_id = county_id
+            if street:
+                user_info.street = street
+
+            db.add(user)
+            db.add(user_info)
+            db.commit()
+            user = User.query.filter(User.id == user_id).first()
+            user_info = UserInfoDb.query.filter(UserInfoDb.user_id == user_id).first()
+
+            return {'user': pickler.flatten(user), 'user_info': pickler.flatten(user_info)}
+
+        if login_type == 1 or login_type == 2:
+            if not open_id:
+                err['message'] = '第三方登录用户必须需要open_id'
+                return err
+            user = User.query.filter(User.id == user_id).first()
+            user_info = UserInfoDb.query.filter(UserInfoDb.user_id == user_id).first()
+            if nick_name:
+                if User.query.filter(User.nick_name == nick_name).count():
+                    err['message'] = 'nick_name已存在'
+                    return err
+            if head_picture:
+                pass
+            if system_message_time:  # 1
+                if not user.system_message_time:
+                    user.system_message_time = todayfstr()
+            else:
+                user.system_message_time = None
+            if mobile:
+                user_info.mobile = mobile
+            if tel:
+                user_info.tel = tel
+            if real_name:
+                user_info.real_name = real_name
+            if sex:
+                user_info.sex = sex
+            if birthday_type:
+                user_info.birthday_type = birthday_type
+            if birthday:
+                user_info.birthday = birthday
+            if intro:
+                user_info.intro = intro
+            if signature:
+                user_info.signature = signature
+            if ethnicity_id:
+                user_info.ethnicity_id = ethnicity_id
+            if company:
+                user_info.company = company
+            if job:
+                user_info.job = job
+            if email:
+                user_info.email = email
+            if province_id:
+                user_info.province_id = province_id
+            if city_id:
+                user_info.city_id = city_id
+            if county_id:
+                user_info.county_id = county_id
+            if street:
+                user_info.street = street
+
+            db.add(user)
+            db.add(user_info)
+            db.commit()
+            user = User.query.filter(User.id == user_id).first()
+            user_info = UserInfoDb.query.filter(UserInfoDb.user_id == user_id).first()
+
+            return {'user': pickler.flatten(user), 'user_info': pickler.flatten(user_info)}
