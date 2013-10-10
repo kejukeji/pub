@@ -1,4 +1,5 @@
 .idea/*
 *.py[cod]
 server.cfg
-master/*
+upload/head_picture/*
+upload/pu_picture/*
