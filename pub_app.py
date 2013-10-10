@@ -48,5 +48,8 @@ api.add_resource(UserRegister, '/restful/user/register')
 api.add_resource(UserLogin, '/restful/user/login')
 api.add_resource(UserInfo, '/restful/user/user_info')
 
+# todo-lyw just for ipython test
+from models import User, engine
+
 if __name__ == '__main__':
     app.run()

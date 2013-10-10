@@ -167,7 +167,7 @@ class UserInfo(Base):
     ethnicity_id = Column(Integer, nullable=True, server_default=None)
     company = Column(String(32), nullable=True, server_default=None)
     job = Column(String(32), nullable=True, server_default=None)
-    email = Column(String(32), nullable=False)
+    email = Column(String(32), nullable=True, server_default=None)
     province_id = Column(Integer, nullable=True, server_default=None)
     city_id = Column(Integer, nullable=True, server_default=None)
     county_id = Column(Integer, nullable=True, server_default=None)
@@ -179,7 +179,7 @@ class UserInfo(Base):
 
     def __init__(self, **kwargs):  # todo-lyw这个赋值太复杂了，一定有简单的写法
         self.user_id = kwargs.pop('user_id')
-        self.email = kwargs.pop('email')
+        self.email = kwargs.pop('email', None)
         self.mobile = kwargs.pop('mobile', None)
         self.tel = kwargs.pop('tel', None)
         self.real_name = kwargs.pop('real_name', None)
