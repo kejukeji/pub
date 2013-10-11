@@ -46,7 +46,7 @@ class User(Base):
     def __init__(self, **kwargs):
         self.login_type = kwargs.pop('login_type')
         self.nick_name = kwargs.pop('nick_name')
-        self.sign_up_date = kwargs.pop('sign_up_date', todayfstr())  # string "2012-09-23 23:23:23"
+        self.sign_up_date = todayfstr()
         self.login_name = kwargs.pop('login_name', None)
 
         password = kwargs.pop('password', None)
@@ -66,7 +66,6 @@ class User(Base):
     def update(self, **kwargs):
         self.login_type = kwargs.pop('login_type')
         self.nick_name = kwargs.pop('nick_name')
-        self.sign_up_date = kwargs.pop('sign_up_date', todayfstr())  # string "2012-09-23 23:23:23"
         self.login_name = kwargs.pop('login_name', None)
 
         password = kwargs.pop('password', None)
