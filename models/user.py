@@ -39,8 +39,8 @@ class User(Base):
     login_type = Column(Integer, nullable=False, server_default='0')
     open_id = Column(String(64), nullable=True, server_default=None)
     nick_name = Column(String(32), nullable=False, unique=True)
-    sign_up_date = Column(DATETIME, nullable=False, server_default=text('NOW()'))
-    system_message_time = Column(DATETIME, nullable=True, server_default=text('NOW()'))
+    sign_up_date = Column(DATETIME, nullable=True, None)
+    system_message_time = Column(DATETIME, nullable=True, None)
     admin = Column(Boolean, nullable=False, server_default='0')
 
     def __init__(self, **kwargs):
