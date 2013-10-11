@@ -23,11 +23,11 @@ class SystemMessage(Base):
 
     id = Column(Integer, primary_key=True)
     content = Column(String(128), nullable=False)
-    time = Column(DATETIME, nullable=False, server_default=text('NOW()'))
+    time = Column(DATETIME, nullable=True, server_default=None)
 
-    def __init__(self, content, time=todayfstr()):
-        self.content = content
-        self.time = time
+    def __init__(self, **kwargs):
+        self.content = kwargs.pop('content')
+        self.time = todayfstr()
 
     def __repr__(self):
         return '<SystemMessage(content: %s, time: %s)>' % (self.content, self.time)
