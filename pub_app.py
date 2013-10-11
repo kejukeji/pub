@@ -49,4 +49,4 @@ api.add_resource(UserLogin, '/restful/user/login')
 api.add_resource(UserInfo, '/restful/user/user_info/<int:user_id>')
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0')
