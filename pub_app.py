@@ -37,7 +37,7 @@ def close_db(exception=None):
     db.remove()
 
 # todo-lyw 更好的路径管理插件，直接放在这里是不知道如何放在单独文件里面
-#: 用户登陆相关路径
+# 用户登陆相关路径
 app.add_url_rule('/login', 'login', login)
 app.add_url_rule('/logout', 'logout', logout)
 

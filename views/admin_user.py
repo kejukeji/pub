@@ -19,6 +19,7 @@ class UserView(ModelView):
     """定义数据库user视图"""
 
     page_size = 30
+    can_delete = False
     column_exclude_list = ('password', 'open_id')
     column_default_sort = ('sign_up_date', True)
     column_searchable_list = ('login_name', 'nick_name')
