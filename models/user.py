@@ -77,7 +77,7 @@ class User(Base):
             self.password = password
 
         self.open_id = kwargs.pop('open_id', None)
-        self.system_message_time = kwargs.pop('system_message_time')
+        self.system_message_time = kwargs.pop('system_message_time', None)
         self.admin = kwargs.pop('admin', 0)
 
     def change_password(self, old_password, new_password):
@@ -110,7 +110,7 @@ class User(Base):
 
         return bcrypt.checkpw(password, self.password)
 
-    def is_authenticated(self):
+    def is_authenticated(self):  # todo-lyw 静态method是如何用的，和类方法的不同
         return True
 
     def is_active(self):
