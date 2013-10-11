@@ -34,12 +34,12 @@ class Collect(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey(User.id, ondelete='cascade', onupdate='cascade'), nullable=False)
     pub_id = Column(Integer, ForeignKey(Pub.id, ondelete='cascade', onupdate='cascade'), nullable=False)
-    time = Column(DATETIME, nullable=False, server_default=text('NOW()'))
+    time = Column(DATETIME, nullable=False, server_default=None)
 
-    def __init__(self, user_id, pub_id, time=todayfstr()):
+    def __init__(self, user_id, pub_id):
         self.user_id = user_id
         self.pub_id = pub_id
-        self.time = time  # string '2012-02-02 02:02:02'
+        self.time = todayfstr()
 
     def __repr__(self):
         return '<Collect(user_id: %s, pub_id: %s, time: %s)>' % (self.user_id, self.pub_id, self.time)
@@ -60,15 +60,15 @@ class Comment(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey(User.id, ondelete='set null', onupdate='cascade'), nullable=True)
     pub_id = Column(Integer, ForeignKey(Pub.id, ondelete='cascade', onupdate='cascade'), nullable=False)
-    time = Column(DATETIME, nullable=False, server_default=text('NOW()'))
+    time = Column(DATETIME, nullable=False, server_default=None)
     content = Column(String(256), nullable=False)
     star = Column(Integer, nullable=False, server_default='5')
 
-    def __init__(self, user_id, pub_id, content, time=todayfstr(), star=5):
+    def __init__(self, user_id, pub_id, content, star=5):
         self.user_id = user_id
         self.pub_id = pub_id
         self.content = content
-        self.time = time
+        self.time = todayfstr()
         self.star = star
 
     def __repr__(self):
@@ -89,13 +89,13 @@ class Checkin(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey(User.id, ondelete='cascade', onupdate='cascade'), nullable=False)
     pub_id = Column(Integer, ForeignKey(Pub.id, ondelete='cascade', onupdate='cascade'), nullable=False)
-    time = Column(DATETIME, nullable=False, server_default=text('NOW()'))
+    time = Column(DATETIME, nullable=True, server_default=None)
     view_number = Column(Integer, nullable=False, server_default='0')
 
-    def __init__(self, user_id, pub_id, time=todayfstr(), view_number=0):
+    def __init__(self, user_id, pub_id, view_number=0):
         self.user_id = user_id
         self.pub_id = pub_id
-        self.time = time
+        self.time = todayfstr()
         self.view_number = view_number
 
     def __repr__(self):
