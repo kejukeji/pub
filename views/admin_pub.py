@@ -30,8 +30,8 @@ class PubTypeView(ModelView):
     def __init__(self, db, **kwargs):
         super(PubTypeView, self).__init__(PubType, db, **kwargs)
 
-    def is_accessible(self):
-        return current_user.is_admin()
+    #def is_accessible(self):  # 登陆管理功能先关闭，后期添加
+    #    return current_user.is_admin()
 
 
 class PubView(ModelView):
@@ -88,5 +88,5 @@ class PubView(ModelView):
     def __init__(self, db, **kwargs):
         super(PubView, self).__init__(Pub, db, **kwargs)
 
-    def is_accessible(self):
-        return current_user.is_admin()
+    #def is_accessible(self):  # 登陆管理功能先关闭，后期添加
+    #    return current_user.is_admin()

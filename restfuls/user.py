@@ -242,7 +242,7 @@ class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True
                 user_info.upload_name = head_picture.stream.filename
                 user_info.base_path = HEAD_PICTURE_BASE_PATH
                 user_info.rel_path = HEAD_PICTURE_UPLOAD_FOLDER
-                user_info.pic_name = time_file_name(secure_filename(head_picture.stream.filename))
+                user_info.pic_name = time_file_name(secure_filename(head_picture.stream.filename), user_id)
                 head_picture.save(os.path.join(user_info.base_path+user_info.rel_path+'/', user_info.pic_name))
                 try:
                     os.remove(old_head_picture)
@@ -318,7 +318,7 @@ class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True
                 user_info.upload_name = head_picture.stream.filename
                 user_info.base_path = HEAD_PICTURE_BASE_PATH
                 user_info.rel_path = HEAD_PICTURE_UPLOAD_FOLDER
-                user_info.pic_name = time_file_name(secure_filename(head_picture.stream.filename))
+                user_info.pic_name = time_file_name(secure_filename(head_picture.stream.filename), user_id)
                 head_picture.save(os.path.join(user_info.base_path+user_info.rel_path+'/', user_info.pic_name))
                 try:
                     os.remove(old_head_picture)

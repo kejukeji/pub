@@ -44,8 +44,8 @@ class UserView(ModelView):
     def __init__(self, db, **kwargs):
         super(UserView, self).__init__(User, db, **kwargs)
 
-    def is_accessible(self):
-        return current_user.is_admin()
+    #def is_accessible(self):  # 登陆管理功能先关闭，后期添加
+    #    return current_user.is_admin()
 
     def create_model(self, form):
         """改写flask的新建model的函数"""

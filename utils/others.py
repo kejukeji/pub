@@ -8,6 +8,6 @@ def allowed_file(filename, allowed_extension):
            filename.rsplit('.', 1)[1].lower() in allowed_extension
 
 
-def time_file_name(filename):
+def time_file_name(filename, user_id):
     return str(datetime.datetime.now()).replace(' ', '_').replace('-', '_').replace(':', '_').replace('.', '_')\
-           + filename
+           + str(user_id) + filename
