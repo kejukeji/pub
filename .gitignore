@@ -2,3 +2,4 @@
 *.py[cod]
 upload/head_picture/*
 upload/pu_picture/*
+ex_var.py
