@@ -118,14 +118,14 @@ class Message(Base):
     sender_id = Column(Integer, ForeignKey(User.id, ondelete='set null', onupdate='cascade'), nullable=True)
     receiver_id = Column(Integer, ForeignKey(User.id, ondelete='set null', onupdate='cascade'), nullable=True)
     content = Column(String(256), nullable=False)
-    time = Column(DATETIME, nullable=False, server_default=text('NOW()'))
+    time = Column(DATETIME, nullable=True, server_default=None)
     view = Column(Boolean, nullable=False, server_default='0')
 
-    def __init__(self, sender_id, receiver_id, content, time=todayfstr(), view=0):
+    def __init__(self, sender_id, receiver_id, content, view=0):
         self.sender_id = sender_id
         self.receiver_id = receiver_id
         self.content = content
-        self.time = time
+        self.time = todayfstr()
         self.view = view
 
     def __repr__(self):
