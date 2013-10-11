@@ -24,7 +24,7 @@ SQLALCHEMY_ECHO = True
 
 # 显示调试的框框
 #### ------------------------------------------------------------
-DEBUG_TOOLBAR=True
+DEBUG_TOOLBAR = True
 
 # 头像图片的路径
 HEAD_PICTURE_UPLOAD_FOLDER = '/upload/head_picture'  # 这个是相对的存放路径，对于pub而言，取图片不需要
