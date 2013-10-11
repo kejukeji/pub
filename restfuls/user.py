@@ -9,8 +9,9 @@ from werkzeug import secure_filename
 
 from models import db, User
 from models import UserInfo as UserInfoDb  # 避免和下面的类冲突
-from utils import pickler, todayfstr, allowed_file, time_file_name
-from develop_vars import HEAD_PICTURE_ALLOWED_EXTENSION, HEAD_PICTURE_BASE_PATH, HEAD_PICTURE_UPLOAD_FOLDER
+from utils import pickler, todayfstr, allowed_file_extension, time_file_name
+from ex_var import HEAD_PICTURE_ALLOWED_EXTENSION, HEAD_PICTURE_BASE_PATH, HEAD_PICTURE_UPLOAD_FOLDER
+
 
 class UserRegister(restful.Resource):
     """用户注册的接口"""
@@ -235,14 +236,14 @@ class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True
                     err['message'] = 'nick_name已存在'
                     return err
             if head_picture:
-                if not allowed_file(head_picture.stream.filename, HEAD_PICTURE_ALLOWED_EXTENSION):
+                if not allowed_file_extension(head_picture.stream.filename, HEAD_PICTURE_ALLOWED_EXTENSION):
                     err['message'] = '图片的格式不支持，png jpg jpeg gif支持'
                     return err
                 old_head_picture = user_info.base_path + user_info.rel_path + '/' + user_info.pic_name
                 user_info.upload_name = head_picture.stream.filename
                 user_info.base_path = HEAD_PICTURE_BASE_PATH
                 user_info.rel_path = HEAD_PICTURE_UPLOAD_FOLDER
-                user_info.pic_name = time_file_name(secure_filename(head_picture.stream.filename), user_id)
+                user_info.pic_name = time_file_name(secure_filename(head_picture.stream.filename), sign=user_id)
                 head_picture.save(os.path.join(user_info.base_path+user_info.rel_path+'/', user_info.pic_name))
                 try:
                     os.remove(old_head_picture)
@@ -311,14 +312,14 @@ class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True
                     err['message'] = 'nick_name已存在'
                     return err
             if head_picture:
-                if not allowed_file(head_picture.stream.filename, HEAD_PICTURE_ALLOWED_EXTENSION):
+                if not allowed_file_extension(head_picture.stream.filename, HEAD_PICTURE_ALLOWED_EXTENSION):
                     err['message'] = '图片的格式不支持，png jpg jpeg gif支持'
                     return err
                 old_head_picture = user_info.base_path + user_info.rel_path + '/' + user_info.pic_name
                 user_info.upload_name = head_picture.stream.filename
                 user_info.base_path = HEAD_PICTURE_BASE_PATH
                 user_info.rel_path = HEAD_PICTURE_UPLOAD_FOLDER
-                user_info.pic_name = time_file_name(secure_filename(head_picture.stream.filename), user_id)
+                user_info.pic_name = time_file_name(secure_filename(head_picture.stream.filename), sign=user_id)
                 head_picture.save(os.path.join(user_info.base_path+user_info.rel_path+'/', user_info.pic_name))
                 try:
                     os.remove(old_head_picture)

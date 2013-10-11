@@ -8,7 +8,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from develop_vars import SQLALCHEMY_DATABASE_URI, SQLALCHEMY_ECHO
+from ex_var import SQLALCHEMY_DATABASE_URI, SQLALCHEMY_ECHO
 
 engine = create_engine(SQLALCHEMY_DATABASE_URI, echo=SQLALCHEMY_ECHO)
 db = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))

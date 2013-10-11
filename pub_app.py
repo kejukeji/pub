@@ -18,7 +18,7 @@ from models.database import db
 from urls import admin
 from login import login_manager, login, logout
 from restfuls import UserInfo, UserLogin, UserRegister
-from develop_vars import CONFIG_FILE
+from ex_var import CONFIG_FILE
 
 # 创建应用
 app = Flask(__name__)

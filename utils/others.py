@@ -1,13 +1,20 @@
 # coding: utf-8
 
-import datetime
+from wtforms import BooleanField
+import jsonpickle
+
+pickler = jsonpickle.pickler.Pickler(unpicklable=False, max_depth=2)
 
 
-def allowed_file(filename, allowed_extension):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in allowed_extension
+def form_to_dict(form):
+    form_dict = {}
 
+    for key in form._fields:  # 可以编写一个更好的函数，可惜我不会。。。
+        if isinstance(form._fields[key].data, BooleanField) or isinstance(form._fields[key].data, int):
+            form_dict[key] = form._fields[key].data
+            continue
 
-def time_file_name(filename, user_id):
-    return str(datetime.datetime.now()).replace(' ', '_').replace('-', '_').replace(':', '_').replace('.', '_')\
-           + str(user_id) + filename
+        if form._fields[key].data:
+            form_dict[key] = form._fields[key].data
+
+    return form_dict

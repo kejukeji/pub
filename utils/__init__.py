@@ -1,8 +1,6 @@
 # coding: utf-8
+from utils.ex_file import allowed_file_extension, time_file_name
 
-from utils.form import form_to_dict
+from utils.ex_time import todayfstr
 
-from utils.time_str import todayfstr
-from utils.query import pickler
-
-from utils.others import allowed_file, time_file_name
+from utils.others import form_to_dict, pickler
