@@ -13,7 +13,7 @@ SQLALCHEMY_ECHO = True  # 是否显示SQL语句
 # restfuls模块需要的配置参数
 # ===============================================================
 # 用户头像
-HEAD_PICTURE_UPLOAD_FOLDER = '/upload/head_picture'  # 运行目录的相对目录，URL获取图片的路径
+HEAD_PICTURE_UPLOAD_FOLDER = '/static/upload/head_picture'  # 运行目录的相对目录，URL获取图片的路径
 HEAD_PICTURE_BASE_PATH = '/Users/X/Dropbox/Code/pub'  # pub运行文件的目录，图片的绝对路径使用
 HEAD_PICTURE_ALLOWED_EXTENSION = ('png', 'jpg', 'jpeg', 'gif')  # 允许的拓展名
 

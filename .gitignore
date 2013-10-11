@@ -1,4 +1,4 @@
 .idea/*
 *.py[cod]
-upload/head_picture/*
-upload/pu_picture/*
+static/upload/head_picture/*
+static/upload/pub_picture/*
