@@ -11,7 +11,7 @@ def allowed_file_extension(filename, allowed_extension):
 
     extension = []
     for i in allowed_extension:
-        extension[i] = allowed_extension[i].lower()
+        extension.append(i.lower())
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in extension
 
