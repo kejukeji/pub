@@ -8,7 +8,7 @@
     Message 用户私信
 """
 
-from sqlalchemy import Column, Integer, String, Boolean, DATETIME, ForeignKey, text
+from sqlalchemy import Column, Integer, String, Boolean, DATETIME, ForeignKey
 
 from .database import Base
 from utils import todayfstr

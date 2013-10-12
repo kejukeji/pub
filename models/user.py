@@ -34,7 +34,7 @@ class User(Base):
     __tablename__ = USER_TABLE
 
     id = Column(Integer, primary_key=True)
-    login_name = Column(String(32), nullable=True, server_default=None)
+    login_name = Column(String(32), nullable=True, server_default=None, unique=True)
     password = Column(String(64), nullable=True, server_default=None)
     login_type = Column(Integer, nullable=False, server_default='0')
     open_id = Column(String(64), nullable=True, server_default=None)
