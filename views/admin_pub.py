@@ -15,8 +15,8 @@ class PubTypeView(ModelView):
     """酒吧类型的类"""
 
     page_size = 30
-    can_create = True
-    can_edit = True
+    can_create = False
+    can_edit = False
     can_delete = False
     column_display_pk = True
     column_searchable_list = ('name', 'code')
