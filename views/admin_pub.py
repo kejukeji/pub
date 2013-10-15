@@ -100,16 +100,6 @@ class PubView(ModelView):
         form_class = super(PubView, self).scaffold_form()
         return form_class
 
-    # Templates
-    list_template = 'admin_pub/list.html'
-    """Default list view template"""
-
-    edit_template = 'admin_pub/edit.html'
-    """Default edit template"""
-
-    create_template = 'admin_pub/create.html'
-    """Default create template"""
-
     def __init__(self, db, **kwargs):
         super(PubView, self).__init__(Pub, db, **kwargs)
 
