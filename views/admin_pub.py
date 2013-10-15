@@ -7,6 +7,12 @@
 from flask.ext.admin.contrib.sqla import ModelView
 from flask.ext.admin.contrib.sqla.ajax import QueryAjaxModelLoader
 from flask.ext.login import current_user
+from wtforms.fields import SelectField, StringField, BooleanField, SelectMultipleField
+from wtforms import Form
+from wtforms import validators
+from flask.ext.admin.contrib.sqla import form
+from flask.ext.admin import BaseView, expose
+from flask import render_template
 
 from models import Pub, PubType, Province
 
@@ -78,12 +84,31 @@ class PubView(ModelView):
         county_id=u'区县，比如上海的闵行区',
         street=u'下一级的详细地址描述',
         longitude=u'经度',
-        latitude=u'纬度'
+        latitude=u'纬度',
     )
     column_exclude_list = ('intro', 'web_url', 'mobile_list', 'tel_list', 'email',
                            'fax', 'street', 'longitude', 'latitude')
 
     form_ajax_refs = None
+    form_overrides = dict(recommend=SelectField)
+    form_args = dict(
+        recommend=dict(
+            choices=[(0, '否'), (1, '是')])
+    )
+
+    def scaffold_form(self):
+        form_class = super(PubView, self).scaffold_form()
+        return form_class
+
+    # Templates
+    list_template = 'admin_pub/list.html'
+    """Default list view template"""
+
+    edit_template = 'admin_pub/edit.html'
+    """Default edit template"""
+
+    create_template = 'admin_pub/create.html'
+    """Default create template"""
 
     def __init__(self, db, **kwargs):
         super(PubView, self).__init__(Pub, db, **kwargs)
