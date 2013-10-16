@@ -17,7 +17,7 @@ from flask.ext import restful
 from models.database import db
 from urls import admin
 from login import login_manager, login, logout
-from restfuls import UserInfo, UserLogin, UserRegister
+from restfuls import UserInfo, UserLogin, UserRegister, PubHome, PubListDetail, PubDetail
 from ex_var import CONFIG_FILE
 
 # 创建应用
@@ -47,6 +47,9 @@ api = restful.Api(app)
 api.add_resource(UserRegister, '/restful/user/register')
 api.add_resource(UserLogin, '/restful/user/login')
 api.add_resource(UserInfo, '/restful/user/user_info/<int:user_id>')
+api.add_resource(PubHome, '/restful/pub/home')
+api.add_resource(PubListDetail, '/restful/pub/list/detail')
+api.add_resource(PubDetail, '/restful/pub/detail')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
