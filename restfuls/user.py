@@ -32,7 +32,7 @@ class UserRegister(restful.Resource):
         login_name = args.get('login_name', None)
         open_id = args.get('open_id', None)
 
-        err = {}
+        err = {'status': 1}
 
         if login_type == 0:  # 注意纯数字的昵称和手机号的冲突，以后不同用户的昵称和不能用户登录名不能相同，同一个用户可以
             if not password:
@@ -91,7 +91,7 @@ class UserRegister(restful.Resource):
             db.add(user_info)
             db.commit()
 
-        return pickler.flatten(User.query.filter(User.nick_name == nick_name).first())
+        return {'user': pickler.flatten(User.query.filter(User.nick_name == nick_name).first()), 'status': 0}
 
 
 class UserLogin(restful.Resource):
@@ -111,7 +111,7 @@ class UserLogin(restful.Resource):
         password = args.get('password', None)
         open_id = args.get('open_id', None)
 
-        err = {}
+        err = {'status': 1}
 
         if login_type == 0:
             if not password:
@@ -129,7 +129,7 @@ class UserLogin(restful.Resource):
                 return err
 
             if user.check_password(password):
-                return pickler.flatten(user)
+                return {'user': pickler.flatten(user), 'status': 0}
             else:
                 err['message'] = '密码错误'
                 return err
@@ -144,7 +144,7 @@ class UserLogin(restful.Resource):
                 err['message'] = '不存在这个open_id'
                 return err
 
-            return pickler.flatten(user)
+            return {'user': pickler.flatten(user), 'status': 0}
 
         if login_type == 2:
             if not open_id:
@@ -156,7 +156,7 @@ class UserLogin(restful.Resource):
                 err['message'] = '不存在这个open_id'
                 return err
 
-            return pickler.flatten(user)
+            return {'user': pickler.flatten(user), 'status': 0}
 
 
 class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True和false，设置消息使用1和0
@@ -216,7 +216,7 @@ class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True
         street = args.get('street', None)
         head_picture = args.get('head_picture', None)
 
-        err = {}
+        err = {'status': 1}
 
         if login_type == 0:
             if not password:
@@ -299,7 +299,7 @@ class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True
             user = User.query.filter(User.id == user_id).first()
             user_info = UserInfoDb.query.filter(UserInfoDb.user_id == user_id).first()
 
-            return {'user': pickler.flatten(user), 'user_info': pickler.flatten(user_info)}
+            return {'user': pickler.flatten(user), 'user_info': pickler.flatten(user_info), 'status': 0}
 
         if login_type == 1 or login_type == 2:
             if not open_id:
@@ -371,4 +371,4 @@ class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True
             user = User.query.filter(User.id == user_id).first()
             user_info = UserInfoDb.query.filter(UserInfoDb.user_id == user_id).first()
 
-            return {'user': pickler.flatten(user), 'user_info': pickler.flatten(user_info)}
+            return {'user': pickler.flatten(user), 'user_info': pickler.flatten(user_info), 'status': 0}
