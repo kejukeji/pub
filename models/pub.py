@@ -59,13 +59,30 @@ class Pub(Base):
     longitude = Column(DOUBLE, nullable=False)
     latitude = Column(DOUBLE, nullable=False)
 
-    def __init__(self, name, longitude, latitude, province_id, city_id, county_id, **kwargs):
-        self.name = name
-        self.latitude = longitude
-        self.latitude = latitude
-        self.province_id = province_id
-        self.city_id = city_id
-        self.county_id = county_id
+    def __init__(self, **kwargs):
+        self.name = kwargs.pop('name')
+        self.longitude = kwargs.pop('longitude')
+        self.latitude = kwargs.pop('latitude')
+        self.province_id = kwargs.pop('province_id')
+        self.city_id = kwargs.pop('city_id')
+        self.county_id = kwargs.pop('county_id')
+        self.street = kwargs.pop('street', None)
+        self.recommend = kwargs.pop('recommend', 0)
+        self.view_number = kwargs.pop('view_number', 0)
+        self.intro = kwargs.pop('intro', None)
+        self.web_url = kwargs.pop('web_url', None)
+        self.mobile_list = kwargs.pop('mobile_list', None)
+        self.tel_list = kwargs.pop('tel_list', None)
+        self.email = kwargs.pop('email', None)
+        self.fax = kwargs.pop('fax', None)
+
+    def update(self, **kwargs):
+        self.name = kwargs.pop('name')
+        self.longitude = kwargs.pop('longitude')
+        self.latitude = kwargs.pop('latitude')
+        self.province_id = kwargs.pop('province_id')
+        self.city_id = kwargs.pop('city_id')
+        self.county_id = kwargs.pop('county_id')
         self.street = kwargs.pop('street', None)
         self.recommend = kwargs.pop('recommend', 0)
         self.view_number = kwargs.pop('view_number', 0)

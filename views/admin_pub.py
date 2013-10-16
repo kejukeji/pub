@@ -4,10 +4,14 @@
     pub相关的后台代码
 """
 
+import logging
+
 from flask.ext.admin.contrib.sqla import ModelView
+from flask import flash
+from flask.ext.admin.babel import gettext
 from flask.ext.admin.contrib.sqla.ajax import QueryAjaxModelLoader
 from flask.ext.login import current_user
-from wtforms.fields import SelectField, StringField, BooleanField, SelectMultipleField
+from wtforms.fields import SelectField, StringField, BooleanField, SelectMultipleField, TextField
 from wtforms import Form
 from wtforms import validators
 from flask.ext.admin.contrib.sqla import form
@@ -15,6 +19,9 @@ from flask.ext.admin import BaseView, expose
 from flask import render_template
 
 from models import Pub, PubType, Province
+from utils import form_to_dict
+
+log = logging.getLogger("flask-admin.sqla")
 
 
 class PubTypeView(ModelView):
@@ -90,18 +97,76 @@ class PubView(ModelView):
                            'fax', 'street', 'longitude', 'latitude')
 
     form_ajax_refs = None
-    form_overrides = dict(recommend=SelectField)
-    form_args = dict(
-        recommend=dict(
-            choices=[(0, '否'), (1, '是')])
-    )
+
+    # Templates
+    edit_template = 'admin/pub_edit.html'
+    """Default edit template"""
+
+    create_template = 'admin/pub_create.html'
+    """Default create template"""
 
     def scaffold_form(self):
         form_class = super(PubView, self).scaffold_form()
+        form_class.pub_type = TextField(label='酒吧类型', validators=[validators.input_required()],
+                                        description=u'酒吧类型')
         return form_class
 
     def __init__(self, db, **kwargs):
         super(PubView, self).__init__(Pub, db, **kwargs)
+
+    def create_model(self, form):
+        """改写flask的新建model的函数"""
+
+        try:
+            model = self.model(**form_to_dict(form))
+            self.session.add(model)
+            self.session.commit()
+        except Exception, ex:
+            flash(gettext('Failed to create model. %(error)s', error=str(ex)), 'error')
+            logging.exception('Failed to create model')
+            self.session.rollback()
+            return False
+        else:
+            self.after_model_change(form, model, True)
+
+        return True
+
+    def update_model(self, form, model):
+        """改写了update函数"""
+        try:
+            model.update(**form_to_dict(form))
+            self.session.commit()
+        except Exception, ex:
+            flash(gettext('Failed to update model. %(error)s', error=str(ex)), 'error')
+            logging.exception('Failed to update model')
+            self.session.rollback()
+            return False
+        else:
+            self.after_model_change(form, model, False)
+
+        return True
+
+    def delete_model(self, model):
+        """
+            Delete model.
+
+            :param model:
+                Model to delete
+        """
+        try:
+            self.on_model_delete(model)
+            self.session.flush()
+            self.session.delete(model)
+            self.session.commit()
+            return True
+        except Exception as ex:
+            if self._debug:
+                raise
+
+            flash(gettext('Failed to delete model. %(error)s', error=str(ex)), 'error')
+            log.exception('Failed to delete model')
+            self.session.rollback()
+            return False
 
     #def is_accessible(self):  # 登陆管理功能先关闭，后期添加
     #    return current_user.is_admin()
