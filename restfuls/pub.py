@@ -6,7 +6,7 @@ from utils import pickler
 from flask.ext.restful import reqparse
 
 
-class PubHome(restful.Resource):
+class PubGetType(restful.Resource):
     """
     泡吧主页
     """
