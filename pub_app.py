@@ -17,7 +17,8 @@ from flask.ext import restful
 from models.database import db
 from urls import admin
 from login import login_manager, login, logout
-from restfuls import UserInfo, UserLogin, UserRegister, PubGetType, PubListDetail, PubDetail, UserCollect, PubCollect, PubPictureDetail, PubSearch
+from restfuls import (UserInfo, UserLogin, UserRegister, PubGetType, PubListDetail, PubDetail, UserCollect,
+                      PubCollect, PubPictureDetail, PubSearch, GetPubType, GetProvince, GetCity, GetCounty)
 from ex_var import CONFIG_FILE
 
 # 创建应用
@@ -54,6 +55,13 @@ api.add_resource(UserCollect, '/restful/user/collect')
 api.add_resource(PubCollect, '/restful/pub/collect')
 api.add_resource(PubPictureDetail, '/restful/pub/picture')
 api.add_resource(PubSearch, '/restful/pub/search')
+
+# 后台获取相关ajax文件的路径
+# todo-lyw 直辖市的市级只留下一个选项！
+api.add_resource(GetPubType, '/restful/admin/pub_type')
+api.add_resource(GetProvince, '/restful/admin/province')
+api.add_resource(GetCity, '/restful/admin/city/<int:province_id>')
+api.add_resource(GetCounty, '/restful/admin/county/<int:city_id>')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
