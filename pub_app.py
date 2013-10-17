@@ -18,7 +18,8 @@ from models.database import db
 from urls import admin
 from login import login_manager, login, logout
 from restfuls import (UserInfo, UserLogin, UserRegister, PubGetType, PubListDetail, PubDetail, UserCollect,
-                      PubCollect, PubPictureDetail, PubSearch, GetPubType, GetProvince, GetCity, GetCounty)
+                      PubCollect, PubPictureDetail, PubSearch, GetPubType, GetProvince, GetCity, GetCounty,
+                      UserMessage)
 from ex_var import CONFIG_FILE
 
 # 创建应用
@@ -55,6 +56,7 @@ api.add_resource(UserCollect, '/restful/user/collect')
 api.add_resource(PubCollect, '/restful/pub/collect')
 api.add_resource(PubPictureDetail, '/restful/pub/picture')
 api.add_resource(PubSearch, '/restful/pub/search')
+api.add_resource(UserMessage, '/restful/user/message')
 
 # 后台获取相关ajax文件的路径
 # todo-lyw 直辖市的市级只留下一个选项！
