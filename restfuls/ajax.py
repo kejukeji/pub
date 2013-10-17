@@ -18,3 +18,17 @@ class GetPubType(restful.Resource):
             json[i] = pub_type[i].name
 
         return json
+
+
+class GetProvince(restful.Resource):
+    """获取省份的json"""
+
+    pass
+
+
+class GetCity(restful.Resource):
+    pass
+
+
+class GetCounty(restful.Resource):
+    pass
