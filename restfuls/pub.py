@@ -212,13 +212,56 @@ class PubSearch(restful.Resource):
         if args['content']:
             content = str(unicode(args['content']))
             s = '%' + content + '%'
-            sql = "select a.*,b.rel_path,b.pic_name from pub a " \
-                  "inner join pub_picture b on a.id = b.pub_id " \
-                  "where a.name like '" + s + "''"
-            results = engine.execute(sql)
-            for result in results:
-                print "user_name:", result['a.name']
+            pub_count = Pub.query.filter(Pub.name.like(s)).count()
+            if pub_count > 1:
+                pubs = Pub.query.filter(Pub.name.like(s))
+                for pub in pubs:
+                    pub_pic = pickler.flatten(pub)
+                    pub_picture_count = PubPicture.query.filter(PubPicture.pub_id == pub.id).count()
+                    if pub_picture_count > 1:
+                        pub_pictures = PubPicture.query.filter(PubPicture.pub_id == pub.id)
+                        pub_pic['pic_path'] = pub_pictures[0].rel_path + pub_pictures[0].pic_name
+                        for pub_picture in pub_pictures:
+                            pub_picture_pic = pickler.flatten(pub_picture)
+                            pub_picture_pic['pic_path'] = pub_picture.rel_path + pub_picture.pic_name
+                            resp_suc['pub_picture_list'].append(pub_picture_pic)
+                    else:
+                        pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub.id).first()
+                        pub_pic['pic_path'] = pub_picture.rel_path + pub_picture.pic_name
 
+                        pub_picture_pic = pickler.flatten(pub_picture)
+                        pub_picture_pic['pic_path'] = pub_picture.rel_path + pub_picture.pic_name
+                        resp_suc['pub_picture_list'].append(pub_picture_pic)
 
+                    resp_suc['pub_list'].append(pub_pic)
+            else:
+                pub = Pub.query.filter(Pub.name.like(s)).first()
+                pub_pic = pickler.flatten(pub)
+                pub_picture_count = PubPicture.query.filter(PubPicture.pub_id == pub.id).count()
+                if pub_picture_count > 1:
+                    pub_pictures = PubPicture.query.filter(PubPicture.pub_id == pub.id)
+
+                    pub_pic['pic_path'] = pub_pictures[0].rel_path + pub_pictures[0].pic_name
+
+                    for pub_picture in pub_pictures:
+                        pub_picture_pic = pickler.flatten(pub_picture)
+                        pub_picture_pic['pic_path'] = pub_picture.rel_path + pub_picture.pic_name
+                        resp_suc['pub_picture_list'].append(pub_picture_pic)
+                else:
+                    pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub.id).first()
+                    pub_pic['pic_path'] = pub_picture.rel_path + pub_picture.pic_name
+
+                    pub_picture_pic = pickler.flatten(pub_picture)
+                    pub_picture_pic['pic_path'] = pub_picture.rel_path + pub_picture.pic_name
+                    resp_suc['pub_picture_list'].append(pub_picture_pic)
+                resp_suc['pub_list'].append(pub_pic)
+
+            resp_suc['message'] = "success"
+            resp_suc['status'] = 0
+            return resp_suc
+        else:
+            resp_suc['message'] = "error"
+            resp_suc['status'] = 1
+            return resp_suc
 
 
