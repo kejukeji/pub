@@ -56,7 +56,7 @@ class PubView(ModelView):
     can_delete = True
     column_display_pk = True
     column_searchable_list = ('name',)
-    column_default_sort = ('recommend', False)
+    column_default_sort = ('id', True)
     column_labels = dict(
         id=u'ID',
         name=u'酒吧名',
@@ -97,13 +97,6 @@ class PubView(ModelView):
                            'fax', 'street', 'longitude', 'latitude')
 
     form_ajax_refs = None
-
-    # Templates
-    edit_template = 'admin/pub_edit.html'
-    """Default edit template"""
-
-    create_template = 'admin/pub_create.html'
-    """Default create template"""
 
     def scaffold_form(self):
         form_class = super(PubView, self).scaffold_form()
