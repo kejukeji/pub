@@ -207,7 +207,7 @@ class PubPictureDetail(restful.Resource):
 
         args = parser.parse_args()
         resp_suc = {}
-        resp_suc['list'] = []
+        resp_suc['picture_list'] = []
         if args['pub_id']:
             pub_id = int(args['pub_id'])
             pub_picture_count = PubPicture.query.filter(PubPicture.pub_id == pub_id).count()
