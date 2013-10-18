@@ -15,7 +15,7 @@ from views import UserView, PubTypeView, PubView, PubFile
 from login import login_manager, login, logout
 from restfuls import (UserInfo, UserLogin, UserRegister, PubGetType, PubListDetail, PubDetail, UserCollect,
                       PubCollect, PubPictureDetail, PubSearch, GetPubType, GetProvince, GetCity, GetCounty,
-                      UserMessage)
+                      UserMessage, PubSearchView)
 
 # 用户登陆管理
 login_manager.init_app(app)
@@ -55,4 +55,5 @@ api.add_resource(PubCollect, '/restful/pub/collect')
 api.add_resource(PubPictureDetail, '/restful/pub/picture')
 api.add_resource(PubSearch, '/restful/pub/search')
 api.add_resource(UserMessage, '/restful/user/message')
+api.add_resource(PubSearchView, '/restful/pub/search/view')
 

@@ -8,13 +8,57 @@ from flask.ext.restful import reqparse
 from sqlalchemy.orm import Session, sessionmaker
 
 
+Session = sessionmaker()
+Session.configure(bind=engine)
+session = Session()
+
+
 def flatten(obj, obj2):
     """
     转换json对象
     """
     obj_pic = pickler.flatten(obj)
-    obj_pic['pic_path'] = obj2.rel_path + obj2.pic_name
+    if obj2:
+        obj_pic['pic_path'] = obj2.rel_path + obj2.pic_name
     return obj_pic
+
+
+def pub_list_picture(pub_pictures, resp_suc):
+    """
+    遍历多个图片
+    """
+    for pub_picture in pub_pictures:
+        pub_picture_pic = flatten(pub_picture, pub_picture)
+        resp_suc['picture_list'].append(pub_picture_pic)
+
+
+def pub_picture_only(pub_picture, resp_suc):
+    """
+    单个图片
+    """
+    if pub_picture:
+        pub_picture_pic = flatten(pub_picture, pub_picture)
+        resp_suc['picture_list'].append(pub_picture_pic)
+
+
+def pub_list(pubs, resp_suc):
+    """
+    遍历多个酒吧
+    """
+    for pub in pubs:
+        pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub.id).first()
+        pub_pic = flatten(pub, pub_picture)
+        resp_suc['pub_list'].append(pub_pic)
+
+
+def pub_only(pub, resp_suc):
+    """
+    一个酒吧
+    """
+    if pub:
+        pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub.id).first()
+        pub_pic = flatten(pub, pub_picture)
+        resp_suc['pub_list'].append(pub_pic)
 
 
 class PubGetType(restful.Resource):
@@ -56,7 +100,7 @@ class PubListDetail(restful.Resource):
 
         args = parser.parse_args()
         resp_suc = {}
-        resp_suc['list'] = []
+        resp_suc['pub_list'] = []
         resp_suc['hot_list'] = []
         Session = sessionmaker()
         Session.configure(bind=engine)
@@ -94,22 +138,14 @@ class PubListDetail(restful.Resource):
                     pub_count = Pub.query.filter(Pub.id == pub_type.pub_id).count()
                     if pub_count > 1:
                         pubs = Pub.query.filter(Pub.id == pub_type.pub_id)
-                        for pub in pubs:
-                            pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub.id).first()
-                            pub_pic = flatten(pub, pub_picture)
-                            resp_suc['list'].append(pub_pic)
+                        pub_list(pubs, resp_suc)
                     else:
                         pub = Pub.query.filter(Pub.id == pub_type.pub_id).first()
-                        pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub.id).first()
-                        pub_pic = flatten(pub, pub_picture)
-                        resp_suc['list'].append(pub_pic)
+                        pub_only(pub, resp_suc)
             else:
                 pub_type = PubTypeMid.query.filter(PubTypeMid.pub_type_id == int(args['type_id'])).first()
                 pub = Pub.query.filter(Pub.id == pub_type.pub_id).first()
-                pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub.id).first()
-                pub_pic = pickler.flatten(pub)
-                pub_pic['pic_path'] = pub_picture.rel_path + pub_picture.pic_name
-                resp_suc['list'].append(pub_pic)
+                pub_only(pub, resp_suc)
             resp_suc['status'] = 0
             return resp_suc
         else:
@@ -143,13 +179,10 @@ class PubDetail(restful.Resource):
             pub_p_count = PubPicture.query.filter(PubPicture.pub_id == pub.id).count()
             if pub_p_count > 1:
                 pub_ps = PubPicture.query.filter(PubPicture.pub_id == pub_id)
-                for pub_picture in pub_ps:
-                    pub_picture_pic = flatten(pub_picture, pub_picture)
-                    resp_suc['picture_list'].append(pub_picture_pic)
+                pub_list_picture(pub_ps, resp_suc)
             else:
                 pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub_id).first()
-                pub_picture_pic = flatten(pub_picture, pub_picture)
-                resp_suc['picture_list'].append(pub_picture_pic)
+                pub_list_picture(pub_picture, resp_suc)
             resp_suc['status'] = 0
             resp_suc['message'] = 'success'
             return resp_suc
@@ -180,14 +213,10 @@ class PubPictureDetail(restful.Resource):
             pub_picture_count = PubPicture.query.filter(PubPicture.pub_id == pub_id).count()
             if pub_picture_count > 1:
                 pub_pictures = PubPicture.query.filter(PubPicture.pub_id == pub_id)
-                for pub_picture in pub_pictures:
-                    pub_picture_pic = flatten(pub_picture, pub_picture)
-                    resp_suc['list'].append(pub_picture_pic)
+                pub_list_picture(pub_pictures, resp_suc)
             else:
                 pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub_id).first()
-                if pub_picture:
-                    pub_picture_pic = flatten(pub_picture, pub_picture)
-                    resp_suc['list'].append(pub_picture_pic)
+                pub_picture_only(pub_picture, resp_suc)
         else:
             resp_suc['message'] = 'error'
             resp_suc['status'] = 1
@@ -207,53 +236,37 @@ class PubSearch(restful.Resource):
         """
         parser = reqparse.RequestParser()
         parser.add_argument('content', type=str, required=True, help=u'content必须，搜索酒吧')
+        parser.add_argument('type_id', type=str, required=False, help=u'type_id必须，酒吧类型')
 
         args = parser.parse_args()
         resp_suc = {}
         resp_suc['pub_list'] = []
-        resp_suc['pub_picture_list'] = []
+        pub_pic = None
         if args['content']:
             content = str(args['content'])
             s = "%" + content + "%"
-            pub_count = Pub.query.filter(Pub.name.like(s)).count()
-            if pub_count > 1:
-                pubs = Pub.query.filter(Pub.name.like(s))
-                for pub in pubs:
-                    pub_picture_count = PubPicture.query.filter(PubPicture.pub_id == pub.id).count()
-                    if pub_picture_count > 1:
-                        pub_pictures = PubPicture.query.filter(PubPicture.pub_id == pub.id)
-                        pub_pic = flatten(pub, pub_pictures[0])
-                        for pub_picture in pub_pictures:
-                            pub_picture_pic = flatten(pub_picture, pub_picture)
-                            resp_suc['pub_picture_list'].append(pub_picture_pic)
-                    else:
-                        pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub.id).first()
-                        if pub_picture:
-                            pub_pic = flatten(pub, pub_picture)
-                            pub_pic['pic_path'] = pub_picture.rel_path + pub_picture.pic_name
-                            pub_picture_pic = flatten(pub_picture, pub_picture)
-                        resp_suc['pub_picture_list'].append(pub_picture_pic)
-
-                    resp_suc['pub_list'].append(pub_pic)
+            if args['type_id']:
+                pub_count = session.query(Pub).\
+                    join(PubTypeMid).\
+                    filter(Pub.name.like(s), PubTypeMid.pub_type_id == int(args['type_id'])).count()
+                if pub_count > 1:
+                    pubs = session.query(Pub). \
+                        join(PubTypeMid). \
+                        filter(Pub.name.like(s), PubTypeMid.pub_type_id == int(args['type_id']))
+                    pub_list(pubs, resp_suc)
+                else:
+                    pub = session.query(Pub). \
+                        join(PubTypeMid). \
+                        filter(Pub.name.like(s), PubTypeMid.pub_type_id == int(args['type_id'])).first()
+                    pub_only(pub, resp_suc)
             else:
-                pub = Pub.query.filter(Pub.name.like(s)).first()
-                if pub:
-                    pub_picture_count = PubPicture.query.filter(PubPicture.pub_id == pub.id).count()
-                    if pub_picture_count > 1:
-                        pub_pictures = PubPicture.query.filter(PubPicture.pub_id == pub.id)
-                        pub_pic = flatten(pub, pub_pictures[0])
-
-                        for pub_picture in pub_pictures:
-                            pub_picture_pic = flatten(pub_picture, pub_picture)
-                            resp_suc['pub_picture_list'].append(pub_picture_pic)
-                    else:
-                        pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub.id).first()
-                        if pub_picture:
-                            pub_pic = flatten(pub, pub_picture)
-
-                            pub_picture_pic = flatten(pub_picture, pub_picture)
-                        resp_suc['pub_picture_list'].append(pub_picture_pic)
-                    resp_suc['pub_list'].append(pub_pic)
+                pub_count = Pub.query.filter(Pub.name.like(s)).count()
+                if pub_count > 1:
+                    pubs = Pub.query.filter(Pub.name.like(s))
+                    pub_list(pubs, resp_suc)
+                else:
+                    pub = Pub.query.filter(Pub.name.like(s)).first()
+                    pub_only(pub, resp_suc)
 
             resp_suc['message'] = "success"
             resp_suc['status'] = 0
@@ -282,6 +295,9 @@ class PubSearchView(restful.Resource):
             for pub_type in pub_types:
                 pub_type_pic = pickler.flatten(pub_type)
                 resp_suc['pub_type_list'].append(pub_type_pic)
+        else:
+            resp_suc['status'] = 1
+            resp_suc['message'] = 'error'
         pub_count = Pub.query.filter(Pub.recommend == 1).count()
         if pub_count > 1:
             pubs = Pub.query.filter(Pub.recommend == 1)
@@ -292,4 +308,6 @@ class PubSearchView(restful.Resource):
             pub = Pub.query.filter(Pub.recommend == 1).first()
             pub_pic = pickler.flatten(pub)
             resp_suc['pub_list'].append(pub_pic)
+        resp_suc['status'] = 0
+        resp_suc['message'] = 'success'
         return resp_suc
