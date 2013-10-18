@@ -219,17 +219,17 @@ class PubSearch(restful.Resource):
             if pub_count > 1:
                 pubs = Pub.query.filter(Pub.name.like(s))
                 for pub in pubs:
-                    pub_pic = pickler.flatten(pub)
                     pub_picture_count = PubPicture.query.filter(PubPicture.pub_id == pub.id).count()
                     if pub_picture_count > 1:
                         pub_pictures = PubPicture.query.filter(PubPicture.pub_id == pub.id)
-                        pub_pic['pic_path'] = pub_pictures[0].rel_path + pub_pictures[0].pic_name
+                        pub_pic = flatten(pub, pub_pictures[0])
                         for pub_picture in pub_pictures:
                             pub_picture_pic = flatten(pub_picture, pub_picture)
                             resp_suc['pub_picture_list'].append(pub_picture_pic)
                     else:
                         pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub.id).first()
                         if pub_picture:
+                            pub_pic = flatten(pub, pub_picture)
                             pub_pic['pic_path'] = pub_picture.rel_path + pub_picture.pic_name
                             pub_picture_pic = flatten(pub_picture, pub_picture)
                         resp_suc['pub_picture_list'].append(pub_picture_pic)
@@ -238,11 +238,10 @@ class PubSearch(restful.Resource):
             else:
                 pub = Pub.query.filter(Pub.name.like(s)).first()
                 if pub:
-                    pub_pic = pickler.flatten(pub)
                     pub_picture_count = PubPicture.query.filter(PubPicture.pub_id == pub.id).count()
                     if pub_picture_count > 1:
                         pub_pictures = PubPicture.query.filter(PubPicture.pub_id == pub.id)
-                        pub_pic['pic_path'] = pub_pictures[0].rel_path + pub_pictures[0].pic_name
+                        pub_pic = flatten(pub, pub_pictures[0])
 
                         for pub_picture in pub_pictures:
                             pub_picture_pic = flatten(pub_picture, pub_picture)
@@ -250,7 +249,7 @@ class PubSearch(restful.Resource):
                     else:
                         pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub.id).first()
                         if pub_picture:
-                            pub_pic['pic_path'] = pub_picture.rel_path + pub_picture.pic_name
+                            pub_pic = flatten(pub, pub_picture)
 
                             pub_picture_pic = flatten(pub_picture, pub_picture)
                         resp_suc['pub_picture_list'].append(pub_picture_pic)
@@ -265,3 +264,32 @@ class PubSearch(restful.Resource):
             return resp_suc
 
 
+class PubSearchView(restful.Resource):
+    """
+    搜索界面所需要的数据接口
+    """
+    @staticmethod
+    def get():
+        """
+        所需参数：
+            无
+        """
+        pub_types = PubType.query.filter()
+        resp_suc = {}
+        resp_suc['pub_type_list'] = []
+        resp_suc['pub_list'] = []
+        if pub_types:
+            for pub_type in pub_types:
+                pub_type_pic = pickler.flatten(pub_type)
+                resp_suc['pub_type_list'].append(pub_type_pic)
+        pub_count = Pub.query.filter(Pub.recommend == 1).count()
+        if pub_count > 1:
+            pubs = Pub.query.filter(Pub.recommend == 1)
+            for pub in pubs:
+                pub_pic = pickler.flatten(pub)
+                resp_suc['pub_list'].append(pub_pic)
+        else:
+            pub = Pub.query.filter(Pub.recommend == 1).first()
+            pub_pic = pickler.flatten(pub)
+            resp_suc['pub_list'].append(pub_pic)
+        return resp_suc
