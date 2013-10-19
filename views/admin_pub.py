@@ -66,7 +66,7 @@ class PubView(ModelView):
         web_url=u'网址',
         mobile_list=u'移动号码列表',
         tel_list=u'固话列表',
-        email=u'网址',
+        email=u'邮箱',
         fax=u'传真',
         province_id=u'省份',
         city_id=u'市',
@@ -84,14 +84,14 @@ class PubView(ModelView):
         web_url=u'酒吧的网站',
         mobile_list=u'酒吧的移动号码，多个号码使用英文逗号分离',
         tel_list=u'固话列表，多个号码使用英文逗号分离',
-        email=u'酒吧网址',
+        email=u'酒吧邮箱',
         fax=u'酒吧的传真',
         province_id=u'省份',
         city_id=u'市，直辖市的省份和市不做区分',
         county_id=u'区县，比如上海的闵行区',
         street=u'下一级的详细地址描述',
-        longitude=u'经度',
-        latitude=u'纬度',
+        longitude=u'经度 - 填写酒吧名之后，默认搜索，点击位置方可更新',
+        latitude=u'纬度 - 搜索之后，点选位置方可更新',
     )
     column_exclude_list = ('intro', 'web_url', 'mobile_list', 'tel_list', 'email',
                            'fax', 'street', 'longitude', 'latitude')
@@ -102,6 +102,8 @@ class PubView(ModelView):
         form_class = super(PubView, self).scaffold_form()
         form_class.pub_type = TextField(label='酒吧类型', validators=[validators.input_required()],
                                         description=u'酒吧类型')
+        form_class.picture = TextField(label='酒吧图片', validators=[validators.input_required()],
+                                       description=u'酒吧图片，按control键可以选择多张图片')
         return form_class
 
     def __init__(self, db, **kwargs):
