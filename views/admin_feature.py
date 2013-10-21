@@ -85,19 +85,19 @@ class UserCollectView(ModelView):
     can_edit = False
     column_default_sort = ('id', True)
     collects = Collect.query.filter().all()
-    user_name = []
-    pub_name = []
-    for collect in collects:
-        user = User.query.filter(User.id == collect.user_id).first()
-        pub = Pub.query.filter(Pub.id == collect.pub_id).first()
-        user_name = user.nick_name
-        pub_name = pub.name
+    # user_name = []
+    # pub_name = []
+    #for collect in collects:
+    #    user = User.query.filter(User.id == collect.user_id).first()
+    #    pub = Pub.query.filter(Pub.id == collect.pub_id).first()
+    #    user_name = user.nick_name
+    #    pub_name = pub.name
     column_labels = dict(id=u'ID', user_id=u'用户id', pub_id=u'酒吧id', time=u'收藏时间')
     column_descriptions = dict(
         user_id=u'用户的id',
         pub_id=u'用户收藏的酒吧id'
     )
-    column_list = ObsoleteAttr(user_name, pub_name, None)
+    # column_list = ObsoleteAttr(user_name, pub_name, None)
 
     def __init__(self, db, **kwargs):
         super(UserCollectView, self).__init__(Collect, db, **kwargs)
