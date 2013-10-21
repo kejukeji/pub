@@ -302,6 +302,7 @@ class PubSearchView(restful.Resource):
         if pub_count > 1:
             pubs = Pub.query.filter(Pub.recommend == 1)
             pub_list(pubs, resp_suc)
+        
         else:
             pub = Pub.query.filter(Pub.recommend == 1).first()
             pub_only(pub, resp_suc)
