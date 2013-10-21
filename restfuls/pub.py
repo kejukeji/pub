@@ -2,7 +2,7 @@
 #!/usr/bin/python
 
 from flask.ext import restful
-from models import Pub, PubType, PubTypeMid, PubPicture, engine
+from models import Pub, PubType, PubTypeMid, PubPicture, engine, County
 from utils import pickler
 from flask.ext.restful import reqparse
 from sqlalchemy.orm import Session, sessionmaker
@@ -13,7 +13,7 @@ Session.configure(bind=engine)
 session = Session()
 
 
-def flatten(obj, obj2):
+def to_flatten(obj, obj2):
     """
     转换json对象
     """
@@ -23,12 +23,20 @@ def flatten(obj, obj2):
     return obj_pic
 
 
+def to_city(obj_pic, county):
+    """
+        所在城市
+    """
+    if county:
+        obj_pic['city_county'] = county.name
+
+
 def pub_list_picture(pub_pictures, resp_suc):
     """
     遍历多个图片
     """
     for pub_picture in pub_pictures:
-        pub_picture_pic = flatten(pub_picture, pub_picture)
+        pub_picture_pic = to_flatten(pub_picture, pub_picture)
         resp_suc['picture_list'].append(pub_picture_pic)
 
 
@@ -37,7 +45,7 @@ def pub_picture_only(pub_picture, resp_suc):
     单个图片
     """
     if pub_picture:
-        pub_picture_pic = flatten(pub_picture, pub_picture)
+        pub_picture_pic = to_flatten(pub_picture, pub_picture)
         resp_suc['picture_list'].append(pub_picture_pic)
 
 
@@ -47,7 +55,7 @@ def pub_list(pubs, resp_suc):
     """
     for pub in pubs:
         pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub.id).first()
-        pub_pic = flatten(pub, pub_picture)
+        pub_pic = to_flatten(pub, pub_picture)
         resp_suc['pub_list'].append(pub_pic)
 
 
@@ -57,7 +65,7 @@ def pub_only(pub, resp_suc):
     """
     if pub:
         pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub.id).first()
-        pub_pic = flatten(pub, pub_picture)
+        pub_pic = to_flatten(pub, pub_picture)
         resp_suc['pub_list'].append(pub_pic)
 
 
@@ -119,7 +127,7 @@ class PubListDetail(restful.Resource):
                     group_by(PubPicture.pub_id)
                 for result in results:
                     if result:
-                        result_pic = flatten(result, result)
+                        result_pic = to_flatten(result, result)
                         resp_suc['hot_list'].append(result_pic)
             else:
                 result = session.query(PubPicture). \
@@ -128,7 +136,7 @@ class PubListDetail(restful.Resource):
                     filter(PubTypeMid.pub_type_id == int(args['type_id']), Pub.recommend == 1).\
                     group_by(PubPicture.pub_id).first()
                 if result:
-                    result_pic = flatten(result, result)
+                    result_pic = to_flatten(result, result)
                     resp_suc['hot_list'].append(result_pic)
 
             pub_type_count = PubTypeMid.query.filter(PubTypeMid.pub_type_id == int(args['type_id'])).count()
@@ -174,7 +182,9 @@ class PubDetail(restful.Resource):
         if pub_id:
             pub = Pub.query.filter(Pub.id == pub_id).first()
             pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub_id).first()
-            pub_pic = flatten(pub, pub_picture)
+            county = County.query.filter(County.id == pub.county_id).first()
+            pub_pic = to_flatten(pub, pub_picture)
+            to_city(pub_pic, county)
             resp_suc['pub_list'].append(pub_pic)
             pub_p_count = PubPicture.query.filter(PubPicture.pub_id == pub.id).count()
             if pub_p_count > 1:
