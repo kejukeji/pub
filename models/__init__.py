@@ -3,7 +3,7 @@
 from models.user import User, UserInfo
 from models.pub import Pub, PubType, PubPicture, PubTypeMid
 from models.location import Province, City, County
-from models.feature import Collect, Comment, Checkin, Message
+from models.feature import Collect, Comment, View, Message
 from models.ethnicity import Ethnicity
 from models.admin import SystemMessage
 

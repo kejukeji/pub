@@ -32,7 +32,7 @@ $(document).ready(function(){
         // 获取省的json
         $.ajax({
             type: "GET",
-            url: "http://127.0.0.1:5000/restful/admin/province",
+            url: "http://www.maobake.com/restful/admin/province",
             dataType: "json",
             async: false,
             cache: false,
@@ -51,7 +51,7 @@ $(document).ready(function(){
         // 获取特定省下面的市区
         $.ajax({
             type: "GET",
-            url: "http://127.0.0.1:5000/restful/admin/city/" + init_province,
+            url: "http://www.maobake.com/restful/admin/city/" + init_province,
             dataType: "json",
             async: false,
             cache: false,
@@ -71,7 +71,7 @@ $(document).ready(function(){
         // 获取特定市下面的区县
         $.ajax({
             type: "GET",
-            url: "http://127.0.0.1:5000/restful/admin/county/" + init_city,
+            url: "http://www.maobake.com/restful/admin/county/" + init_city,
             dataType: "json",
             async: false,
             cache: false,
@@ -112,7 +112,7 @@ $(document).ready(function(){
 	    // 获取特定省下面的市区
 	    $.ajax({
 	         type: "GET",
-	         url: "http://127.0.0.1:5000/restful/admin/city/" + g_province_id,
+	         url: "http://www.maobake.com/restful/admin/city/" + g_province_id,
 	         dataType: "json",
 	         async: false,
 	         cache: false,
@@ -131,7 +131,7 @@ $(document).ready(function(){
 
 	    $.ajax({
 	         type: "GET",
-	         url: "http://127.0.0.1:5000/restful/admin/county/" + g_city_id,
+	         url: "http://www.maobake.com/restful/admin/county/" + g_city_id,
 	         dataType: "json",
 	         async: false,
 	         cache: false,
@@ -156,7 +156,7 @@ $(document).ready(function(){
 	     // 获取特定市下面的区县
 	    $.ajax({
 	         type: "GET",
-	         url: "http://127.0.0.1:5000/restful/admin/county/" + g_city_id,
+	         url: "http://www.maobake.com/restful/admin/county/" + g_city_id,
 	         dataType: "json",
 	         async: false,
 	         cache: false,
@@ -196,7 +196,7 @@ $(document).ready(function(){
         if (id) {
             $.ajax({
                 type: "GET",
-                url: "http://127.0.0.1:5000/restful/admin/pub_type_list/" + id,
+                url: "http://www.maobake.com/restful/admin/pub_type_list/" + id,
                 dataType: "json",
                 async: false,
                 cache: false,
@@ -217,7 +217,7 @@ $(document).ready(function(){
 	// 获取酒吧类型
 	$.ajax({
 		type: "GET",
-		url: "http://127.0.0.1:5000/restful/admin/pub_type",
+		url: "http://www.maobake.com/restful/admin/pub_type",
 		dataType: "json",
 		async: false,
 		cache: false,

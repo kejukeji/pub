@@ -17,7 +17,7 @@ from .user import User
 
 COLLECT_TABLE = 'collect'
 COMMENT_TABLE = 'comment'
-CHECK_IN_TABLE = 'checkin'
+VIEW_TABLE = 'view'
 MESSAGE_TABLE = 'message'
 
 
@@ -75,7 +75,7 @@ class Comment(Base):
         return '<Comment(user_id: %s, pub_id: %s, content: %s)>' % (self.user_id, self.pub_id, self.content)
 
 
-class Checkin(Base):
+class View(Base):
     """view对应的类
     记录用户浏览的某一个酒吧
     user_id 用户ID ON DELETE CASCADE ON UPDATE CASCADE
@@ -84,7 +84,7 @@ class Checkin(Base):
     view_number 用户一共浏览这个酒吧的次数
     """
 
-    __tablename__ = CHECK_IN_TABLE
+    __tablename__ = VIEW_TABLE
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey(User.id, ondelete='cascade', onupdate='cascade'), nullable=False)
