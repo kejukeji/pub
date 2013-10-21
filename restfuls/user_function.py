@@ -45,6 +45,30 @@ def to_messages(times, content, message_id):
     json_pic['content'] = content
     return json_pic
 
+
+def traverse_messages(messages, resp_suc):
+    """
+        遍历多条消息
+    """
+    if messages:
+        for message in messages:
+            times = time_diff(message.time)
+            content = message.content
+            user_pic = to_messages(times, content, message.sender_id)
+            resp_suc['list'].append(user_pic)
+
+
+def traverse_message(message, resp_suc):
+    """
+        遍历一条消息
+    """
+    if message:
+        times = time_diff(message.time)
+        content = message.content
+        user_pic = to_messages(times, content, message.sender_id)
+        resp_suc['list'].append(user_pic)
+
+
 Session = sessionmaker()
 Session.configure(bind=engine)
 session = Session()
@@ -154,18 +178,10 @@ class UserMessage(restful.Resource):
             message_count = Message.query.filter(Message.receiver_id == user_id).count()
             if message_count > 1:
                 messages = Message.query.filter(Message.receiver_id == user_id)
-                for message in messages:
-                    times = time_diff(message.time)
-                    content = message.content
-                    user_pic = to_messages(times, content, message.sender_id)
-                    resp_suc['list'].append(user_pic)
+                traverse_messages(messages, resp_suc)
             else:
                 message = Message.query.filter(Message.receiver_id == user_id).first()
-                if message:
-                    times = time_diff(message.time)
-                    content = message.content
-                    user_pic = to_messages(times, content, message.sender_id)
-                    resp_suc['list'].append(user_pic)
+                traverse_message(message, resp_suc)
             resp_suc['status'] = 0
             resp_suc['message'] = 'success'
             return resp_suc
