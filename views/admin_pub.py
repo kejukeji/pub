@@ -40,6 +40,38 @@ class PubTypeView(ModelView):
     def __init__(self, db, **kwargs):
         super(PubTypeView, self).__init__(PubType, db, **kwargs)
 
+    def create_model(self, form):
+        """改写flask的新建model的函数"""
+
+        try:
+            model = self.model(**form_to_dict(form))
+            self.session.add(model)  # 保存酒吧基本资料
+            self.session.commit()
+        except Exception, ex:
+            flash(gettext('Failed to create model. %(error)s', error=str(ex)), 'error')
+            logging.exception('Failed to create model')
+            self.session.rollback()
+            return False
+        else:
+            self.after_model_change(form, model, True)
+
+        return True
+
+    def update_model(self, form, model):
+        """改写了update函数"""
+        try:
+            model.update(**form_to_dict(form))
+            self.session.commit()
+        except Exception, ex:
+            flash(gettext('Failed to update model. %(error)s', error=str(ex)), 'error')
+            logging.exception('Failed to update model')
+            self.session.rollback()
+            return False
+        else:
+            self.after_model_change(form, model, False)
+
+        return True
+
     #def is_accessible(self):  # 登陆管理功能先关闭，后期添加
     #    return current_user.is_admin()
 
