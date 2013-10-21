@@ -36,9 +36,9 @@ class Collect(Base):
     pub_id = Column(Integer, ForeignKey(Pub.id, ondelete='cascade', onupdate='cascade'), nullable=False)
     time = Column(DATETIME, nullable=False, server_default=None)
 
-    def __init__(self, user_id, pub_id):
-        self.user_id = user_id
-        self.pub_id = pub_id
+    def __init__(self, **kwargs):
+        self.user_id = kwargs.pop('user_id')
+        self.pub_id = kwargs.pop('pub_id')
         self.time = todayfstr()
 
     def __repr__(self):
