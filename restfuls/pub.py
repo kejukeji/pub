@@ -301,13 +301,10 @@ class PubSearchView(restful.Resource):
         pub_count = Pub.query.filter(Pub.recommend == 1).count()
         if pub_count > 1:
             pubs = Pub.query.filter(Pub.recommend == 1)
-            for pub in pubs:
-                pub_pic = pickler.flatten(pub)
-                resp_suc['pub_list'].append(pub_pic)
+            pub_list(pubs, resp_suc)
         else:
             pub = Pub.query.filter(Pub.recommend == 1).first()
-            pub_pic = pickler.flatten(pub)
-            resp_suc['pub_list'].append(pub_pic)
+            pub_only(pub, resp_suc)
         resp_suc['status'] = 0
         resp_suc['message'] = 'success'
         return resp_suc
