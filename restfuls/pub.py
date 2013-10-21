@@ -31,6 +31,26 @@ def to_city(obj_pic, county):
         obj_pic['city_county'] = county.name
 
 
+def to_pub_type(pub_types, obj_pic):
+    """
+        遍历一个酒吧对应多个类型
+    """
+    if pub_types:
+        obj_pic['type_name'] = ''
+        for pub_type in pub_types:
+            p_type = PubType.query.filter(PubType.id == pub_type.pub_type_id).first()
+            obj_pic['type_name'] = obj_pic['type_name'] + '/' + p_type.name
+
+
+def to_pub_type_only(pub_type, obj_pic):
+    """
+        遍历一个酒吧对应一个类型
+    """
+    if pub_type:
+        p_type = PubType.query.filter(PubType.id == pub_type.pub_type_id).first()
+        obj_pic['type_name'] = p_type.name
+
+
 def pub_list_picture(pub_pictures, resp_suc):
     """
     遍历多个图片
@@ -184,6 +204,13 @@ class PubDetail(restful.Resource):
             pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub_id).first()
             county = County.query.filter(County.id == pub.county_id).first()
             pub_pic = to_flatten(pub, pub_picture)
+            ptm_count = PubTypeMid.query.filter(PubTypeMid.pub_id == pub.id).count()
+            if ptm_count > 1:
+                pub_type_mids = PubTypeMid.query.filter(PubTypeMid.pub_id == pub.id).all()
+                to_pub_type(pub_type_mids, pub_pic)
+            else:
+                pub_type_mid = PubTypeMid.query.filter(PubTypeMid.pub_id == pub.id).first()
+                to_pub_type_only(pub_type_mid, pub_pic)
             to_city(pub_pic, county)
             resp_suc['pub_list'].append(pub_pic)
             pub_p_count = PubPicture.query.filter(PubPicture.pub_id == pub.id).count()
@@ -192,7 +219,7 @@ class PubDetail(restful.Resource):
                 pub_list_picture(pub_ps, resp_suc)
             else:
                 pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub_id).first()
-                pub_list_picture(pub_picture, resp_suc)
+                pub_picture_only(pub_picture, resp_suc)
             resp_suc['status'] = 0
             resp_suc['message'] = 'success'
             return resp_suc
