@@ -111,9 +111,9 @@ class PubType(Base):
     name = Column(String(16), nullable=False)
     code = Column(String(4), nullable=False)
 
-    def __init__(self, name, code):
-        self.name = name
-        self.code = code
+    def __init__(self, **kwargs):
+        self.name = kwargs.pop('name')
+        self.code = kwargs.pop('code')
 
     def __repr__(self):
         return '<PubType(name: %s, code: %s)>' % (self.name, self.code)
