@@ -115,6 +115,10 @@ class PubType(Base):
         self.name = kwargs.pop('name')
         self.code = kwargs.pop('code')
 
+    def update(self, **kwargs):
+        self.name = kwargs.pop('name')
+        self.code = kwargs.pop('code')
+
     def __repr__(self):
         return '<PubType(name: %s, code: %s)>' % (self.name, self.code)
 
