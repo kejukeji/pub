@@ -306,6 +306,7 @@ class PubSearchView(restful.Resource):
         else:
             pub = Pub.query.filter(Pub.recommend == 1).first()
             pub_only(pub, resp_suc)
+
         resp_suc['status'] = 0
         resp_suc['message'] = 'success'
         return resp_suc
