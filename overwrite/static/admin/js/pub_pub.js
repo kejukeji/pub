@@ -28,64 +28,72 @@ $(document).ready(function(){
 
 	add_select();
 
-	// 获取省的json
-	$.ajax({
-		type: "GET",
-		url: "http://127.0.0.1:5000/restful/admin/province",
-		dataType: "json",
-		async: false,
-		cache: false,
-		success: function(json) {
-			$("#province_id").empty();
-			$.each(json, function(i, value) {
-				$("#province_id").append($("<option>").text(value[1]).attr('value', value[0]));
-			});
-			$("#province_id").val(g_province_id);
-		},
-		error: function() {
-			alert("获取省份资料失败，请刷新网页！");
-		}
-	});
+    function init_loacation(init_province, init_city, init_county) {
+        // 获取省的json
+        $.ajax({
+            type: "GET",
+            url: "http://127.0.0.1:5000/restful/admin/province",
+            dataType: "json",
+            async: false,
+            cache: false,
+            success: function(json) {
+                $("#province_id").empty();
+                $.each(json, function(i, value) {
+                    $("#province_id").append($("<option>").text(value[1]).attr('value', value[0]));
+                });
+                $("#province_id").val(init_province);
+            },
+            error: function() {
+                alert("获取省份资料失败，请刷新网页！");
+            }
+        });
 
-	// 获取特定省下面的市区
-	$.ajax({
-		type: "GET",
-		url: "http://127.0.0.1:5000/restful/admin/city/" + g_province_id,
-		dataType: "json",
-		async: false,
-		cache: false,
-		success: function(json) {
-			$("#city_id").empty();
-			$.each(json, function(i, value) {
-				$("#city_id").append($("<option>").text(value[1]).attr('value', value[0]));
-			});
-			$("#city_id").val(g_city_id);
-			// 这里设置市改变之后，区县的option也跟着改变
-		},
-		error: function() {
-			alert("获取市资料失败，请刷新网页！");
-		}
-	});
+        // 获取特定省下面的市区
+        $.ajax({
+            type: "GET",
+            url: "http://127.0.0.1:5000/restful/admin/city/" + init_province,
+            dataType: "json",
+            async: false,
+            cache: false,
+            success: function(json) {
+                $("#city_id").empty();
+                $.each(json, function(i, value) {
+                    $("#city_id").append($("<option>").text(value[1]).attr('value', value[0]));
+                });
+                $("#city_id").val(init_city);
+                // 这里设置市改变之后，区县的option也跟着改变
+            },
+            error: function() {
+                alert("获取市资料失败，请刷新网页！");
+            }
+        });
 
-	// 获取特定市下面的区县
-	$.ajax({
-		type: "GET",
-		url: "http://127.0.0.1:5000/restful/admin/county/" + g_city_id,
-		dataType: "json",
-		async: false,
-		cache: false,
-		success: function(json) {
-			$("#county_id").empty();
-			$.each(json, function(i, value) {
-				$("#county_id").append($("<option>").text(value[1]).attr('value', value[0]));
-			});
-			$("#county_id").val(g_county_id);
-		},
-		error: function() {
-			alert("获取区县资料失败，请刷新页面！")
-		}
-	})
+        // 获取特定市下面的区县
+        $.ajax({
+            type: "GET",
+            url: "http://127.0.0.1:5000/restful/admin/county/" + init_city,
+            dataType: "json",
+            async: false,
+            cache: false,
+            success: function(json) {
+                $("#county_id").empty();
+                $.each(json, function(i, value) {
+                    $("#county_id").append($("<option>").text(value[1]).attr('value', value[0]));
+                });
+                $("#county_id").val(init_county);
+            },
+            error: function() {
+                alert("获取区县资料失败，请刷新页面！")
+            }
+        })
+    };
 
+    // 如果是新建的话，这几个id是不存在的，无法获取，使用默认参数
+    if (g_province_id != "") {
+        init_loacation(g_province_id, g_city_id, g_county_id);
+    } else {
+        init_loacation(9, 75, 794);
+    }
 
 	$("select").change(function() {
 		if (g_province_id != $("#province_id").val()) {
@@ -170,6 +178,42 @@ $(document).ready(function(){
 		alert("p+"+a1+"  c+"+a2+"  co+"+a3+"  p+"+a4+"  c+"+a4+"  co+"+a6);
 	};
 
+    function getPubType() {
+        var pub_type = ""
+
+        function gup( name ) {
+            name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+            var regexS = "[\\?&]"+name+"=([^&#]*)";
+            var regex = new RegExp( regexS );
+            var results = regex.exec( window.location.href );
+            if( results == null )
+                return "";
+            else
+                return results[1];
+        }
+        var id = gup("id"); // returns "7"
+
+        if (id) {
+            $.ajax({
+                type: "GET",
+                url: "http://127.0.0.1:5000/restful/admin/pub_type_list/" + id,
+                dataType: "json",
+                async: false,
+                cache: false,
+                success: function(json) {
+                    $.each(json, function(i, value) {
+                        pub_type = value;
+                    });
+                },
+                error: function() {
+                    alert("获取酒吧类型失败，请刷新页面！")
+                }
+            });
+        }
+
+        return pub_type.split(","); // ['1', '2']
+    }
+
 	// 获取酒吧类型
 	$.ajax({
 		type: "GET",
@@ -183,6 +227,7 @@ $(document).ready(function(){
 			$.each(json, function(i, value) {
 				$("#pub_type").append($('<option>').text(value[1]).attr('value', value[0]));
 			});
+            $("#pub_type").val(getPubType());
 			$("#pub_type").select2({
 				width: '220px'
 			});

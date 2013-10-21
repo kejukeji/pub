@@ -5,21 +5,18 @@
 """
 
 import logging
+import os
 
 from flask.ext.admin.contrib.sqla import ModelView
-from flask import flash
+from flask import flash, request
 from flask.ext.admin.babel import gettext
-from flask.ext.admin.contrib.sqla.ajax import QueryAjaxModelLoader
-from flask.ext.login import current_user
-from wtforms.fields import SelectField, StringField, BooleanField, SelectMultipleField, TextField
-from wtforms import Form
+from wtforms.fields import TextField
 from wtforms import validators
-from flask.ext.admin.contrib.sqla import form
-from flask.ext.admin import BaseView, expose
-from flask import render_template
 
-from models import Pub, PubType, Province
-from utils import form_to_dict
+from models import Pub, PubType, PubTypeMid, db, PubPicture
+from ex_var import PUB_PICTURE_BASE_PATH, PUB_PICTURE_UPLOAD_FOLDER, PUB_PICTURE_ALLOWED_EXTENSION
+from utils import time_file_name, allowed_file_extension, form_to_dict
+from werkzeug import secure_filename
 
 log = logging.getLogger("flask-admin.sqla")
 
@@ -102,8 +99,7 @@ class PubView(ModelView):
         form_class = super(PubView, self).scaffold_form()
         form_class.pub_type = TextField(label='酒吧类型', validators=[validators.input_required()],
                                         description=u'酒吧类型')
-        form_class.picture = TextField(label='酒吧图片', validators=[validators.input_required()],
-                                       description=u'酒吧图片，按control键可以选择多张图片')
+        form_class.picture = TextField(label='酒吧图片', description=u'酒吧图片，按control键可以选择多张图片')
         return form_class
 
     def __init__(self, db, **kwargs):
@@ -114,8 +110,14 @@ class PubView(ModelView):
 
         try:
             model = self.model(**form_to_dict(form))
-            self.session.add(model)
+            self.session.add(model)  # 保存酒吧基本资料
             self.session.commit()
+            pub_id = model.id  # 获取和保存酒吧id
+            pub_type_list = form.pub_type.data  # 获取酒吧的类型字符串
+            pub_pictures = request.files.getlist("picture")  # 获取酒吧图片
+            save_pub_type(pub_id, pub_type_list)
+            save_pub_pictures(pub_id, pub_pictures)
+
         except Exception, ex:
             flash(gettext('Failed to create model. %(error)s', error=str(ex)), 'error')
             logging.exception('Failed to create model')
@@ -131,6 +133,12 @@ class PubView(ModelView):
         try:
             model.update(**form_to_dict(form))
             self.session.commit()
+            pub_id = model.id  # 获取和保存酒吧id
+            pub_type_list = form.pub_type.data  # 获取酒吧的类型字符串
+            pub_pictures = request.files.getlist("picture")  # 获取酒吧图片
+            delete_pub_type(pub_id)
+            save_pub_type(pub_id, pub_type_list)
+            save_pub_pictures(pub_id, pub_pictures)
         except Exception, ex:
             flash(gettext('Failed to update model. %(error)s', error=str(ex)), 'error')
             logging.exception('Failed to update model')
@@ -165,3 +173,45 @@ class PubView(ModelView):
 
     #def is_accessible(self):  # 登陆管理功能先关闭，后期添加
     #    return current_user.is_admin()
+
+
+def save_pub_type(pub_id, types):
+    """保存酒吧类型"""
+
+    type_list = [int(i) for i in types.split(',')]
+    for pub_type in type_list:
+        db.add(PubTypeMid(pub_id, pub_type))
+
+    db.commit()
+
+
+def get_pub_type(pub_id):
+    """获取酒吧类型的字符串'1,2,3'"""
+
+    pub_type = PubTypeMid.query.filter(PubTypeMid.pub_id == pub_id).all()
+    type_string = ""
+    for i in pub_type:
+        type_string += str(i.pub_type_id)
+        type_string += ','
+
+    return type_string.rstrip(',')
+
+
+def delete_pub_type(pub_id):
+    """删除酒吧的类型"""
+    PubTypeMid.query.filter(PubTypeMid.pub_id == pub_id).delete()
+
+
+def save_pub_pictures(pub_id, pictures):
+    """保存酒吧图片"""
+    for picture in pictures:
+        if not allowed_file_extension(picture.filename, PUB_PICTURE_ALLOWED_EXTENSION):
+            continue
+        else:
+            upload_name = picture.filename
+            base_path = PUB_PICTURE_BASE_PATH
+            rel_path = PUB_PICTURE_UPLOAD_FOLDER
+            pic_name = time_file_name(secure_filename(upload_name), sign=pub_id)
+            db.add(PubPicture(pub_id, base_path, rel_path, pic_name, upload_name, cover=0))
+            picture.save(os.path.join(base_path+rel_path+'/', pic_name))
+            db.commit()

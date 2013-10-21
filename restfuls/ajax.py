@@ -3,7 +3,7 @@
 """后台管理需要的ajax文件生成"""
 
 from flask.ext import restful
-from models import PubType, Province, City, County
+from models import PubType, Province, City, County, PubTypeMid
 
 
 class GetPubType(restful.Resource):
@@ -60,3 +60,17 @@ class GetCounty(restful.Resource):
             json.append([county[i].id, county[i].name])
 
         return json
+
+
+class GetPubTypeList(restful.Resource):
+    """获取市的json"""
+
+    @staticmethod
+    def get(pub_id):
+        pub_type = PubTypeMid.query.filter(PubTypeMid.pub_id == pub_id).all()
+        type_string = ""
+        for i in pub_type:
+            type_string += str(i.pub_type_id)
+            type_string += ','
+
+        return [type_string.rstrip(',')]
