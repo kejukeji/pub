@@ -372,3 +372,33 @@ class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True
             user_info = UserInfoDb.query.filter(UserInfoDb.user_id == user_id).first()
 
             return {'user': pickler.flatten(user), 'user_info': pickler.flatten(user_info), 'status': 0}
+
+
+class UserOpenIdCheck(restful.Resource):
+    """
+        用户第三方登录判断
+    """
+    @staticmethod
+    def post():
+        """
+            所需参数:
+                1.login_type: 登录类型 0（注册用户），1（微博用户），2（QQ用户）
+                2.nick_name: 用户昵称
+        """
+        parser = reqparse.RequestParser()
+        parser.add_argument('login_type', type=str, required=True, help=u'缺少参数 login_type必须为 0（注册用户），1（微博用户），2（QQ用户）')
+        parser.add_argument('open_id', type=str, required=True, help=u'缺少参数 open_id必须唯一')
+
+        args = parser.parse_args()
+
+        resp_suc = {}
+        login_type = args['login_type']
+        open_id = args['open_id']
+        user = User.query.filter(User.login_type == login_type, User.open_id == open_id).first()
+        if user:
+            resp_suc['status'] = 0
+            resp_suc['message'] = 'again'
+        else:
+            resp_suc['status'] = 1
+            resp_suc['message'] = '填写nick_name'
+        return resp_suc
