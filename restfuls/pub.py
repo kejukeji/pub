@@ -77,7 +77,8 @@ def pub_list(pubs, resp_suc):
         pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub.id).first()
         pub_pic = to_flatten(pub, pub_picture)
         county = County.query.filter(County.id == pub.county_id).first()
-        pub_pic['city_county'] = county.name
+        if county:
+            pub_pic['city_county'] = county.name
         resp_suc['pub_list'].append(pub_pic)
 
 
