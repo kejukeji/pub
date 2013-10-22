@@ -127,6 +127,9 @@ class PubView(ModelView):
 
     form_ajax_refs = None
 
+    edit_template = 'admin_pub/edit.html'
+    create_template = 'admin_pub/create.html'
+
     def scaffold_form(self):
         form_class = super(PubView, self).scaffold_form()
         form_class.pub_type = TextField(label='酒吧类型', validators=[validators.input_required()],
