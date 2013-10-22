@@ -234,6 +234,7 @@ class PubDetail(restful.Resource):
         resp_suc['user_list'] = []
         resp_suc['pub_list'] = []
         pub_id = int(args['pub_id'])
+        
         user_id = args['user_id']
         if pub_id:
             pub = Pub.query.filter(Pub.id == pub_id).first()
