@@ -23,6 +23,20 @@ def to_flatten(obj, obj2):
     return obj_pic
 
 
+def to_pub_longitude_latitude(pub, picture):
+    """
+        经度纬度
+    """
+    pub_pic = pickler.flatten(pub)
+    if picture:
+        pub_pic['pic_path'] = picture.rel_path + picture.pic_name
+    pub_pic.pop('longitude')
+    pub_pic.pop('latitude')
+    pub_pic['longitude'] = str(pub.longitude)
+    pub_pic['latitude'] = str(pub.latitude)
+    return pub_pic
+
+
 def to_city(obj_pic, county):
     """
         所在城市
@@ -79,6 +93,10 @@ def pub_list(pubs, resp_suc):
         county = County.query.filter(County.id == pub.county_id).first()
         if county:
             pub_pic['city_county'] = county.name
+        pub_pic.pop('longitude')
+        pub_pic.pop('latitude')
+        pub_pic['latitude'] = str(pub.latitude)
+        pub_pic['longitude'] = str(pub.longitude)
         resp_suc['pub_list'].append(pub_pic)
 
 
@@ -92,6 +110,10 @@ def pub_only(pub, resp_suc):
         county = County.query.filter(County.id == pub.county_id).first()
         if county:
             pub_pic['city_county'] = county.name
+        pub_pic.pop('longitude')
+        pub_pic.pop('latitude')
+        pub_pic['latitude'] = str(pub.latitude)
+        pub_pic['longitude'] = str(pub.longitude)
         resp_suc['pub_list'].append(pub_pic)
 
 
@@ -217,7 +239,7 @@ class PubDetail(restful.Resource):
             pub = Pub.query.filter(Pub.id == pub_id).first()
             pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub_id).first()
             county = County.query.filter(County.id == pub.county_id).first()
-            pub_pic = to_flatten(pub, pub_picture)
+            pub_pic = to_pub_longitude_latitude(pub, pub_picture)
             ptm_count = PubTypeMid.query.filter(PubTypeMid.pub_id == pub.id).count()
             if ptm_count > 1:
                 pub_type_mids = PubTypeMid.query.filter(PubTypeMid.pub_id == pub.id).all()
