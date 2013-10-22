@@ -175,12 +175,12 @@ class UserMessage(restful.Resource):
         resp_suc = {}
         resp_suc['list'] = []
         if user_id:
-            message_count = Message.query.filter(Message.receiver_id == user_id).count()
+            message_count = Message.query.filter(Message.receiver_id == user_id, Message.view == 0).count()
             if message_count > 1:
-                messages = Message.query.filter(Message.receiver_id == user_id)
+                messages = Message.query.filter(Message.receiver_id == user_id, Message.view == 0)
                 traverse_messages(messages, resp_suc)
             else:
-                message = Message.query.filter(Message.receiver_id == user_id).first()
+                message = Message.query.filter(Message.receiver_id == user_id, Message.view == 0).first()
                 traverse_message(message, resp_suc)
             resp_suc['status'] = 0
             resp_suc['message'] = 'success'
@@ -189,3 +189,30 @@ class UserMessage(restful.Resource):
             resp_suc['status'] = 1
             resp_suc['message'] = 'error'
             return resp_suc
+
+
+class UserMessageUpdate(restful.Resource):
+    """
+        用户看过私信修改view值
+    """
+    @staticmethod
+    def get():
+        parser = reqparse.RequestParser()
+        parser.add_argument('message_id', type=str, required=True, help=u'详细message_id必须。')
+
+        args = parser.parse_args()
+        message_id = args['message_id']
+        message = Message.query.filter(Message.id == message_id).first()
+        message.view = 1
+        resp_suc = []
+
+        try:
+            db.update(message)
+            db.commit()
+            resp_suc['status'] = 0
+            resp_suc['message'] = 'success'
+        except:
+            resp_suc['status'] = 1
+            resp_suc['message'] = '未知错误'
+
+
