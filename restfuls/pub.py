@@ -182,8 +182,9 @@ class PubListDetail(restful.Resource):
                         pub_only(pub, resp_suc)
             else:
                 pub_type = PubTypeMid.query.filter(PubTypeMid.pub_type_id == int(args['type_id'])).first()
-                pub = Pub.query.filter(Pub.id == pub_type.pub_id).first()
-                pub_only(pub, resp_suc)
+                if pub_type:
+                    pub = Pub.query.filter(Pub.id == pub_type.pub_id).first()
+                    pub_only(pub, resp_suc)
             resp_suc['status'] = 0
             return resp_suc
         else:
