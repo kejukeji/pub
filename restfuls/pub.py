@@ -2,7 +2,7 @@
 #!/usr/bin/python
 
 from flask.ext import restful
-from models import Pub, PubType, PubTypeMid, PubPicture, engine, County
+from models import Pub, PubType, PubTypeMid, PubPicture, engine, County, View, UserInfo, User, db
 from utils import pickler, page_utils
 from flask.ext.restful import reqparse
 from sqlalchemy.orm import Session, sessionmaker
@@ -202,14 +202,17 @@ class PubDetail(restful.Resource):
         """
         所需参数:
             pub_id:必传，用户所选中的酒吧id
+            user_id: 必传，登录用户id
         """
         parser = reqparse.RequestParser()
         parser.add_argument('pub_id', type=str, required=True, help=u'酒吧pub_id必须。')
+        parser.add_argument('user_id', type=str, required=True, help=u'登录用户id必须。')
         args = parser.parse_args()
         resp_suc = {}
-        resp_suc['picture_list'] = []
+        resp_suc['user_list'] = []
         resp_suc['pub_list'] = []
         pub_id = int(args['pub_id'])
+        user_id = args['user_id']
         if pub_id:
             pub = Pub.query.filter(Pub.id == pub_id).first()
             pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub_id).first()
@@ -225,12 +228,20 @@ class PubDetail(restful.Resource):
             to_city(pub_pic, county)
             resp_suc['pub_list'].append(pub_pic)
             pub_p_count = PubPicture.query.filter(PubPicture.pub_id == pub.id).count()
-            if pub_p_count > 1:
-                pub_ps = PubPicture.query.filter(PubPicture.pub_id == pub_id)
-                pub_list_picture(pub_ps, resp_suc)
+            view_check = View.query.filter(View.user_id == user_id, View.pub_id == pub_id).first()
+            if view_check:
+                view_check.view_number = view_check.view_number + 1
+                db.commit()
             else:
-                pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub_id).first()
-                pub_picture_only(pub_picture, resp_suc)
+                view = View(user_id, pub_id, 1)
+                db.add(view)
+                db.commit()
+            result = session.query(UserInfo).\
+                join(User).\
+                join(View).\
+                filter(View.user_id == user_id, View.pub_id == pub_id).order_by(View.time.desc()).first()
+            result_pic = to_flatten(result, result)
+            resp_suc['user_list'].append(result_pic)
             resp_suc['status'] = 0
             resp_suc['message'] = 'success'
             return resp_suc
