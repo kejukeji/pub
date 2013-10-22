@@ -2,11 +2,6 @@
 // 相关的model的create.html和update.html也改变了，需要ln导入
 
 $(document).ready(function(){
-	// 检测是不是pubview页面，现在的代码更难看了
-	if (!window.location.href.match("/admin/pubview/")) {
-		return false;
-	};
-
 	function add_select() {
 		g_city_id = $("#city_id").val();
 		g_province_id = $("#province_id").val();
