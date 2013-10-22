@@ -39,3 +39,11 @@ def time_diff(dt):
         return str(s / 60) + " 分钟前"
     else:  # use "just now"
         return "刚刚"
+
+
+def page_utils(count, page, per_page=10):
+    min = 1
+    max = count / per_page if count % per_page == 0 else count / per_page + 1
+    page = page if ( page >= min and page <= max  ) else 1
+
+    return page, per_page
