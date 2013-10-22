@@ -3,7 +3,7 @@
 
 from flask.ext import restful
 from models import Pub, PubType, PubTypeMid, PubPicture, engine, County
-from utils import pickler
+from utils import pickler, page_utils
 from flask.ext.restful import reqparse
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -127,10 +127,12 @@ class PubListDetail(restful.Resource):
         """
         需要分类的id
         参数:
-            type_id
+            type_id:酒吧类型type_id
+            page: 酒吧分页
         """
         parser = reqparse.RequestParser()
         parser.add_argument('type_id', type=str, required=True, help=u'酒吧类型type_id必须。')
+        parser.add_argument('page', type=str, required=True, help=u'分页page必须。')
 
         args = parser.parse_args()
         resp_suc = {}
@@ -139,6 +141,7 @@ class PubListDetail(restful.Resource):
         Session = sessionmaker()
         Session.configure(bind=engine)
         session = Session()
+        page = args['page']
         if args['type_id']:
             result_count = session.query(PubPicture).\
                 join(Pub).\
@@ -164,14 +167,15 @@ class PubListDetail(restful.Resource):
                 if result:
                     result_pic = to_flatten(result, result)
                     resp_suc['hot_list'].append(result_pic)
-
             pub_type_count = PubTypeMid.query.filter(PubTypeMid.pub_type_id == int(args['type_id'])).count()
             if pub_type_count > 1:
-                pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == int(args['type_id']))
+                page, per_page = page_utils(pub_type_count, page)
+                pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == int(args['type_id']))[per_page*(page-1):per_page*page]
                 for pub_type in pub_types:
                     pub_count = Pub.query.filter(Pub.id == pub_type.pub_id).count()
+
                     if pub_count > 1:
-                        pubs = Pub.query.filter(Pub.id == pub_type.pub_id)
+                        pubs = Pub.query.filter(Pub.id == pub_type.pub_id)[per_page*(page-1):per_page*page]
                         pub_list(pubs, resp_suc)
                     else:
                         pub = Pub.query.filter(Pub.id == pub_type.pub_id).first()
