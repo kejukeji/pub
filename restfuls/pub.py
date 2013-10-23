@@ -17,9 +17,12 @@ def to_flatten(obj, obj2):
     """
     转换json对象
     """
-    obj_pic = pickler.flatten(obj)
+    obj_pic = None
+    if obj:
+        obj_pic = pickler.flatten(obj)
     if obj2:
-        obj_pic['pic_path'] = obj2.rel_path + obj2.pic_name
+        if obj2.rel_path and obj2.pic_name:
+            obj_pic['pic_path'] = obj2.rel_path + obj2.pic_name
     return obj_pic
 
 
@@ -256,9 +259,11 @@ class PubDetail(restful.Resource):
                 view_check.view_number = view_check.view_number + 1
                 db.commit()
             else:
-                view = View(user_id, pub_id, 1)
-                db.add(view)
-                db.commit()
+                user = User.query.filter(User.id == user_id).first()
+                if user:
+                    view = View(user_id, pub_id, 1)
+                    db.add(view)
+                    db.commit()
             result = session.query(UserInfo).\
                 join(User).\
                 join(View).\
