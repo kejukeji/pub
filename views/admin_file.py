@@ -8,13 +8,18 @@ import shutil
 from operator import itemgetter
 
 from werkzeug import secure_filename
+from flask.ext.admin.actions import action
+from flask.ext.admin.babel import gettext, lazy_gettext
 from flask import flash, url_for, redirect, request
 from flask.ext.admin import helpers
 from flask.ext.admin._compat import as_unicode
 from flask.ext.admin.base import expose
-from flask.ext.admin.babel import gettext
 from flask.ext.admin.contrib.fileadmin import FileAdmin
 from flask.ext.admin.contrib.fileadmin import UploadForm
+
+from models import PubPicture, db
+from utils import allowed_file_extension, time_file_name
+from ex_var import PUB_PICTURE_BASE_PATH, PUB_PICTURE_UPLOAD_FOLDER, PUB_PICTURE_ALLOWED_EXTENSION
 
 
 class PubFile(FileAdmin):
@@ -27,7 +32,7 @@ class PubFile(FileAdmin):
     can_rename = False
 
 
-class PubPicture(FileAdmin):  # todo-lyw代码进一步完善中
+class PubPictureFile(FileAdmin):  # todo-lyw代码进一步完善中
     """酒吧图片的后台管理"""
     can_upload = True
     can_delete = True
@@ -37,28 +42,11 @@ class PubPicture(FileAdmin):  # todo-lyw代码进一步完善中
 
     allowed_extensions = ('jpg', 'gif', 'png', 'jpeg')
 
+    list_template = 'admin_pub/pub_picture_list.html'
+
     def __init__(self, base_path, base_url,
                  name=None, category=None, endpoint=None, url=None,
                  verify_path=True):
-        """
-            Constructor.
-
-            :param base_path:
-                Base file storage location
-            :param base_url:
-                Base URL for the files
-            :param name:
-                Name of this view. If not provided, will default to the class name.
-            :param category:
-                View category
-            :param endpoint:
-                Endpoint name for the view
-            :param url:
-                URL for view
-            :param verify_path:
-                Verify if path exists. If set to `True` and path does not exist
-                will raise an exception.
-        """
         self.base_path = as_unicode(base_path)
         self.base_url = base_url
 
@@ -92,7 +80,8 @@ class PubPicture(FileAdmin):  # todo-lyw代码进一步完善中
 
     def on_file_delete(self, full_path, filename):
         """定义图片删除之后的行为"""
-        pass
+        PubPicture.query.filter(PubPicture.pic_name == filename).delete()
+        db.commit()
 
     @expose('/')
     @expose('/b/<path:path>')
@@ -113,20 +102,10 @@ class PubPicture(FileAdmin):  # todo-lyw代码进一步完善中
         # Get directory listing
         items = []
 
-        # Parent directory
-        if directory != base_path:
-            parent_path = op.normpath(op.join(path, '..'))
-            if parent_path == '.':
-                parent_path = None
-
-            items.append(('..', parent_path, True, 0))
-
-        for f in os.listdir(directory):
-            fp = op.join(directory, f)
-            rel_path = op.join(path, f)
-
-            if self.is_accessible_path(rel_path):
-                items.append((f, rel_path, op.isdir(fp), op.getsize(fp)))
+        pub_id = request.args.get("pub_id", None)
+        if pub_id:
+            for picture in PubPicture.query.filter(PubPicture.pub_id == pub_id).all():
+                items.append(get_picture(path, directory, picture))
 
         # Sort by name
         items.sort(key=itemgetter(0))
@@ -175,17 +154,25 @@ class PubPicture(FileAdmin):  # todo-lyw代码进一步完善中
 
         form = UploadForm(self)
         if helpers.validate_form_on_submit(form):
-            filename = op.join(directory,
-                               secure_filename(form.upload.data.filename))
+            pub_id = request.args.get('pub_id')
+            if not pub_id:
+                flash(gettext('这里无法上传图片，修改酒吧即可看到图片管理按钮。'), 'error')
+                return redirect("/admin/pubpicturefile")  # todo-lyw ugly
+            upload_name = secure_filename(form.upload.data.filename)
+            pic_name = time_file_name(upload_name, sign=pub_id)
+            save_path_name = op.join(directory, pic_name)
 
-            if op.exists(filename):
-                flash(gettext('File "%(name)s" already exists.', name=filename),
+            if not allowed_file_extension(upload_name, PUB_PICTURE_ALLOWED_EXTENSION):
+                flash(gettext('File "%(name)s" must be a picture!', name=pic_name),
                       'error')
             else:
                 try:
-                    self.save_file(filename, form.upload.data)
-                    self.on_file_upload(directory, path, filename)
-                    return redirect(self._get_dir_url('.index', path))
+                    self.save_file(save_path_name, form.upload.data)
+                    db.add(PubPicture(pub_id, PUB_PICTURE_BASE_PATH, PUB_PICTURE_UPLOAD_FOLDER, pic_name,
+                                      upload_name, cover=0))
+                    db.commit()
+                    self.on_file_upload(directory, path, pic_name)
+                    return redirect('/admin/pubpicturefile/?pub_id=' + str(request.args.get('pub_id')))  # todo-lyw ugly
                 except Exception as ex:
                     flash(gettext('Failed to save file: %(error)s', error=ex))
 
@@ -203,8 +190,9 @@ class PubPicture(FileAdmin):  # todo-lyw代码进一步完善中
 
         # Get path and verify if it is valid
         base_path, full_path, path = self._normalize_path(path)
+        pub_id = PubPicture.query.filter(PubPicture.pic_name == path).first().pub_id
 
-        return_url = self._get_dir_url('.index', op.dirname(path))
+        return_url = self._get_dir_url('.index', op.dirname(path)) + "?pub_id=" + str(pub_id)  # todo-lyw ugly
 
         if not self.can_delete:
             flash(gettext('Deletion is disabled.'))
@@ -234,3 +222,11 @@ class PubPicture(FileAdmin):  # todo-lyw代码进一步完善中
                 flash(gettext('Failed to delete file: %(name)s', name=ex), 'error')
 
         return redirect(return_url)
+
+
+def get_picture(path, directory, picture):
+    """获取一个图片相关的tuple用于添加需要显示的图片"""
+    fp = op.join(directory, picture.pic_name)
+    rel_path = op.join(path, picture.pic_name)
+
+    return picture.pic_name, rel_path, op.isdir(fp), op.getsize(fp)

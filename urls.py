@@ -11,7 +11,7 @@ from flask.ext import restful
 
 from pub_app import app
 from models import db
-from views import UserView, PubTypeView, PubView, PubFile, UserMessageView, UserCollectView
+from views import UserView, PubTypeView, PubView, PubFile, UserMessageView, UserCollectView, PubPictureFile
 from login import login_manager, login, logout
 from restfuls import (UserInfo, UserLogin, UserRegister, PubGetType, PubListDetail, PubDetail, UserCollect,
                       PubCollect, PubPictureDetail, PubSearch, GetPubType, GetProvince, GetCity, GetCounty,
@@ -36,7 +36,7 @@ admin.add_view(PubView(db, name=u'酒吧详情', category=u'酒吧'))
 file_path = os.path.join(os.path.dirname(__file__), 'static')
 admin.add_view(PubFile(file_path, '/static/', name='文件'))
 picture_path = os.path.join(os.path.dirname(__file__), 'static/system/pub_picture')
-#admin.add_view(PubPicture(picture_path, '/static/system/pub_picture/', name='图片'))  # todo-lyw 后期开启
+admin.add_view(PubPictureFile(picture_path, '/static/system/pub_picture/', name='酒吧图片', category=u'酒吧'))  # todo-lyw 后期开启
 
 # API接口
 api = restful.Api(app)
