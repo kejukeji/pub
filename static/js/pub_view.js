@@ -23,11 +23,23 @@ $(document).ready(function(){
 
 	add_select();
 
+    // 定义获取当前url属性的函数
+    function gup( name ) {
+        name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+        var regexS = "[\\?&]"+name+"=([^&#]*)";
+        var regex = new RegExp( regexS );
+        var results = regex.exec( window.location.href );
+        if( results == null )
+            return "";
+        else
+            return results[1];
+    }
+
     function init_loacation(init_province, init_city, init_county) {
         // 获取省的json
         $.ajax({
             type: "GET",
-            url: "http://www.maobake.com/restful/admin/province",
+            url: "/restful/admin/province",
             dataType: "json",
             async: false,
             cache: false,
@@ -46,7 +58,7 @@ $(document).ready(function(){
         // 获取特定省下面的市区
         $.ajax({
             type: "GET",
-            url: "http://www.maobake.com/restful/admin/city/" + init_province,
+            url: "/restful/admin/city/" + init_province,
             dataType: "json",
             async: false,
             cache: false,
@@ -66,7 +78,7 @@ $(document).ready(function(){
         // 获取特定市下面的区县
         $.ajax({
             type: "GET",
-            url: "http://www.maobake.com/restful/admin/county/" + init_city,
+            url: "/restful/admin/county/" + init_city,
             dataType: "json",
             async: false,
             cache: false,
@@ -90,6 +102,12 @@ $(document).ready(function(){
         init_loacation(9, 75, 794);
     }
 
+    // 如果不是新建的话，添加一个图片管理的东西，到哪里去
+    if (g_province_id != "") {
+        var manager_link = $.parseHTML("<p><a class='btn btn-danger' href='/admin/pubpicturefile?pub_id="+gup('id')+"'>图片管理</a></p>");
+        $("#picture").after(manager_link)
+    }
+
 	$("select").change(function() {
 		if (g_province_id != $("#province_id").val()) {
 			province_change();
@@ -107,7 +125,7 @@ $(document).ready(function(){
 	    // 获取特定省下面的市区
 	    $.ajax({
 	         type: "GET",
-	         url: "http://www.maobake.com/restful/admin/city/" + g_province_id,
+	         url: "/restful/admin/city/" + g_province_id,
 	         dataType: "json",
 	         async: false,
 	         cache: false,
@@ -126,7 +144,7 @@ $(document).ready(function(){
 
 	    $.ajax({
 	         type: "GET",
-	         url: "http://www.maobake.com/restful/admin/county/" + g_city_id,
+	         url: "/restful/admin/county/" + g_city_id,
 	         dataType: "json",
 	         async: false,
 	         cache: false,
@@ -151,7 +169,7 @@ $(document).ready(function(){
 	     // 获取特定市下面的区县
 	    $.ajax({
 	         type: "GET",
-	         url: "http://www.maobake.com/restful/admin/county/" + g_city_id,
+	         url: "/restful/admin/county/" + g_city_id,
 	         dataType: "json",
 	         async: false,
 	         cache: false,
@@ -175,23 +193,12 @@ $(document).ready(function(){
 
     function getPubType() {
         var pub_type = ""
-
-        function gup( name ) {
-            name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
-            var regexS = "[\\?&]"+name+"=([^&#]*)";
-            var regex = new RegExp( regexS );
-            var results = regex.exec( window.location.href );
-            if( results == null )
-                return "";
-            else
-                return results[1];
-        }
         var id = gup("id"); // returns "7"
 
         if (id) {
             $.ajax({
                 type: "GET",
-                url: "http://www.maobake.com/restful/admin/pub_type_list/" + id,
+                url: "/restful/admin/pub_type_list/" + id,
                 dataType: "json",
                 async: false,
                 cache: false,
@@ -212,7 +219,7 @@ $(document).ready(function(){
 	// 获取酒吧类型
 	$.ajax({
 		type: "GET",
-		url: "http://www.maobake.com/restful/admin/pub_type",
+		url: "/restful/admin/pub_type",
 		dataType: "json",
 		async: false,
 		cache: false,
