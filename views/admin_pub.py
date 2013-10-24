@@ -232,7 +232,7 @@ class PubView(ModelView):
 
         return self.render(self.create_template,
                            form=form,
-                           form_widget_args=self.form_widget_args,
+                           form_widget_args={},  # todo-lyw {}
                            return_url=return_url)
 
     @expose('/edit/', methods=('GET', 'POST'))
@@ -267,7 +267,7 @@ class PubView(ModelView):
         return self.render(self.edit_template,
                            model=model,
                            form=form,
-                           form_widget_args=self.form_widget_args,
+                           form_widget_args={},  # todo-lyw {}
                            return_url=return_url)
 
     #def is_accessible(self):  # 登陆管理功能先关闭，后期添加
