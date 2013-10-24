@@ -8,10 +8,13 @@ import logging
 import os
 
 from flask.ext.admin.contrib.sqla import ModelView
-from flask import flash, request
+from flask import flash, request, url_for, redirect
 from flask.ext.admin.babel import gettext
 from wtforms.fields import TextField
 from wtforms import validators
+from flask.ext.admin.base import expose
+from flask.ext.admin.helpers import validate_form_on_submit
+from flask.ext.admin.model.helpers import get_mdict_item_or_list
 
 from models import Pub, PubType, PubTypeMid, db, PubPicture
 from ex_var import PUB_PICTURE_BASE_PATH, PUB_PICTURE_UPLOAD_FOLDER, PUB_PICTURE_ALLOWED_EXTENSION
@@ -193,6 +196,7 @@ class PubView(ModelView):
         """
         try:
             self.on_model_delete(model)
+            delete_pub_picture(model.id)
             self.session.flush()
             self.session.delete(model)
             self.session.commit()
@@ -205,6 +209,66 @@ class PubView(ModelView):
             log.exception('Failed to delete model')
             self.session.rollback()
             return False
+
+    @expose('/new/', methods=('GET', 'POST'))
+    def create_view(self):
+        """
+            Create model view
+        """
+        return_url = request.args.get('url') or url_for('.index_view')
+
+        if not self.can_create:
+            return redirect(return_url)
+
+        form = self.create_form()
+
+        if validate_form_on_submit(form):
+            if self.create_model(form):
+                if '_add_another' in request.form:
+                    flash(gettext('Model was successfully created.'))
+                    return redirect(url_for('.create_view', url=return_url))
+                else:
+                    return redirect(return_url)
+
+        return self.render(self.create_template,
+                           form=form,
+                           form_widget_args=self.form_widget_args,
+                           return_url=return_url)
+
+    @expose('/edit/', methods=('GET', 'POST'))
+    def edit_view(self):
+        """
+            Edit model view
+        """
+        return_url = request.args.get('url') or url_for('.index_view')
+
+        if not self.can_edit:
+            return redirect(return_url)
+
+        id = get_mdict_item_or_list(request.args, 'id')
+        if id is None:
+            return redirect(return_url)
+
+        model = self.get_one(id)
+
+        if model is None:
+            return redirect(return_url)
+
+        form = self.edit_form(obj=model)
+
+        if validate_form_on_submit(form):
+            if self.update_model(form, model):
+                if '_continue_editing' in request.form:
+                    flash(gettext('Model was successfully saved.'))
+                    return redirect(request.full_path)
+                else:
+                    return redirect(return_url)
+
+        return self.render(self.edit_template,
+                           model=model,
+                           form=form,
+                           form_widget_args=self.form_widget_args,
+                           return_url=return_url)
 
     #def is_accessible(self):  # 登陆管理功能先关闭，后期添加
     #    return current_user.is_admin()
@@ -250,3 +314,12 @@ def save_pub_pictures(pub_id, pictures):
             db.add(PubPicture(pub_id, base_path, rel_path, pic_name, upload_name, cover=0))
             picture.save(os.path.join(base_path+rel_path+'/', pic_name))
             db.commit()
+
+
+def delete_pub_picture(id):
+    pictures = PubPicture.query.filter(PubPicture.pub_id == id).all()
+    for picture in pictures:
+        try:
+            os.remove(os.path.join(picture.base_path+picture.rel_path+'/', picture.pic_name))
+        except:
+            pass
