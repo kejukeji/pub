@@ -25,10 +25,10 @@ from ex_var import PUB_PICTURE_BASE_PATH, PUB_PICTURE_UPLOAD_FOLDER, PUB_PICTURE
 class PubFile(FileAdmin):
     """酒吧后台文件管理"""
 
-    can_upload = True
-    can_delete = True
+    can_upload = False
+    can_delete = False
     can_delete_dirs = False
-    can_mkdir = True
+    can_mkdir = False
     can_rename = False
 
 
