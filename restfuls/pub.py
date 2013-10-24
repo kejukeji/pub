@@ -247,7 +247,7 @@ class PubDetail(restful.Resource):
         parser.add_argument('user_id', type=str, required=False, help=u'登录用户id必须。')
         args = parser.parse_args()
         resp_suc = {}
-        resp_suc['user_list'] = []
+        resp_suc['picture_list'] = []
         resp_suc['pub_list'] = []
         pub_id = int(args['pub_id'])
 
@@ -277,12 +277,23 @@ class PubDetail(restful.Resource):
                     view = View(user_id, pub_id, 1)
                     db.add(view)
                     db.commit()
-            result = session.query(UserInfo).\
+            result_count = session.query(UserInfo).\
                 join(User).\
                 join(View).\
-                filter(View.user_id == user_id, View.pub_id == pub_id).order_by(View.time.desc()).first()
-            result_pic = to_flatten(result, result)
-            resp_suc['user_list'].append(result_pic)
+                filter(View.pub_id == pub_id).order_by(View.time.desc()).count()
+            if result_count > 1:
+                results = session.query(UserInfo). \
+                    join(User). \
+                    join(View). \
+                    filter(View.pub_id == pub_id).order_by(View.time.desc())[:5]
+                pub_list_picture(results, resp_suc)
+            else:
+                result = session.query(UserInfo). \
+                    join(User). \
+                    join(View). \
+                    filter(View.pub_id == pub_id).order_by(View.time.desc()).first()
+                pub_picture_only(result, resp_suc)
+
             resp_suc['status'] = 0
             resp_suc['message'] = 'success'
             return resp_suc
