@@ -106,6 +106,7 @@ $(document).ready(function(){
     if (g_province_id != "") {
         var manager_link = $.parseHTML("<p><a class='btn btn-danger' href='/admin/pubpicturefile?pub_id="+gup('id')+"'>图片管理</a></p>");
         $("#picture").after(manager_link)
+        $("#picture").remove()  // 去掉图片上传
     }
 
 	$("select").change(function() {
