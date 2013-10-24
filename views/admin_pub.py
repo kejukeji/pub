@@ -8,13 +8,10 @@ import logging
 import os
 
 from flask.ext.admin.contrib.sqla import ModelView
-from flask import flash, request, url_for, redirect
+from flask import flash, request
 from flask.ext.admin.babel import gettext
 from wtforms.fields import TextField
 from wtforms import validators
-from flask.ext.admin.base import expose
-from flask.ext.admin.helpers import validate_form_on_submit
-from flask.ext.admin.model.helpers import get_mdict_item_or_list
 
 from models import Pub, PubType, PubTypeMid, db, PubPicture
 from ex_var import PUB_PICTURE_BASE_PATH, PUB_PICTURE_UPLOAD_FOLDER, PUB_PICTURE_ALLOWED_EXTENSION
