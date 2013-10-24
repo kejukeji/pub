@@ -29,6 +29,19 @@ def to_flatten(obj, obj2):
 def to_pub_longitude_latitude(pub, picture):
     """
         经度纬度
+        def calc_distance( l1,  n1 ,   l2,  n2 ):
+            import math
+            lat1 ,longt1 ,lat2 ,longt2 = float(l1),float(n1),float(l2),float(n2)
+
+            PI = math.pi # 圆周率
+            R = 6371229; #地球的半径
+
+            x = (longt2 - longt1) * PI * R * math.cos(((lat1 + lat2) / 2) * PI / 180) / 180;
+            y = (lat2 - lat1) * PI * R / 180;
+
+            distance = math.sqrt(math.pow(x, 2) + math.pow(y,2))  #两者的平方和开根号
+
+            return distance
     """
     pub_pic = pickler.flatten(pub)
     if picture:
@@ -231,7 +244,7 @@ class PubDetail(restful.Resource):
         """
         parser = reqparse.RequestParser()
         parser.add_argument('pub_id', type=str, required=True, help=u'酒吧pub_id必须。')
-        parser.add_argument('user_id', type=str, required=True, help=u'登录用户id必须。')
+        parser.add_argument('user_id', type=str, required=False, help=u'登录用户id必须。')
         args = parser.parse_args()
         resp_suc = {}
         resp_suc['user_list'] = []
