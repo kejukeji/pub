@@ -9,7 +9,7 @@
 """
 
 from sqlalchemy import Column, Integer, String, Boolean, DATETIME, ForeignKey
-
+from sqlalchemy.orm import relationship
 from .database import Base
 from utils import todayfstr
 from .pub import Pub
@@ -33,7 +33,9 @@ class Collect(Base):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey(User.id, ondelete='cascade', onupdate='cascade'), nullable=False)
+    user = relationship(User)
     pub_id = Column(Integer, ForeignKey(Pub.id, ondelete='cascade', onupdate='cascade'), nullable=False)
+    pub = relationship(Pub)
     time = Column(DATETIME, nullable=False, server_default=None)
 
     def __init__(self, **kwargs):
