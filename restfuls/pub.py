@@ -347,12 +347,14 @@ class PubSearch(restful.Resource):
         """
         parser = reqparse.RequestParser()
         parser.add_argument('content', type=str, required=True, help=u'content必须，搜索酒吧')
-        parser.add_argument('type_id', type=str, required=False, help=u'type_id必须，酒吧类型')
+        parser.add_argument('type_id', type=str, required=False)
+        parser.add_argument('page', type=str, required=True, help=u'分页page必须.')
 
         args = parser.parse_args()
         resp_suc = {}
         resp_suc['pub_list'] = []
         pub_pic = None
+        page = args['page']
         if args['content']:
             content = str(args['content'])
             s = "%" + content + "%"
@@ -360,10 +362,11 @@ class PubSearch(restful.Resource):
                 pub_count = session.query(Pub).\
                     join(PubTypeMid).\
                     filter(Pub.name.like(s), PubTypeMid.pub_type_id == int(args['type_id'])).count()
+                page, per_page = page_utils(pub_count, page)
                 if pub_count > 1:
                     pubs = session.query(Pub). \
                         join(PubTypeMid). \
-                        filter(Pub.name.like(s), PubTypeMid.pub_type_id == int(args['type_id']))
+                        filter(Pub.name.like(s), PubTypeMid.pub_type_id == int(args['type_id']))[per_page*(page-1):per_page*page]
                     pub_list(pubs, resp_suc)
                 else:
                     pub = session.query(Pub). \
@@ -372,8 +375,9 @@ class PubSearch(restful.Resource):
                     pub_only(pub, resp_suc)
             else:
                 pub_count = Pub.query.filter(Pub.name.like(s)).count()
+                page, per_page = page_utils(pub_count, page)
                 if pub_count > 1:
-                    pubs = Pub.query.filter(Pub.name.like(s))
+                    pubs = Pub.query.filter(Pub.name.like(s))[per_page*(page-1):per_page*page]
                     pub_list(pubs, resp_suc)
                 else:
                     pub = Pub.query.filter(Pub.name.like(s)).first()
