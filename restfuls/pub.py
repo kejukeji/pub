@@ -83,13 +83,15 @@ def to_pub_type_only(pub_type, obj_pic):
 
 def pub_list_picture(pub_pictures, resp_suc):
     """
-    遍历多个图片
+    遍历多个酒吧图片
     """
     for pub_picture in pub_pictures:
         pub_picture_pic = to_flatten(pub_picture, pub_picture)
-        pub_picture_pic.pop('id')
-        pub_picture_pic.pop('pub_id')
-        pub_picture_pic['id'] = pub_picture.pub_id
+        pub = Pub.query.filter(Pub.id == pub_picture.pub_id).first()
+        change_latitude_longitude(pub_picture_pic, pub)
+        picture_pub(pub_picture_pic, pub, pub_picture)
+        county = County.query.filter(County.id == pub.county_id).first()
+        to_city(pub_picture_pic, county)
         resp_suc['picture_list'].append(pub_picture_pic)
 
 
@@ -113,14 +115,28 @@ def user_picture_only(pub_picture, resp_suc):
 
 def pub_picture_only(pub_picture, resp_suc):
     """
-    单个图片
+        单个酒吧图片
     """
     if pub_picture:
+
         pub_picture_pic = to_flatten(pub_picture, pub_picture)
-        pub_picture_pic.pop('id')
-        pub_picture_pic.pop('pub_id')
-        pub_picture_pic['id'] = pub_picture.pub_id
+        pub = Pub.query.filter(Pub.id == pub_picture.pub_id).first()
+        change_latitude_longitude(pub_picture_pic, pub)
+        picture_pub(pub_picture_pic, pub, pub_picture)
+        county = County.query.filter(County.id == pub.county_id).first()
+        to_city(pub_picture_pic, county)
         resp_suc['picture_list'].append(pub_picture_pic)
+
+
+def picture_pub(pub_picture_pic, pub, pub_picture):
+    """
+        酒吧图片，添加酒吧信息
+    """
+    pub_picture_pic.pop('id')
+    pub_picture_pic.pop('pub_id')
+    pub_picture_pic['name'] = pub.name
+    pub_picture_pic['id'] = pub_picture.pub_id
+    pub_picture_pic['intro'] = pub.intro
 
 
 def pub_list(pubs, resp_suc):
@@ -130,13 +146,11 @@ def pub_list(pubs, resp_suc):
     for pub in pubs:
         pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub.id).first()
         pub_pic = to_flatten(pub, pub_picture)
-        county = County.query.filter(County.id == pub.county_id).first()
-        if county:
-            pub_pic['city_county'] = county.name
         pub_pic.pop('longitude')
         pub_pic.pop('latitude')
-        pub_pic['latitude'] = str(pub.latitude)
-        pub_pic['longitude'] = str(pub.longitude)
+        county = County.query.filter(County.id == pub.county_id).first()
+        to_city(pub_pic, county)
+        change_latitude_longitude(pub_pic, pub)
         resp_suc['pub_list'].append(pub_pic)
 
 
@@ -148,13 +162,20 @@ def pub_only(pub, resp_suc):
         pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub.id).first()
         pub_pic = to_flatten(pub, pub_picture)
         county = County.query.filter(County.id == pub.county_id).first()
-        if county:
-            pub_pic['city_county'] = county.name
+        to_city(pub_pic, county)
         pub_pic.pop('longitude')
         pub_pic.pop('latitude')
+        change_latitude_longitude(pub_pic, pub)
+        resp_suc['pub_list'].append(pub_pic)
+
+
+def change_latitude_longitude(pub_pic, pub):
+    """
+        得到酒吧经度纬度
+    """
+    if pub:
         pub_pic['latitude'] = str(pub.latitude)
         pub_pic['longitude'] = str(pub.longitude)
-        resp_suc['pub_list'].append(pub_pic)
 
 
 class PubGetType(restful.Resource):
