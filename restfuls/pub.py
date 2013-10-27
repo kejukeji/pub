@@ -61,24 +61,32 @@ def to_city(obj_pic, county):
         obj_pic['city_county'] = county.name
 
 
-def to_pub_type(pub_types, obj_pic):
+def to_pub_type(pub, obj_pic):
     """
-        遍历一个酒吧对应多个类型
+        遍历一个酒吧对应多个类型和对应一个类型
     """
-    if pub_types:
+    if pub:
         obj_pic['type_name'] = ''
-        for pub_type in pub_types:
+        ptm_count = PubTypeMid.query.filter(PubTypeMid.pub_id == pub.id).count()
+        if ptm_count > 1:
+            pub_type_mids = PubTypeMid.query.filter(PubTypeMid.pub_id == pub.id).all()
+            for pub_type in pub_type_mids:
+                p_type = PubType.query.filter(PubType.id == pub_type.pub_type_id).first()
+                obj_pic['type_name'] = obj_pic['type_name'] + '/' + p_type.name
+        else:
+            pub_type = PubTypeMid.query.filter(PubTypeMid.pub_id == pub.id).first()
             p_type = PubType.query.filter(PubType.id == pub_type.pub_type_id).first()
-            obj_pic['type_name'] = obj_pic['type_name'] + '/' + p_type.name
+            obj_pic['type_name'] = p_type.name
 
-
-def to_pub_type_only(pub_type, obj_pic):
-    """
-        遍历一个酒吧对应一个类型
-    """
-    if pub_type:
-        p_type = PubType.query.filter(PubType.id == pub_type.pub_type_id).first()
-        obj_pic['type_name'] = p_type.name
+#
+#
+# def to_pub_type_only(pub_type, obj_pic):
+#     """
+#         遍历一个酒吧对应一个类型
+#     """
+#     if pub_type:
+#         p_type = PubType.query.filter(PubType.id == pub_type.pub_type_id).first()
+#         obj_pic['type_name'] = p_type.name
 
 
 def pub_list_picture(pub_pictures, resp_suc):
@@ -137,6 +145,8 @@ def picture_pub(pub_picture_pic, pub, pub_picture):
     pub_picture_pic['name'] = pub.name
     pub_picture_pic['id'] = pub_picture.pub_id
     pub_picture_pic['intro'] = pub.intro
+    pub_picture_pic['view_number'] = pub.view_number
+    to_pub_type(pub, pub_picture_pic)
 
 
 def pub_list(pubs, resp_suc):
@@ -297,16 +307,9 @@ class PubDetail(restful.Resource):
             pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub_id).first()
             county = County.query.filter(County.id == pub.county_id).first()
             pub_pic = to_pub_longitude_latitude(pub, pub_picture)
-            ptm_count = PubTypeMid.query.filter(PubTypeMid.pub_id == pub.id).count()
-            if ptm_count > 1:
-                pub_type_mids = PubTypeMid.query.filter(PubTypeMid.pub_id == pub.id).all()
-                to_pub_type(pub_type_mids, pub_pic)
-            else:
-                pub_type_mid = PubTypeMid.query.filter(PubTypeMid.pub_id == pub.id).first()
-                to_pub_type_only(pub_type_mid, pub_pic)
+            to_pub_type(pub, pub_pic)
             to_city(pub_pic, county)
             resp_suc['pub_list'].append(pub_pic)
-            pub_p_count = PubPicture.query.filter(PubPicture.pub_id == pub.id).count()
             view_check = View.query.filter(View.user_id == user_id, View.pub_id == pub_id).first()
             if view_check:
                 view_check.view_number = view_check.view_number + 1
