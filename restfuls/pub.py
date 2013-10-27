@@ -151,7 +151,7 @@ def picture_pub(pub_picture_pic, pub, pub_picture):
 
 def pub_list(pubs, resp_suc):
     """
-    遍历多个酒吧
+        遍历多个酒吧
     """
     for pub in pubs:
         pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub.id).first()
@@ -166,7 +166,7 @@ def pub_list(pubs, resp_suc):
 
 def pub_only(pub, resp_suc):
     """
-    一个酒吧
+        一个酒吧
     """
     if pub:
         pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub.id).first()
@@ -174,6 +174,7 @@ def pub_only(pub, resp_suc):
         county = County.query.filter(County.id == pub.county_id).first()
         pub_pic.pop('longitude')
         pub_pic.pop('latitude')
+        to_pub_type(pub, pub_pic)
         to_city(pub_pic, county)
         change_latitude_longitude(pub_pic, pub)
         resp_suc['pub_list'].append(pub_pic)
@@ -260,13 +261,8 @@ class PubListDetail(restful.Resource):
                 page, per_page = page_utils(pub_type_count, page)
                 pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == int(args['type_id']))[per_page*(page-1):per_page*page]
                 for pub_type in pub_types:
-                    pub_count = Pub.query.filter(Pub.id == pub_type.pub_id).count()
-                    if pub_count > 1:
-                        pubs = Pub.query.filter(Pub.id == pub_type.pub_id)[per_page*(page-1):per_page*page]
-                        pub_list(pubs, resp_suc)
-                    else:
-                        pub = Pub.query.filter(Pub.id == pub_type.pub_id).first()
-                        pub_only(pub, resp_suc)
+                    pub = Pub.query.filter(Pub.id == pub_type.pub_id).first()
+                    pub_only(pub, resp_suc)
             else:
                 pub_type = PubTypeMid.query.filter(PubTypeMid.pub_type_id == int(args['type_id'])).first()
                 if pub_type:
