@@ -154,8 +154,10 @@ def pub_list(pubs, resp_suc):
     遍历多个酒吧
     """
     for pub in pubs:
+
         pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub.id).first()
         pub_pic = to_flatten(pub, pub_picture)
+        to_pub_type(pub, pub_pic)
         pub_pic.pop('longitude')
         pub_pic.pop('latitude')
         county = County.query.filter(County.id == pub.county_id).first()
@@ -171,6 +173,7 @@ def pub_only(pub, resp_suc):
     if pub:
         pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub.id).first()
         pub_pic = to_flatten(pub, pub_picture)
+        to_pub_type(pub, pub_pic)
         county = County.query.filter(County.id == pub.county_id).first()
         to_city(pub_pic, county)
         pub_pic.pop('longitude')
