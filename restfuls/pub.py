@@ -358,34 +358,34 @@ class PubPictureDetail(restful.Resource):
         resp_suc = {}
         pub_id = args['pub_id']
         resp_suc['picture_list'] = []
-        result_count = session.query(UserInfo). \
-            join(User). \
-            join(View). \
-            filter(View.pub_id == pub_id).order_by(View.time.desc()).count()
-        if result_count > 1:
-            results = session.query(UserInfo). \
-                join(User). \
-                join(View). \
-                filter(View.pub_id == pub_id).order_by(View.time.desc())
-            user_list_picture(results, resp_suc)
-        else:
-            result = session.query(UserInfo). \
-                join(User). \
-                join(View). \
-                filter(View.pub_id == pub_id).order_by(View.time.desc()).first()
-            user_picture_only(result, resp_suc)
-        # if args['pub_id']:
-        #     pub_id = int(args['pub_id'])
-        #     pub_picture_count = PubPicture.query.filter(PubPicture.pub_id == pub_id).count()
-        #     if pub_picture_count > 1:
-        #         pub_pictures = PubPicture.query.filter(PubPicture.pub_id == pub_id)
-        #         pub_list_picture(pub_pictures, resp_suc)
-        #     else:
-        #         pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub_id).first()
-        #         pub_picture_only(pub_picture, resp_suc)
+        # result_count = session.query(UserInfo). \
+        #     join(User). \
+        #     join(View). \
+        #     filter(View.pub_id == pub_id).order_by(View.time.desc()).count()
+        # if result_count > 1:
+        #     results = session.query(UserInfo). \
+        #         join(User). \
+        #         join(View). \
+        #         filter(View.pub_id == pub_id).order_by(View.time.desc())
+        #     user_list_picture(results, resp_suc)
         # else:
-        #     resp_suc['message'] = 'error'
-        #     resp_suc['status'] = 1
+        #     result = session.query(UserInfo). \
+        #         join(User). \
+        #         join(View). \
+        #         filter(View.pub_id == pub_id).order_by(View.time.desc()).first()
+        #     user_picture_only(result, resp_suc)
+        if args['pub_id']:
+            pub_id = int(args['pub_id'])
+            pub_picture_count = PubPicture.query.filter(PubPicture.pub_id == pub_id).count()
+            if pub_picture_count > 1:
+                pub_pictures = PubPicture.query.filter(PubPicture.pub_id == pub_id)
+                pub_list_picture(pub_pictures, resp_suc)
+            else:
+                pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub_id).first()
+                pub_picture_only(pub_picture, resp_suc)
+        else:
+            resp_suc['message'] = 'error'
+            resp_suc['status'] = 1
 
         return resp_suc
 
