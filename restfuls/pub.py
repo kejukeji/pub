@@ -87,6 +87,27 @@ def pub_list_picture(pub_pictures, resp_suc):
     """
     for pub_picture in pub_pictures:
         pub_picture_pic = to_flatten(pub_picture, pub_picture)
+        pub_picture_pic.pop('id')
+        pub_picture_pic.pop('pub_id')
+        pub_picture_pic['id'] = pub_picture.pub_id
+        resp_suc['picture_list'].append(pub_picture_pic)
+
+
+def user_list_picture(pub_pictures, resp_suc):
+    """
+        遍历多个用户图片
+    """
+    for pub_picture in pub_pictures:
+        pub_picture_pic = to_flatten(pub_picture, pub_picture)
+        resp_suc['picture_list'].append(pub_picture_pic)
+
+
+def user_picture_only(pub_picture, resp_suc):
+    """
+        单个用户图片
+    """
+    if pub_picture:
+        pub_picture_pic = to_flatten(pub_picture, pub_picture)
         resp_suc['picture_list'].append(pub_picture_pic)
 
 
@@ -96,6 +117,9 @@ def pub_picture_only(pub_picture, resp_suc):
     """
     if pub_picture:
         pub_picture_pic = to_flatten(pub_picture, pub_picture)
+        pub_picture_pic.pop('id')
+        pub_picture_pic.pop('pub_id')
+        pub_picture_pic['id'] = pub_picture.pub_id
         resp_suc['picture_list'].append(pub_picture_pic)
 
 
@@ -175,7 +199,7 @@ class PubListDetail(restful.Resource):
         args = parser.parse_args()
         resp_suc = {}
         resp_suc['pub_list'] = []
-        resp_suc['hot_list'] = []
+        resp_suc['picture_list'] = []
         Session = sessionmaker()
         Session.configure(bind=engine)
         session = Session()
@@ -192,19 +216,14 @@ class PubListDetail(restful.Resource):
                     join(PubTypeMid).\
                     filter(PubTypeMid.pub_type_id == int(args['type_id']), Pub.recommend == 1).\
                     group_by(PubPicture.pub_id)
-                for result in results:
-                    if result:
-                        result_pic = to_flatten(result, result)
-                        resp_suc['hot_list'].append(result_pic)
+                pub_list_picture(results, resp_suc)
             else:
                 result = session.query(PubPicture). \
                     join(Pub). \
                     join(PubTypeMid).\
                     filter(PubTypeMid.pub_type_id == int(args['type_id']), Pub.recommend == 1).\
                     group_by(PubPicture.pub_id).first()
-                if result:
-                    result_pic = to_flatten(result, result)
-                    resp_suc['hot_list'].append(result_pic)
+                pub_picture_only(result, resp_suc)
             pub_type_count = PubTypeMid.query.filter(PubTypeMid.pub_type_id == int(args['type_id'])).count()
             if pub_type_count > 1:
                 page, per_page = page_utils(pub_type_count, page)
@@ -286,13 +305,13 @@ class PubDetail(restful.Resource):
                     join(User). \
                     join(View). \
                     filter(View.pub_id == pub_id).order_by(View.time.desc())[:5]
-                pub_list_picture(results, resp_suc)
+                user_list_picture(results, resp_suc)
             else:
                 result = session.query(UserInfo). \
                     join(User). \
                     join(View). \
                     filter(View.pub_id == pub_id).order_by(View.time.desc()).first()
-                pub_picture_only(result, resp_suc)
+                user_picture_only(result, resp_suc)
 
             resp_suc['status'] = 0
             resp_suc['message'] = 'success'
@@ -318,19 +337,36 @@ class PubPictureDetail(restful.Resource):
 
         args = parser.parse_args()
         resp_suc = {}
+        pub_id = args['pub_id']
         resp_suc['picture_list'] = []
-        if args['pub_id']:
-            pub_id = int(args['pub_id'])
-            pub_picture_count = PubPicture.query.filter(PubPicture.pub_id == pub_id).count()
-            if pub_picture_count > 1:
-                pub_pictures = PubPicture.query.filter(PubPicture.pub_id == pub_id)
-                pub_list_picture(pub_pictures, resp_suc)
-            else:
-                pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub_id).first()
-                pub_picture_only(pub_picture, resp_suc)
+        result_count = session.query(UserInfo). \
+            join(User). \
+            join(View). \
+            filter(View.pub_id == pub_id).order_by(View.time.desc()).count()
+        if result_count > 1:
+            results = session.query(UserInfo). \
+                join(User). \
+                join(View). \
+                filter(View.pub_id == pub_id).order_by(View.time.desc())
+            user_list_picture(results, resp_suc)
         else:
-            resp_suc['message'] = 'error'
-            resp_suc['status'] = 1
+            result = session.query(UserInfo). \
+                join(User). \
+                join(View). \
+                filter(View.pub_id == pub_id).order_by(View.time.desc()).first()
+            user_picture_only(result, resp_suc)
+        # if args['pub_id']:
+        #     pub_id = int(args['pub_id'])
+        #     pub_picture_count = PubPicture.query.filter(PubPicture.pub_id == pub_id).count()
+        #     if pub_picture_count > 1:
+        #         pub_pictures = PubPicture.query.filter(PubPicture.pub_id == pub_id)
+        #         pub_list_picture(pub_pictures, resp_suc)
+        #     else:
+        #         pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub_id).first()
+        #         pub_picture_only(pub_picture, resp_suc)
+        # else:
+        #     resp_suc['message'] = 'error'
+        #     resp_suc['status'] = 1
 
         return resp_suc
 

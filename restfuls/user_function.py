@@ -4,7 +4,7 @@ from flask.ext import restful
 from sqlalchemy.orm import Session, sessionmaker
 from models import Collect, Pub, User, engine, db, Message, UserInfo
 from flask.ext.restful import reqparse
-from utils import pickler, time_diff
+from utils import pickler, time_diff, page_utils
 from datetime import datetime
 
 
@@ -69,6 +69,32 @@ def traverse_message(message, resp_suc):
         resp_suc['list'].append(user_pic)
 
 
+def traverse_collects(results, user_id, resp_suc):
+    """
+        遍历多条收藏
+            collect: 收藏中间表
+            resp_suc: 列表
+    """
+    for result in results:
+        collect = Collect.query.filter(Collect.user_id == user_id, Collect.pub_id == result.id).first()
+        difference = time_diff(collect.time)
+        result_pic = differences(result, difference)
+        resp_suc['list'].append(result_pic)
+
+
+def traverse_collect(result, user_id, resp_suc):
+    """
+        遍历一条收藏
+            collect: 收藏中间表
+            resp_suc: 列表
+    """
+    if result:
+        collect = Collect.query.filter(Collect.user_id == user_id, Collect.pub_id == result.id).first()
+        difference = time_diff(collect.time)
+        result_pic = differences(result, difference)
+        resp_suc['list'].append(result_pic)
+
+
 Session = sessionmaker()
 Session.configure(bind=engine)
 session = Session()
@@ -83,39 +109,31 @@ class UserCollect(restful.Resource):
         """
         所需参数：
             user_id：必传，用户登录的id
-            pub_id: 必传,用户收藏的酒吧id
         """
         parser = reqparse.RequestParser()
         parser.add_argument('user_id', type=str, required=True, help=u'必须要传入user_id。')
+        parser.add_argument('page', type=str, required=True, help=u'分页page,传入当前页码')
 
         args = parser.parse_args()
         user_id = int(args['user_id'])
-
+        page = args['page']
         resp_suc = {}
         resp_suc['list'] = []
         if user_id:
             result_count = session.query(Pub).\
                 join(Collect).\
                 filter(Collect.user_id == user_id).count()
-
+            page, per_page = page_utils(result_count, page)
             if result_count > 1:
                 results = session.query(Pub).\
                     join(Collect).\
-                    filter(Collect.user_id == user_id)
-                for result in results:
-                    collect = Collect.query.filter(Collect.user_id == user_id, Collect.pub_id == result.id).first()
-                    difference = time_diff(collect.time)
-                    result_pic = differences(result, difference)
-                    resp_suc['list'].append(result_pic)
+                    filter(Collect.user_id == user_id)[per_page*(page-1):per_page*page]
+                traverse_collects(results, user_id, resp_suc)
             else:
                 result = session.query(Pub).\
                     join(Collect).\
                     filter(Collect.user_id == user_id).first()
-                if result:
-                    collect = Collect.query.filter(Collect.user_id == user_id, Collect.pub_id == result.id)
-                    difference = time_diff(collect.time)
-                    result_pic = differences(result, difference)
-                    resp_suc['list'].append(result_pic)
+                traverse_collect(result, user_id, resp_suc)
             resp_suc['status'] = 0
         else:
             resp_suc['message'] = 'error'
@@ -166,18 +184,22 @@ class UserMessage(restful.Resource):
         """
         所需参数:
             user_id: 登录用户id
+            page: 分页page，传入当前页
         """
         parser = reqparse.RequestParser()
-        parser.add_argument('user_id', type=str, required=True)
+        parser.add_argument('user_id', type=str, required=True, help=u'用户user_id。')
+        parser.add_argument('page', type=str, required=True, help=u'分页page，传入当前页')
 
         args = parser.parse_args()
         user_id = args['user_id']
+        page = args['page']
         resp_suc = {}
         resp_suc['list'] = []
         if user_id:
             message_count = Message.query.filter(Message.receiver_id == user_id, Message.view == 0).count()
+            page, per_page = page_utils(message_count, page)
             if message_count > 1:
-                messages = Message.query.filter(Message.receiver_id == user_id, Message.view == 0)
+                messages = Message.query.filter(Message.receiver_id == user_id, Message.view == 0)[per_page*(page-1):per_page*page]
                 traverse_messages(messages, resp_suc)
             else:
                 message = Message.query.filter(Message.receiver_id == user_id, Message.view == 0).first()
@@ -207,10 +229,10 @@ class UserMessageUpdate(restful.Resource):
         resp_suc = []
 
         try:
-            db.update(message)
             db.commit()
             resp_suc['status'] = 0
             resp_suc['message'] = 'success'
+
         except:
             resp_suc['status'] = 1
             resp_suc['message'] = '未知错误'
