@@ -154,12 +154,11 @@ def pub_list(pubs, resp_suc):
     遍历多个酒吧
     """
     for pub in pubs:
-
         pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub.id).first()
         pub_pic = to_flatten(pub, pub_picture)
-        to_pub_type(pub, pub_pic)
         pub_pic.pop('longitude')
         pub_pic.pop('latitude')
+        to_pub_type(pub, pub_pic)
         county = County.query.filter(County.id == pub.county_id).first()
         to_city(pub_pic, county)
         change_latitude_longitude(pub_pic, pub)
@@ -173,11 +172,11 @@ def pub_only(pub, resp_suc):
     if pub:
         pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub.id).first()
         pub_pic = to_flatten(pub, pub_picture)
-        to_pub_type(pub, pub_pic)
         county = County.query.filter(County.id == pub.county_id).first()
-        to_city(pub_pic, county)
         pub_pic.pop('longitude')
         pub_pic.pop('latitude')
+        to_pub_type(pub, pub_pic)
+        to_city(pub_pic, county)
         change_latitude_longitude(pub_pic, pub)
         resp_suc['pub_list'].append(pub_pic)
 
@@ -264,7 +263,6 @@ class PubListDetail(restful.Resource):
                 pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == int(args['type_id']))[per_page*(page-1):per_page*page]
                 for pub_type in pub_types:
                     pub_count = Pub.query.filter(Pub.id == pub_type.pub_id).count()
-
                     if pub_count > 1:
                         pubs = Pub.query.filter(Pub.id == pub_type.pub_id)[per_page*(page-1):per_page*page]
                         pub_list(pubs, resp_suc)
