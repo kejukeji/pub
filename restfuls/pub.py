@@ -383,6 +383,8 @@ class PubPictureDetail(restful.Resource):
             else:
                 pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub_id).first()
                 pub_picture_only(pub_picture, resp_suc)
+            resp_suc['message'] = 'success'
+            resp_suc['status'] = 0
         else:
             resp_suc['message'] = 'error'
             resp_suc['status'] = 1
