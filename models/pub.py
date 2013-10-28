@@ -110,6 +110,9 @@ class PubType(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(16), nullable=False)
     code = Column(String(4), nullable=False)
+    base_path = Column(String(100), nullable=True)
+    rel_path = Column(String(100), nullable=True)
+    pic_name = Column(String(100), nullable=True)
 
     def __init__(self, **kwargs):
         self.name = kwargs.pop('name')

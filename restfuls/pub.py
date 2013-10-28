@@ -206,7 +206,7 @@ class PubGetType(restful.Resource):
         # 酒吧所有类型
         pub_types = PubType.query.filter()
         for pub_type in pub_types:
-            pub_type_pic = pickler.flatten(pub_type)
+            pub_type_pic = to_flatten(pub_type, pub_type)
             resp_suc['list'].append(pub_type_pic)
         resp_suc['status'] = 0
         return resp_suc
