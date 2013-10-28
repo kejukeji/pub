@@ -158,8 +158,8 @@ class PubCollect(restful.Resource):
         parser.add_argument('pub_id', type=str, required=True, help=u'当前酒吧pub_id必须。')
 
         args = parser.parse_args()
-        user_id = int(args['user_id'])
-        pub_id = int(args['pub_id'])
+        user_id = args['user_id']
+        pub_id = args['pub_id']
         resp_suc = {}
         # 先判断用户是否已经收藏此酒吧
         check_collect = Collect.query.filter(Collect.user_id == user_id, Collect.pub_id == pub_id).count()
@@ -167,7 +167,7 @@ class PubCollect(restful.Resource):
             resp_suc['message'] = 'again'
             resp_suc['status'] = 2
         else:
-            collect = Collect(user_id, pub_id)
+            collect = Collect(user_id=user_id, pub_id=pub_id)
             db.add(collect)
             db.commit()
             resp_suc['message'] = 'success'
