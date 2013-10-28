@@ -208,6 +208,7 @@ class PubGetType(restful.Resource):
         for pub_type in pub_types:
             pub_type_pic = to_flatten(pub_type, pub_type)
             resp_suc['list'].append(pub_type_pic)
+        resp_suc['advertising_picture'] = '/static/pub_type_picture/advertising.png'
         resp_suc['status'] = 0
         return resp_suc
 
