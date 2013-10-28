@@ -16,7 +16,7 @@ from models import User
 
 
 class UserView(ModelView):
-    """定义数据库user视图"""
+    """定义数据库user的视图"""
 
     page_size = 30
     can_delete = False
