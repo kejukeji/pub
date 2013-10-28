@@ -129,6 +129,7 @@ class PubView(ModelView):
 
     edit_template = 'admin_pub/edit.html'
     create_template = 'admin_pub/create.html'
+    list_template = 'admin_pub/list.html'
 
     def scaffold_form(self):
         form_class = super(PubView, self).scaffold_form()
