@@ -165,7 +165,7 @@ class PubCollect(restful.Resource):
         check_collect = Collect.query.filter(Collect.user_id == user_id, Collect.pub_id == pub_id).count()
         if check_collect >= 1:
             resp_suc['message'] = 'again'
-            resp_suc['status'] = 2
+            resp_suc['status'] = 1
         else:
             collect = Collect(user_id=user_id, pub_id=pub_id)
             db.add(collect)
