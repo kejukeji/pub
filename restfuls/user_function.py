@@ -17,6 +17,15 @@ def differences(obj, time_dif):
     return obj_pic
 
 
+def change_latitude_longitude(pub_pic, pub):
+    """
+        得到酒吧经度纬度
+    """
+    if pub:
+        pub_pic['latitude'] = str(pub.latitude)
+        pub_pic['longitude'] = str(pub.longitude)
+
+
 def get_year(time):
     dt = datetime.strptime(str(time), "%Y-%m-%d %H:%M:%S")
     today = datetime.today()
@@ -79,6 +88,9 @@ def traverse_collects(results, user_id, resp_suc):
         collect = Collect.query.filter(Collect.user_id == user_id, Collect.pub_id == result.id).first()
         difference = time_diff(collect.time)
         result_pic = differences(result, difference)
+        result_pic.pop('longitude')
+        result_pic.pop('latitude')
+        change_latitude_longitude(result_pic, result)
         resp_suc['list'].append(result_pic)
 
 
@@ -92,6 +104,9 @@ def traverse_collect(result, user_id, resp_suc):
         collect = Collect.query.filter(Collect.user_id == user_id, Collect.pub_id == result.id).first()
         difference = time_diff(collect.time)
         result_pic = differences(result, difference)
+        result_pic.pop('longitude')
+        result_pic.pop('latitude')
+        change_latitude_longitude(result_pic, result)
         resp_suc['list'].append(result_pic)
 
 
@@ -115,7 +130,7 @@ class UserCollect(restful.Resource):
         parser.add_argument('page', type=str, required=True, help=u'分页page,传入当前页码')
 
         args = parser.parse_args()
-        user_id = int(args['user_id'])
+        user_id = args['user_id']
         page = args['page']
         resp_suc = {}
         resp_suc['list'] = []
