@@ -13,3 +13,10 @@ pub_app.py
 pub_nginx.conf
 pub_uwsgi.ini
 这两个文件是nginx和uwsgi的配置文件
+
+如果是测试的话，运行run_app.py比较合适
+
+所有改变的文件有：
+    run_app.py
+    secret.py
+    ex_var.py
