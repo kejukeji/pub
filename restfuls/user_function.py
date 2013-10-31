@@ -80,7 +80,34 @@ def to_messages_no_time(content, message_id):
             age = get_year(birthday)
             json_pic = pickler._flatten(user)
             if user_info.rel_path and user_info.pic_name:
-                json_pic['pic_path'] = user_info.rel_path + '/' + user_info.pic_name
+                json_pic['receiver_path'] = user_info.rel_path + '/' + user_info.pic_name
+            if sex == 1:
+                json_pic['sex'] = '男'
+            else:
+                json_pic['sex'] = '女'
+            json_pic['age'] = age
+        json_pic['content'] = content
+        return json_pic
+    else:
+        return {}
+
+
+def to_messages_sender(content, message_id):
+    """
+    用户发送时间times
+    用户发送内容content
+    """
+    user = User.query.filter(User.id == message_id).first()
+    if user:
+        user_info = UserInfo.query.filter(UserInfo.user_id == user.id).first()
+        json_pic = pickler._flatten(user)
+        if user_info:
+            sex = user_info.sex
+            birthday = user_info.birthday
+            age = get_year(birthday)
+            json_pic = pickler._flatten(user)
+            if user_info.rel_path and user_info.pic_name:
+                json_pic['sender_path'] = user_info.rel_path + '/' + user_info.pic_name
             if sex == 1:
                 json_pic['sex'] = '男'
             else:
@@ -136,7 +163,7 @@ def traverse_messages_receiver(receiver_messages, sender_message, resp_suc):
             resp_suc['list'].append(user_pic)
     if sender_message:
         for message in sender_message:
-            user_pic = to_messages_no_time(message.content, message.receiver_id)
+            user_pic = to_messages_sender(message.content, message.receiver_id)
             user_pic['sender_id'] = message.sender_id
             user_pic['receiver_id'] = message.receiver_id
             time = time_to_str(message.time)
@@ -552,9 +579,9 @@ class MessageFuck(restful.Resource):
                 system_message_pickler(system_message, resp_suc)
             if type(direct_message) is list:
                 for direct in direct_message:
-                    direct_message_pickler(direct, resp_suc)
+                    traverse_messages(direct, resp_suc)
             else:
-                direct_message_pickler(direct_message, resp_suc)
+                traverse_message(direct_message, resp_suc)
             return resp_suc
         else:
             return resp_fail
