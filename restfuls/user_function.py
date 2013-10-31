@@ -103,6 +103,8 @@ def traverse_messages(messages, resp_suc):
             user_pic = to_messages(times, content, message.sender_id)
             user_pic['sender_id'] = message.sender_id
             user_pic['receiver_id'] = message.receiver_id
+            time = time_to_str(message.time)
+            user_pic['time'] = time
             resp_suc['list'].append(user_pic)
 
 
@@ -144,6 +146,8 @@ def traverse_message(message, resp_suc):
         user_pic = to_messages(times, content, message.sender_id)
         user_pic['sender_id'] = message.sender_id
         user_pic['receiver_id'] = message.receiver_id
+        time = time_to_str(message.time)
+        user_pic['time'] = time
         resp_suc['list'].append(user_pic)
 
 
@@ -170,6 +174,8 @@ def traverse_message_receiver(message, resp_suc):
         user_pic = to_messages(times, content, message.sender_id)
         user_pic['sender_id'] = message.sender_id
         user_pic['receiver_id'] = message.receiver_id
+        time = time_to_str(message.time)
+        user_pic['time'] = time
         resp_suc['receiver_list'].append(user_pic)
 
 
