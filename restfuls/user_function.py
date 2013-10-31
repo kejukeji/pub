@@ -309,7 +309,6 @@ def traverse_direct_message(user_id, resp_suc):
     """
        私信消息
     """
-    resp_suc['direct_message_list'] = []
     message_count = session.query(Message).\
         filter(Message.receiver_id == user_id, Message.view == 0).order_by(Message.time.desc()).\
         group_by(Message.sender_id).count()
@@ -320,8 +319,8 @@ def traverse_direct_message(user_id, resp_suc):
             group_by(Message.sender_id)
         return direct_messages
     else:
-        direct_message = session.query(Message).\
-            filter(Message.receiver_id == user_id, Message.view == 0).order_by(Message.time.desc()).\
+        direct_message = session.query(Message). \
+            filter(Message.receiver_id == user_id, Message.view == 0).order_by(Message.time.desc()). \
             group_by(Message.sender_id).first()
         return direct_message
 
@@ -431,7 +430,6 @@ class UserMessage(restful.Resource):
                 messages = session.query(Message).\
                     filter(Message.receiver_id == user_id, Message.view == 0).order_by(Message.time.desc()).\
                     group_by(Message.sender_id)[per_page*(page-1):per_page*page]
-
                 traverse_messages(messages, resp_suc)
             else:
                 message = Message.query.filter(Message.receiver_id == user_id, Message.view == 0).first()
@@ -568,6 +566,8 @@ class MessageFuck(restful.Resource):
 
         resp_suc = success_dic().dic
         resp_fail = fail_dic().dic
+        resp_suc['sender_list'] = []
+        resp_suc['system_message_list'] = []
         user_id = args['user_id']
         system_message = traverse_system_message(resp_suc)
         direct_message = traverse_direct_message(user_id, resp_suc)
@@ -579,9 +579,9 @@ class MessageFuck(restful.Resource):
                 system_message_pickler(system_message, resp_suc)
             if type(direct_message) is list:
                 for direct in direct_message:
-                    traverse_messages(direct, resp_suc)
+                    traverse_messages_sender(direct, resp_suc)
             else:
-                traverse_message(direct_message, resp_suc)
+                traverse_message_sender(direct_message, resp_suc)
             return resp_suc
         else:
             return resp_fail
