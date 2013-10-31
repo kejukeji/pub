@@ -3,4 +3,4 @@
 from restfuls.user import UserInfo, UserLogin, UserRegister, UserOpenIdCheck
 from restfuls.pub import PubGetType, PubListDetail, PubDetail, PubPictureDetail, PubSearch, PubSearchView
 from restfuls.ajax import GetPubType, GetProvince, GetCity, GetCounty, GetPubTypeList
-from restfuls.user_function import UserCollect, PubCollect, UserMessage, UserMessageInfo, UserSenderMessage
+from restfuls.user_function import UserCollect, PubCollect, UserMessage, UserMessageInfo, UserSenderMessage, MessageFuck

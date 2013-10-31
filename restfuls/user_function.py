@@ -2,11 +2,17 @@
 
 from flask.ext import restful
 from sqlalchemy.orm import Session, sessionmaker
-from models import Collect, Pub, User, engine, db, Message, UserInfo, PubPicture, County
+from models import Collect, Pub, User, engine, db, Message, UserInfo, PubPicture, County, SystemMessage
 from flask.ext.restful import reqparse
 from utils import pickler, time_diff, page_utils
 from datetime import datetime
 from utils.others import success_dic, fail_dic
+from utils.others import time_to_str
+
+
+Session = sessionmaker()
+Session.configure(bind=engine)
+session = Session()
 
 
 def differences(obj, time_dif):
@@ -59,6 +65,33 @@ def to_messages(times, content, message_id):
     return json_pic
 
 
+def to_messages_no_time(content, message_id):
+    """
+    用户发送时间times
+    用户发送内容content
+    """
+    user = User.query.filter(User.id == message_id).first()
+    if user:
+        user_info = UserInfo.query.filter(UserInfo.user_id == user.id).first()
+        json_pic = pickler._flatten(user)
+        if user_info:
+            sex = user_info.sex
+            birthday = user_info.birthday
+            age = get_year(birthday)
+            json_pic = pickler._flatten(user)
+            if user_info.rel_path and user_info.pic_name:
+                json_pic['pic_path'] = user_info.rel_path + '/' + user_info.pic_name
+            if sex == 1:
+                json_pic['sex'] = '男'
+            else:
+                json_pic['sex'] = '女'
+            json_pic['age'] = age
+        json_pic['content'] = content
+        return json_pic
+    else:
+        return {}
+
+
 def traverse_messages(messages, resp_suc):
     """
         遍历多条消息
@@ -79,11 +112,11 @@ def traverse_messages_sender(messages, resp_suc):
     """
     if messages:
         for message in messages:
-            times = time_diff(message.time)
-            content = message.content
-            user_pic = to_messages(times, content, message.sender_id)
+            user_pic = to_messages_no_time(message.content, message.sender_id)
             user_pic['sender_id'] = message.sender_id
             user_pic['receiver_id'] = message.receiver_id
+            time = time_to_str(message.time)
+            user_pic['time'] = time
             resp_suc['sender_list'].append(user_pic)
 
 
@@ -93,11 +126,11 @@ def traverse_messages_receiver(messages, resp_suc):
     """
     if messages:
         for message in messages:
-            times = time_diff(message.time)
-            content = message.content
-            user_pic = to_messages(times, content, message.sender_id)
+            user_pic = to_messages_no_time(message.content, message.sender_id)
             user_pic['sender_id'] = message.sender_id
             user_pic['receiver_id'] = message.receiver_id
+            time = time_to_str(message.time)
+            user_pic['time'] = time
             resp_suc['receiver_list'].append(user_pic)
 
 
@@ -119,11 +152,11 @@ def traverse_message_sender(message, resp_suc):
         遍历一条消息
     """
     if message:
-        times = time_diff(message.time)
-        content = message.content
-        user_pic = to_messages(times, content, message.sender_id)
+        user_pic = to_messages_no_time(message.content, message.sender_id)
         user_pic['sender_id'] = message.sender_id
         user_pic['receiver_id'] = message.receiver_id
+        time = time_to_str(message.time)
+        user_pic['time'] = time
         resp_suc['sender_list'].append(user_pic)
 
 
@@ -192,9 +225,57 @@ def to_city(obj_pic, county):
         obj_pic['city_county'] = county.name
 
 
-Session = sessionmaker()
-Session.configure(bind=engine)
-session = Session()
+def system_message_pickler(system_message, resp_suc):
+    """
+        转换json
+    """
+    system_message_pic = pickler.flatten(system_message)
+    resp_suc['system_message_list'].append(system_message_pic)
+
+
+def direct_message_pickler(direct_message, resp_suc):
+    """
+        转换json
+    """
+    direct_message_pic = pickler.flatten(direct_message)
+    resp_suc['direct_message_list'].append(direct_message_pic)
+
+
+def traverse_system_message(resp_suc):
+    """
+        遍历系统消息
+    """
+    resp_suc['system_message_list'] = []
+
+    system_count = SystemMessage.query.filter().count()
+    resp_suc['system_count'] = system_count
+    if system_count > 1:
+        system_messages = SystemMessage.query.filter()
+        return system_messages
+    else:
+        system_message = SystemMessage.query.filter().first()
+        return system_message
+
+
+def traverse_direct_message(user_id, resp_suc):
+    """
+       私信消息
+    """
+    resp_suc['direct_message_list'] = []
+    message_count = session.query(Message).\
+        filter(Message.receiver_id == user_id, Message.view == 0).order_by(Message.time.desc()).\
+        group_by(Message.sender_id).count()
+    resp_suc['direct_count'] = message_count
+    if message_count > 1:
+        direct_messages = session.query(Message).\
+            filter(Message.receiver_id == user_id, Message.view == 0).order_by(Message.time.desc()).\
+            group_by(Message.sender_id)
+        return direct_messages
+    else:
+        direct_message = session.query(Message).\
+            filter(Message.receiver_id == user_id, Message.view == 0).order_by(Message.time.desc()).\
+            group_by(Message.sender_id).first()
+        return direct_message
 
 
 class UserCollect(restful.Resource):
@@ -419,4 +500,41 @@ class UserSenderMessage(restful.Resource):
         except:
             return resp_fail
         return resp_suc
+
+
+class MessageFuck(restful.Resource):
+    """
+        消息，系统消息，私信消息。
+    """
+    @staticmethod
+    def get():
+        """
+            参数
+                user_id:用户登录id
+        """
+        parser = reqparse.RequestParser()
+        parser.add_argument('user_id', type=str, required=True, help=u'user_id必须。')
+
+        args = parser.parse_args()
+
+        resp_suc = success_dic().dic
+        resp_fail = fail_dic().dic
+        user_id = args['user_id']
+        system_message = traverse_system_message(resp_suc)
+        direct_message = traverse_direct_message(user_id, resp_suc)
+        if system_message or direct_message:
+            if type(system_message) is list:
+                for system in system_message:
+                    system_message_pickler(system, resp_suc)
+            else:
+                system_message_pickler(system_message, resp_suc)
+            if type(direct_message) is list:
+                for direct in direct_message:
+                    direct_message_pickler(direct, resp_suc)
+            else:
+                direct_message_pickler(direct_message, resp_suc)
+            return resp_suc
+        else:
+            return resp_fail
+
 
