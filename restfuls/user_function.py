@@ -124,7 +124,7 @@ def traverse_messages_sender(messages, resp_suc):
 
 def traverse_messages_receiver(messages, resp_suc):
     """
-        遍历多条消息
+        遍历接收多条消息
     """
     if messages:
         for message in messages:
@@ -153,7 +153,7 @@ def traverse_message(message, resp_suc):
 
 def traverse_message_sender(message, resp_suc):
     """
-        遍历一条消息
+        遍历发送一条消息
     """
     if message:
         user_pic = to_messages_no_time(message.content, message.sender_id)
@@ -166,7 +166,7 @@ def traverse_message_sender(message, resp_suc):
 
 def traverse_message_receiver(message, resp_suc):
     """
-        遍历一条消息
+        遍历接收一条消息
     """
     if message:
         times = time_diff(message.time)
@@ -544,3 +544,41 @@ class MessageFuck(restful.Resource):
             return resp_fail
 
 
+class ClearMessage(restful.Resource):
+    """
+        清除私信
+    """
+    @staticmethod
+    def get():
+        """
+            参数：
+                user_id：用户登录id
+        """
+        parser = reqparse.RequestParser()
+        parser.add_argument('user_id', type=str, required=True, help=u'user_id必须.')
+
+        args = parser.parse_args()
+
+        user_id = args['user_id']
+
+        resp_suc = success_dic().dic
+        resp_fail = fail_dic().dic
+
+        message_count = Message.query.filter(Message.receiver_id == user_id).count()
+        if message_count > 1:
+            messages = Message.query.filter(Message.receiver_id == user_id)
+            for message in messages:
+                db.delete(message)
+                try:
+                    db.commit()
+                except:
+                    return resp_fail
+                return resp_suc
+        else:
+            message = Message.query.filter(Message.receiver_id == user_id).first()
+            db.delete(message)
+            try:
+                db.commit()
+            except:
+                return resp_fail
+            return resp_suc
