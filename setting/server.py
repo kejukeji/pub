@@ -21,7 +21,7 @@ HEAD_PICTURE_BASE_PATH = '/mnt/web/www/pub'  # pub运行文件的目录，图片
 HEAD_PICTURE_ALLOWED_EXTENSION = ('png', 'jpg', 'jpeg', 'gif')  # 允许的拓展名
 # 酒吧图片
 PUB_PICTURE_UPLOAD_FOLDER = '/static/system/pub_picture'  # 运行目录的相对目录，URL获取图片的路径
-PUB_PICTURE_BASE_PATH = '/Users/X/Dropbox/Code/pub'  # pub运行文件的目录，图片的绝对路径使用
+PUB_PICTURE_BASE_PATH = '/mnt/web/www/pub'  # pub运行文件的目录，图片的绝对路径使用
 PUB_PICTURE_ALLOWED_EXTENSION = ('png', 'jpg', 'jpeg', 'gif')  # 允许的拓展名
 
 # 其他配置参数

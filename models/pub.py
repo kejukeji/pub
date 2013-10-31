@@ -143,6 +143,7 @@ class PubPicture(Base):
     base_path = Column(String(128), nullable=False)
     rel_path = Column(String(128), nullable=False)
     pic_name = Column(String(128), nullable=False)
+    thumbnail = Column(String(128), nullable=True, server_default=None)
     upload_name = Column(String(128), nullable=False)
     cover = Column(Boolean, nullable=False, server_default='0')
 
@@ -156,6 +157,9 @@ class PubPicture(Base):
 
     def __repr__(self):
         return '<PubPicture(pub_id: %s, upload_name: %s)>' % (self.pub_id, self.upload_name)
+
+    def path(self):
+        return self.base_path + self.rel_path + '/'
 
 
 class PubTypeMid(Base):

@@ -18,6 +18,8 @@ from ex_var import PUB_PICTURE_BASE_PATH, PUB_PICTURE_UPLOAD_FOLDER, PUB_PICTURE
 from utils import time_file_name, allowed_file_extension, form_to_dict
 from werkzeug import secure_filename
 
+from .tools import save_thumbnail
+
 log = logging.getLogger("flask-admin.sqla")
 
 
@@ -249,15 +251,18 @@ def save_pub_pictures(pub_id, pictures):
             base_path = PUB_PICTURE_BASE_PATH
             rel_path = PUB_PICTURE_UPLOAD_FOLDER
             pic_name = time_file_name(secure_filename(upload_name), sign=pub_id)
-            db.add(PubPicture(pub_id, base_path, rel_path, pic_name, upload_name, cover=0))
+            pub_picture = PubPicture(pub_id, base_path, rel_path, pic_name, upload_name, cover=0)
+            db.add(pub_picture)
             picture.save(os.path.join(base_path+rel_path+'/', pic_name))
             db.commit()
+            save_thumbnail(pub_picture.id)
 
 
-def delete_pub_picture(id):
-    pictures = PubPicture.query.filter(PubPicture.pub_id == id).all()
+def delete_pub_picture(pub_id):
+    pictures = PubPicture.query.filter(PubPicture.pub_id == pub_id).all()
     for picture in pictures:
         try:
             os.remove(os.path.join(picture.base_path+picture.rel_path+'/', picture.pic_name))
+            os.remove(os.path.join(picture.base_path+picture.rel_path+'/', picture.thumbnail))
         except:
             pass

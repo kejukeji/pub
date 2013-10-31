@@ -20,6 +20,7 @@ from flask.ext.admin.contrib.fileadmin import UploadForm
 from models import PubPicture, db
 from utils import allowed_file_extension, time_file_name
 from ex_var import PUB_PICTURE_BASE_PATH, PUB_PICTURE_UPLOAD_FOLDER, PUB_PICTURE_ALLOWED_EXTENSION
+from .tools import save_thumbnail
 
 
 class PubFile(FileAdmin):
@@ -80,8 +81,7 @@ class PubPictureFile(FileAdmin):  # todo-lyw代码进一步完善中
 
     def on_file_delete(self, full_path, filename):
         """定义图片删除之后的行为"""
-        PubPicture.query.filter(PubPicture.pic_name == filename).delete()
-        db.commit()
+        pass
 
     @expose('/')
     @expose('/b/<path:path>')
@@ -168,9 +168,11 @@ class PubPictureFile(FileAdmin):  # todo-lyw代码进一步完善中
             else:
                 try:
                     self.save_file(save_path_name, form.upload.data)
-                    db.add(PubPicture(pub_id, PUB_PICTURE_BASE_PATH, PUB_PICTURE_UPLOAD_FOLDER, pic_name,
-                                      upload_name, cover=0))
+                    picture = PubPicture(pub_id, PUB_PICTURE_BASE_PATH, PUB_PICTURE_UPLOAD_FOLDER, pic_name,
+                                         upload_name, cover=0)
+                    db.add(picture)
                     db.commit()
+                    save_thumbnail(picture.id)  # 生产略缩图文件，保存到本地，然后数据库添加数据
                     self.on_file_upload(directory, path, pic_name)
                     return redirect('/admin/pubpicturefile/?pub_id=' + str(request.args.get('pub_id')))  # todo-lyw ugly
                 except Exception as ex:
@@ -215,7 +217,12 @@ class PubPictureFile(FileAdmin):  # todo-lyw代码进一步完善中
                 flash(gettext('Failed to delete directory: %(error)s', error=ex), 'error')
         else:
             try:
+                pub_picture = PubPicture.query.filter(PubPicture.pic_name == path).first()
+                PubPicture.query.filter(PubPicture.pic_name == path).delete()
+                db.commit()
                 os.remove(full_path)
+                if pub_picture.thumbnail:
+                    os.remove(pub_picture.base_path+pub_picture.rel_path+'/'+pub_picture.thumbnail)
                 self.on_file_delete(full_path, path)
                 flash(gettext('File "%(name)s" was successfully deleted.', name=path))
             except Exception as ex:

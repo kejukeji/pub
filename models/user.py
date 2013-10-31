@@ -224,3 +224,6 @@ class UserInfo(Base):
 
     def __repr__(self):
         return '<UserInfo(user_id: %s, email: %s)>' % (self.user_id, self.email)
+
+    def path(self):
+        return self.base_path + self.rel_path + '/'

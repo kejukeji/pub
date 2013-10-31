@@ -22,7 +22,7 @@ def to_flatten(obj, obj2):
         obj_pic = pickler.flatten(obj)
     if obj2:
         if obj2.rel_path and obj2.pic_name:
-            obj_pic['pic_path'] = obj2.rel_path + obj2.pic_name
+            obj_pic['pic_path'] = obj2.rel_path + '/' + obj2.pic_name
     return obj_pic
 
 
@@ -45,7 +45,7 @@ def to_pub_longitude_latitude(pub, picture):
     """
     pub_pic = pickler.flatten(pub)
     if picture:
-        pub_pic['pic_path'] = picture.rel_path + picture.pic_name
+        pub_pic['pic_path'] = picture.rel_path + '/' + picture.pic_name
     pub_pic.pop('longitude')
     pub_pic.pop('latitude')
     pub_pic['longitude'] = str(pub.longitude)

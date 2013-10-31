@@ -46,7 +46,7 @@ def to_messages(times, content, message_id):
         age = get_year(birthday)
         json_pic = pickler._flatten(user)
         if user_info.rel_path and user_info.pic_name:
-            json_pic['pic_path'] = user_info.rel_path + user_info.pic_name
+            json_pic['pic_path'] = user_info.rel_path + '/' + user_info.pic_name
         if sex == 1:
             json_pic['sex'] = '男'
         else:
@@ -95,7 +95,7 @@ def traverse_collects(results, user_id, resp_suc):
         pub_picture = PubPicture.query.filter(PubPicture.pub_id == result.id).first()
         if pub_picture:
             if pub_picture.rel_path and pub_picture.pic_name:
-                result_pic['pic_path'] = pub_picture.rel_path + pub_picture.pic_name
+                result_pic['pic_path'] = pub_picture.rel_path + '/' + pub_picture.pic_name
         change_latitude_longitude(result_pic, result)
         resp_suc['list'].append(result_pic)
 
@@ -115,7 +115,7 @@ def traverse_collect(result, user_id, resp_suc):
         pub_picture = PubPicture.query.filter(PubPicture.pub_id == result.id).first()
         if pub_picture:
             if pub_picture.rel_path and pub_picture.pic_name:
-                result_pic['pic_path'] = pub_picture.rel_path + pub_picture.pic_name
+                result_pic['pic_path'] = pub_picture.rel_path + '/' + pub_picture.pic_name
         change_latitude_longitude(result_pic, result)
         resp_suc['list'].append(result_pic)
 
