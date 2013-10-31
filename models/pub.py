@@ -117,10 +117,16 @@ class PubType(Base):
     def __init__(self, **kwargs):
         self.name = kwargs.pop('name')
         self.code = kwargs.pop('code')
+        self.base_path = kwargs.pop('base_path', None)
+        self.rel_path = kwargs.pop('rel_path', None)
+        self.pic_name = kwargs.pop('pic_name', None)
 
     def update(self, **kwargs):
         self.name = kwargs.pop('name')
         self.code = kwargs.pop('code')
+        self.base_path = kwargs.pop('base_path', None)
+        self.rel_path = kwargs.pop('rel_path', None)
+        self.pic_name = kwargs.pop('pic_name', None)
 
     def __repr__(self):
         return '<PubType(name: %s, code: %s)>' % (self.name, self.code)
