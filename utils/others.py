@@ -71,3 +71,10 @@ class fail_dic(object):
 
     def set(self, k, v):
         self.dic[k] = v
+
+
+def time_to_str(time):
+    """
+
+    """
+    return time.strftime("%Y-%m-%d %H:%M:%S")
