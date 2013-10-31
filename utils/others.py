@@ -47,3 +47,27 @@ def page_utils(count, page, per_page=5):
     page = page if ( page >= min and page <= max  ) else 1
 
     return page, per_page
+
+
+#取得一个正确的返回字典
+class success_dic(object):
+    def __init__(self):
+        self.dic = {}
+        self.dic['status'] = 0
+        self.dic['message'] = 'success'
+        #self.dic['test'] = 'test success'
+
+    def set(self, k, v):
+        self.dic[k] = v
+
+
+#取得一个错误的返回字典
+class fail_dic(object):
+    def __init__(self):
+        self.dic = {}
+        self.dic['status'] = 1
+        self.dic['message'] = '没有查询到相应数据！'
+        #self.dic['test'] = 'test fail'
+
+    def set(self, k, v):
+        self.dic[k] = v
