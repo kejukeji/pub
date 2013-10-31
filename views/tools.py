@@ -15,8 +15,8 @@ def save_thumbnail(picture_id):
     save_path = pub_picture.base_path + pub_picture.rel_path + '/'
     picture = save_path + pub_picture.pic_name
     im = Image.open(picture)
-    thumbnail = im.thumbnail((256, 256))
+    im.thumbnail((256, 256))
     thumbnail_name = time_file_name(pub_picture.upload_name, sign='nail') + '.jpeg'
-    thumbnail.save(save_path+thumbnail_name, 'jpeg')
+    im.save(save_path+thumbnail_name, 'jpeg')
     pub_picture.thumbnail = thumbnail_name
     db.commit()
