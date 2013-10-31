@@ -16,7 +16,7 @@ from login import login_manager, login, logout
 from restfuls import (UserInfo, UserLogin, UserRegister, PubGetType, PubListDetail, PubDetail, UserCollect,
                       PubCollect, PubPictureDetail, PubSearch, GetPubType, GetProvince, GetCity, GetCounty,
                       UserMessage, PubSearchView, GetPubTypeList, UserOpenIdCheck, UserMessageInfo, UserSenderMessage,
-                      MessageFuck)
+                      MessageFuck, ClearMessage)
 
 # 用户登陆管理
 login_manager.init_app(app)
@@ -66,6 +66,7 @@ api.add_resource(PubSearchView, '/restful/pub/search/view')
 api.add_resource(UserMessageInfo, '/restful/user/message/info')
 api.add_resource(UserSenderMessage, '/restful/user/sender/message')
 api.add_resource(MessageFuck, '/restful/user/message')
+api.add_resource(ClearMessage, '/restful/user/clear/message')
 
 ## todo-lyw 代码末尾，形成的基本约定如下
 # 文件相关的使用 static
