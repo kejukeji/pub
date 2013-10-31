@@ -122,18 +122,26 @@ def traverse_messages_sender(messages, resp_suc):
             resp_suc['sender_list'].append(user_pic)
 
 
-def traverse_messages_receiver(messages, resp_suc):
+def traverse_messages_receiver(receiver_messages, sender_message, resp_suc):
     """
         遍历接收多条消息
     """
-    if messages:
-        for message in messages:
+    if receiver_messages:
+        for message in receiver_messages:
             user_pic = to_messages_no_time(message.content, message.sender_id)
             user_pic['sender_id'] = message.sender_id
             user_pic['receiver_id'] = message.receiver_id
             time = time_to_str(message.time)
             user_pic['time'] = time
-            resp_suc['receiver_list'].append(user_pic)
+            resp_suc['list'].append(user_pic)
+    if sender_message:
+        for message in sender_message:
+            user_pic = to_messages_no_time(message.content, message.receiver_id)
+            user_pic['sender_id'] = message.sender_id
+            user_pic['receiver_id'] = message.receiver_id
+            time = time_to_str(message.time)
+            user_pic['time'] = time
+            resp_suc['list'].append(user_pic)
 
 
 def traverse_message(message, resp_suc):
@@ -164,7 +172,7 @@ def traverse_message_sender(message, resp_suc):
         resp_suc['sender_list'].append(user_pic)
 
 
-def traverse_message_receiver(message, resp_suc):
+def traverse_message_receiver(message, sender_message, resp_suc):
     """
         遍历接收一条消息
     """
@@ -176,7 +184,14 @@ def traverse_message_receiver(message, resp_suc):
         user_pic['receiver_id'] = message.receiver_id
         time = time_to_str(message.time)
         user_pic['time'] = time
-        resp_suc['receiver_list'].append(user_pic)
+        resp_suc['list'].append(user_pic)
+    if sender_message:
+        user_pic = to_messages(times, content, sender_message.receiver_id)
+        user_pic['sender_id'] = sender_message.sender_id
+        user_pic['receiver_id'] = sender_message.receiver_id
+        time = time_to_str(sender_message.time)
+        user_pic['time'] = time
+        resp_suc['list'].append(user_pic)
 
 
 def traverse_collects(results, user_id, resp_suc):
@@ -447,20 +462,18 @@ class UserMessageInfo(restful.Resource):
 
         resp_suc = success_dic().dic
         resp_fail = fail_dic().dic
-        resp_suc['sender_list'] = []
-        resp_suc['receiver_list'] = []
+        resp_suc['list'] = []
 
         sender_id = args['sender_id']
         receiver_id = args['receiver_id']
         message_count = Message.query.filter(Message.sender_id == sender_id).count()
         message_receiver_count = Message.query.filter(Message.sender_id == receiver_id, Message.receiver_id == sender_id).count()
         if message_count > 1 or message_receiver_count > 1:
-            messages = Message.query.filter(Message.sender_id == sender_id).order_by(Message.time.desc())
+            messages = Message.query.filter(Message.sender_id == sender_id).order_by(Message.time.asc())
             message_receivers = Message.query.filter(Message.sender_id == receiver_id, Message.receiver_id == sender_id).\
                 order_by(Message.time.desc())
             if messages or message_receivers:
-                traverse_messages_receiver(messages, resp_suc)
-                traverse_messages_sender(message_receivers, resp_suc)
+                traverse_messages_receiver(messages, message_receivers, resp_suc)
                 return resp_suc
             else:
                 return resp_fail
@@ -469,8 +482,7 @@ class UserMessageInfo(restful.Resource):
             message_receiver = Message.query.filter\
                     (Message.sender_id == receiver_id, Message.receiver_id == sender_id).first()
             if message or message_receiver:
-                traverse_message_receiver(message, resp_suc)
-                traverse_message_sender(message_receiver, resp_suc)
+                traverse_message_receiver(message, message_receiver, resp_suc)
                 return resp_suc
             else:
                 return resp_fail
@@ -494,17 +506,21 @@ class UserSenderMessage(restful.Resource):
         parser.add_argument('content', type=str, required=True, help=u'content必须。')
 
         args = parser.parse_args()
-        sender_id = args['receiver_id']
-        receiver_id = args['sender_id']
+        sender_id = args['sender_id']
+        receiver_id = args['receiver_id']
         content = args['content']
         resp_suc = success_dic().dic
         resp_fail = fail_dic().dic
+        resp_suc['sender_list'] = []
+
         message = Message(receiver_id, sender_id, content, view=0)
         db.add(message)
         try:
             db.commit()
         except:
             return resp_fail
+        message = Message.query.filter()[-1]
+        traverse_message_sender(message, resp_suc)
         return resp_suc
 
 
