@@ -2,10 +2,11 @@
 
 from flask.ext import restful
 from sqlalchemy.orm import Session, sessionmaker
-from models import Collect, Pub, User, engine, db, Message, UserInfo, PubPicture
+from models import Collect, Pub, User, engine, db, Message, UserInfo, PubPicture, County
 from flask.ext.restful import reqparse
 from utils import pickler, time_diff, page_utils
 from datetime import datetime
+from utils.others import success_dic, fail_dic
 
 
 def differences(obj, time_dif):
@@ -40,6 +41,7 @@ def to_messages(times, content, message_id):
     """
     user = User.query.filter(User.id == message_id).first()
     user_info = UserInfo.query.filter(UserInfo.user_id == user.id).first()
+    json_pic = pickler._flatten(user)
     if user_info:
         sex = user_info.sex
         birthday = user_info.birthday
@@ -66,7 +68,37 @@ def traverse_messages(messages, resp_suc):
             times = time_diff(message.time)
             content = message.content
             user_pic = to_messages(times, content, message.sender_id)
+            user_pic['sender_id'] = message.sender_id
+            user_pic['receiver_id'] = message.receiver_id
             resp_suc['list'].append(user_pic)
+
+
+def traverse_messages_sender(messages, resp_suc):
+    """
+        遍历多条消息
+    """
+    if messages:
+        for message in messages:
+            times = time_diff(message.time)
+            content = message.content
+            user_pic = to_messages(times, content, message.sender_id)
+            user_pic['sender_id'] = message.sender_id
+            user_pic['receiver_id'] = message.receiver_id
+            resp_suc['sender_list'].append(user_pic)
+
+
+def traverse_messages_receiver(messages, resp_suc):
+    """
+        遍历多条消息
+    """
+    if messages:
+        for message in messages:
+            times = time_diff(message.time)
+            content = message.content
+            user_pic = to_messages(times, content, message.sender_id)
+            user_pic['sender_id'] = message.sender_id
+            user_pic['receiver_id'] = message.receiver_id
+            resp_suc['receiver_list'].append(user_pic)
 
 
 def traverse_message(message, resp_suc):
@@ -77,7 +109,35 @@ def traverse_message(message, resp_suc):
         times = time_diff(message.time)
         content = message.content
         user_pic = to_messages(times, content, message.sender_id)
+        user_pic['sender_id'] = message.sender_id
+        user_pic['receiver_id'] = message.receiver_id
         resp_suc['list'].append(user_pic)
+
+
+def traverse_message_sender(message, resp_suc):
+    """
+        遍历一条消息
+    """
+    if message:
+        times = time_diff(message.time)
+        content = message.content
+        user_pic = to_messages(times, content, message.sender_id)
+        user_pic['sender_id'] = message.sender_id
+        user_pic['receiver_id'] = message.receiver_id
+        resp_suc['sender_list'].append(user_pic)
+
+
+def traverse_message_receiver(message, resp_suc):
+    """
+        遍历一条消息
+    """
+    if message:
+        times = time_diff(message.time)
+        content = message.content
+        user_pic = to_messages(times, content, message.sender_id)
+        user_pic['sender_id'] = message.sender_id
+        user_pic['receiver_id'] = message.receiver_id
+        resp_suc['receiver_list'].append(user_pic)
 
 
 def traverse_collects(results, user_id, resp_suc):
@@ -93,6 +153,8 @@ def traverse_collects(results, user_id, resp_suc):
         result_pic.pop('longitude')
         result_pic.pop('latitude')
         pub_picture = PubPicture.query.filter(PubPicture.pub_id == result.id).first()
+        county = County.query.filter(County.id == result.county_id).first()
+        to_city(result_pic, county)
         if pub_picture:
             if pub_picture.rel_path and pub_picture.pic_name:
                 result_pic['pic_path'] = pub_picture.rel_path + '/' + pub_picture.pic_name
@@ -113,11 +175,21 @@ def traverse_collect(result, user_id, resp_suc):
         result_pic.pop('longitude')
         result_pic.pop('latitude')
         pub_picture = PubPicture.query.filter(PubPicture.pub_id == result.id).first()
+        county = County.query.filter(County.id == result.county_id).first()
+        to_city(result_pic, county)
         if pub_picture:
             if pub_picture.rel_path and pub_picture.pic_name:
                 result_pic['pic_path'] = pub_picture.rel_path + '/' + pub_picture.pic_name
         change_latitude_longitude(result_pic, result)
         resp_suc['list'].append(result_pic)
+
+
+def to_city(obj_pic, county):
+    """
+        所在城市
+    """
+    if county:
+        obj_pic['city_county'] = county.name
 
 
 Session = sessionmaker()
@@ -221,10 +293,16 @@ class UserMessage(restful.Resource):
         resp_suc = {}
         resp_suc['list'] = []
         if user_id:
-            message_count = Message.query.filter(Message.receiver_id == user_id, Message.view == 0).count()
+            message_count = session.query(Message).\
+                filter(Message.receiver_id == user_id, Message.view == 0).group_by(Message.sender_id).count()
             page, per_page = page_utils(message_count, page)
             if message_count > 1:
-                messages = Message.query.filter(Message.receiver_id == user_id, Message.view == 0).order_by(Message.time.desc())[per_page*(page-1):per_page*page]
+                # messages = Message.query.filter(Message.receiver_id == user_id, Message.view == 0).order_by
+                # (Message.time.desc()).group_by(Message.receiver_id)[per_page*(page-1):per_page*page]
+                messages = session.query(Message).\
+                    filter(Message.receiver_id == user_id, Message.view == 0).order_by(Message.time.desc()).\
+                    group_by(Message.sender_id)[per_page*(page-1):per_page*page]
+
                 traverse_messages(messages, resp_suc)
             else:
                 message = Message.query.filter(Message.receiver_id == user_id, Message.view == 0).first()
@@ -262,4 +340,83 @@ class UserMessageUpdate(restful.Resource):
             resp_suc['status'] = 1
             resp_suc['message'] = '未知错误'
 
+
+class UserMessageInfo(restful.Resource):
+    """
+        用户私信详细接口
+    """
+    @staticmethod
+    def get():
+        """
+            参数
+            receiver_id: 接受用户id
+            sender_id: 发送用户id
+        """
+        parser = reqparse.RequestParser()
+        parser.add_argument('sender_id', type=str, required=True, help=u'sender_id必须')
+        parser.add_argument('receiver_id', type=str, required=True, help=u'receiver_id必须')
+
+        args = parser.parse_args()
+
+        resp_suc = success_dic().dic
+        resp_fail = fail_dic().dic
+        resp_suc['sender_list'] = []
+        resp_suc['receiver_list'] = []
+
+        sender_id = args['sender_id']
+        receiver_id = args['receiver_id']
+        message_count = Message.query.filter(Message.sender_id == sender_id).count()
+        message_receiver_count = Message.query.filter(Message.sender_id == receiver_id, Message.receiver_id == sender_id).count()
+        if message_count > 1 or message_receiver_count > 1:
+            messages = Message.query.filter(Message.sender_id == sender_id).order_by(Message.time.desc())
+            message_receivers = Message.query.filter(Message.sender_id == receiver_id, Message.receiver_id == sender_id).\
+                order_by(Message.time.desc())
+            if messages or message_receivers:
+                traverse_messages_receiver(messages, resp_suc)
+                traverse_messages_sender(message_receivers, resp_suc)
+                return resp_suc
+            else:
+                return resp_fail
+        else:
+            message = Message.query.filter(Message.sender_id == sender_id).first()
+            message_receiver = Message.query.filter\
+                    (Message.sender_id == receiver_id, Message.receiver_id == sender_id).first()
+            if message or message_receiver:
+                traverse_message_receiver(message, resp_suc)
+                traverse_message_sender(message_receiver, resp_suc)
+                return resp_suc
+            else:
+                return resp_fail
+
+
+class UserSenderMessage(restful.Resource):
+    """
+        用户发送私信
+    """
+    @staticmethod
+    def get():
+        """
+            参数:
+                sender_id:发送的id
+                receiver_id:接收的id
+                content: 发送内容
+        """
+        parser = reqparse.RequestParser()
+        parser.add_argument('sender_id', type=str, required=True, help=u'sender_id必须。')
+        parser.add_argument('receiver_id', type=str, required=True, help=u'receiver_id必须。')
+        parser.add_argument('content', type=str, required=True, help=u'content必须。')
+
+        args = parser.parse_args()
+        sender_id = args['receiver_id']
+        receiver_id = args['sender_id']
+        content = args['content']
+        resp_suc = success_dic().dic
+        resp_fail = fail_dic().dic
+        message = Message(receiver_id, sender_id, content, view=0)
+        db.add(message)
+        try:
+            db.commit()
+        except:
+            return resp_fail
+        return resp_suc
 
