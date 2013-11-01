@@ -2,7 +2,7 @@
 
 from flask.ext import restful
 from sqlalchemy.orm import Session, sessionmaker
-from models import Collect, Pub, User, engine, db, Message, UserInfo, PubPicture, County, SystemMessage
+from models import Collect, Pub, User, engine, db, Message, UserInfo, PubPicture, County, SystemMessage, FeedBack
 from flask.ext.restful import reqparse
 from utils import pickler, time_diff, page_utils
 from datetime import datetime
@@ -625,3 +625,31 @@ class ClearMessage(restful.Resource):
             except:
                 return resp_fail
             return resp_suc
+
+
+class FeedBackAdd(restful.Resource):
+    """
+        意见反馈
+    """
+    @staticmethod
+    def get():
+        """
+            参数
+                content: 反馈内容
+        """
+        parser = reqparse.RequestParser()
+        parser.add_argument('content', type=str, required=True, help=u'content必须。')
+
+        args = parser.parse_args()
+
+        resp_suc = success_dic().dic
+        resp_fail = fail_dic().dic
+
+        content = args['content']
+        feed_back = FeedBack(content=content)
+        db.add(feed_back)
+        try:
+            db.commit()
+        except:
+            return resp_fail
+        return resp_suc
