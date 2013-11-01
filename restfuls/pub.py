@@ -2,10 +2,11 @@
 #!/usr/bin/python
 
 from flask.ext import restful
-from models import Pub, PubType, PubTypeMid, PubPicture, engine, County, View, UserInfo, User, db
+from models import Pub, PubType, PubTypeMid, PubPicture, engine, County, View, UserInfo, User, db, Activity, ActivityComment
 from utils import pickler, page_utils
 from flask.ext.restful import reqparse
 from sqlalchemy.orm import Session, sessionmaker
+from utils.others import success_dic, fail_dic
 
 
 Session = sessionmaker()
@@ -178,6 +179,55 @@ def pub_only(pub, resp_suc):
         to_city(pub_pic, county)
         change_latitude_longitude(pub_pic, pub)
         resp_suc['pub_list'].append(pub_pic)
+
+
+def pub_activity(activity):
+    """
+        活动的关联酒吧
+    """
+    activity_pic = to_flatten(activity, activity)
+    pub = Pub.query.filter(Pub.id == activity.pub_id).first()
+    county = County.query.filter(County.id == pub.county_id).first()
+    activity_pic['picture_path'] = ''
+    activity_pic['county'] = ''
+    activity_pic['pub_name'] = ''
+    if pub:
+        pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub.id).first()
+        activity_pic['picture_path'] = pub_picture.rel_path + '/' + pub_picture.pic_name
+        activity_pic['pub_name'] = pub.name
+    if county:
+        activity_pic['county'] = county.name
+    return activity_pic
+
+
+def comment_user(count, activity):
+    """
+        评论内容以及用户信息
+    """
+    if count > 1:
+        activity_comments = ActivityComment.query.filter(ActivityComment.activity_id == activity.id)
+        for activity_comment in activity_comments:
+            activity_pic = to_flatten(activity_comment, None)
+            user_info(activity_comment, activity_pic)
+    else:
+        activity_comment = ActivityComment.query.filter(ActivityComment.activity_id == activity.id).first()
+        activity_pic = to_flatten(activity_comment, None)
+        user_info(activity_comment, activity_pic)
+    return activity_pic
+
+
+def user_info(activity_comment, pic):
+    """
+
+    """
+    user = User.query.filter(User.id == activity_comment.user_id).first()
+    pic['user_name'] = ''
+    pic['picture_path'] = ''
+    if user:
+        pic['user_name'] = user.nick_name
+        user_info = UserInfo.query.filter(UserInfo.user_id == user.id).first()
+        if user_info:
+            pic['picture_path'] = user_info.rel_path + '/' + user_info.pic_name
 
 
 def change_latitude_longitude(pub_pic, pub):
@@ -483,3 +533,39 @@ class PubSearchView(restful.Resource):
         resp_suc['status'] = 0
         resp_suc['message'] = 'success'
         return resp_suc
+
+
+class ActivityInfo(restful.Resource):
+    """
+        活动详情
+    """
+    @staticmethod
+    def get():
+        """
+            参数
+            activity_id: 活动id
+        """
+        parser = reqparse.RequestParser()
+        parser.add_argument('activity_id', type=str, required=True, help=u'activity_id必须.')
+
+        args = parser.parse_args()
+
+        activity_id = args['activity_id']
+
+        resp_suc = success_dic().dic
+        resp_fail = fail_dic().dic
+        resp_suc['activity_list'] = []
+        resp_suc['comment_list'] = []
+
+        activity = Activity.query.filter(Activity.id == activity_id).first()
+        if activity:
+            activity_pic = pub_activity(activity)
+            activity_comment_count = ActivityComment.query.filter(ActivityComment.activity_id == activity.id).count()
+            activity_pic['comment_count'] = activity_comment_count
+            resp_suc['activity_list'].append(activity_pic)
+            activity_comment_pic = comment_user(activity_comment_count, activity)
+            resp_suc['comment_list'].append(activity_comment_pic)
+            return resp_suc
+        else:
+            return resp_fail
+
