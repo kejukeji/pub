@@ -1,9 +1,10 @@
 # coding: utf-8
+#!/usr/bin/python\r\n
 
 from models.user import User, UserInfo
 from models.pub import Pub, PubType, PubPicture, PubTypeMid
 from models.location import Province, City, County
-from models.feature import Collect, Comment, View, Message
+from models.feature import Collect, Comment, View, Message, FeedBack
 from models.ethnicity import Ethnicity
 from models.admin import SystemMessage
 
