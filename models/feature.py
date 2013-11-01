@@ -14,12 +14,14 @@ from .database import Base
 from utils import todayfstr
 from .pub import Pub
 from .user import User
+from .activity import Activity
 
 COLLECT_TABLE = 'collect'
 COMMENT_TABLE = 'comment'
 VIEW_TABLE = 'view'
 MESSAGE_TABLE = 'message'
 FEED_BACK = 'feed_back'
+ACTIVITY_COMMENT_TABLE = 'activity_comment'
 
 
 class Collect(Base):
@@ -149,3 +151,30 @@ class FeedBack(Base):
 
     def __init__(self, **kwargs):
         self.content = kwargs.pop('content')
+
+
+class ActivityComment(Base):
+    """comment数据表对应的类
+    id
+    user_id 用户ID ON DELETE SET NULL ON UPDATE CASCADE
+    pub_id 酒吧ID ON DELETE CASCADE ON UPDATE CASCADE
+    time 评论时间
+    content 评论内容
+    star 评论给了几颗星
+    """
+
+    __tablename__ = ACTIVITY_COMMENT_TABLE
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey(User.id, ondelete='set null', onupdate='cascade'), nullable=True)
+    activity_id = Column(Integer, ForeignKey(Pub.id, ondelete='cascade', onupdate='cascade'), nullable=False)
+    time = Column(DATETIME, nullable=False, server_default=None)
+    content = Column(String(256), nullable=False)
+    star = Column(Integer, nullable=False, server_default='5')
+
+    def __init__(self, user_id, activity_id, content, star=5):
+        self.user_id = user_id
+        self.activity_id = activity_id
+        self.content = content
+        self.time = todayfstr()
+        self.star = star

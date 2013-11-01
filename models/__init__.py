@@ -1,12 +1,13 @@
 # coding: utf-8
-#!/usr/bin/python\r\n
+#!/usr/bin/python -u
 
 from models.user import User, UserInfo
 from models.pub import Pub, PubType, PubPicture, PubTypeMid
 from models.location import Province, City, County
-from models.feature import Collect, Comment, View, Message, FeedBack
+from models.feature import Collect, Comment, View, Message, FeedBack, ActivityComment
 from models.ethnicity import Ethnicity
 from models.admin import SystemMessage
+from models.activity import Activity
 
 from models.database import db
 from models.database import Base, engine
