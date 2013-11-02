@@ -139,7 +139,7 @@ class UserLogin(restful.Resource):
                 err['message'] = '微博第三方登陆必须需要open_id'
                 return err
             if User.query.filter(User.login_type == 1, User.open_id == open_id).count():
-                user = User.query.filter(User.login_type == 1, User.open_id == open_id)
+                user = User.query.filter(User.login_type == 1, User.open_id == open_id).first()
             else:
                 err['message'] = '不存在这个open_id'
                 return err
@@ -151,7 +151,7 @@ class UserLogin(restful.Resource):
                 err['message'] = '微博第三方登陆必须需要open_id'
                 return err
             if User.query.filter(User.login_type == 2, User.open_id == open_id).count():
-                user = User.query.filter(User.login_type == 2, User.open_id == open_id)
+                user = User.query.filter(User.login_type == 2, User.open_id == open_id).first()
             else:
                 err['message'] = '不存在这个open_id'
                 return err
