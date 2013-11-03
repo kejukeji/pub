@@ -359,6 +359,7 @@ class UserCollect(restful.Resource):
                     join(Collect).\
                     filter(Collect.user_id == user_id).first()
                 traverse_collect(result, user_id, resp_suc)
+            resp_suc['count'] = result_count
             resp_suc['status'] = 0
         else:
             resp_suc['message'] = 'error'
