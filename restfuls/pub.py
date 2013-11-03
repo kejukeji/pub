@@ -2,7 +2,8 @@
 #!/usr/bin/python
 
 from flask.ext import restful
-from models import Pub, PubType, PubTypeMid, PubPicture, engine, County, View, UserInfo, User, db, Activity, ActivityComment
+from models import Pub, PubType, PubTypeMid, PubPicture, engine, County, View, UserInfo, User, db, Activity,\
+    ActivityComment, Province, City
 from utils import pickler, page_utils
 from flask.ext.restful import reqparse
 from sqlalchemy.orm import Session, sessionmaker
@@ -187,20 +188,24 @@ def pub_activity(activity):
     """
     activity_pic = to_flatten(activity, activity)
     pub = Pub.query.filter(Pub.id == activity.pub_id).first()
+
     county = County.query.filter(County.id == pub.county_id).first()
+    province = Province.query.filter(Province.id == pub.province_id).first()
+    city = City.query.filter(City.id == pub.city_id).first()
     activity_pic['picture_path'] = ''
     activity_pic['county'] = ''
     activity_pic['pub_name'] = ''
+    activity_pic['activity_picture_path'] = activity.rel_path + '/' + activity.pic_name
     if pub:
         pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub.id).first()
-        activity_pic['picture_path'] = pub_picture.rel_path + '/' + pub_picture.pic_name
+        activity_pic['pub_picture_path'] = pub_picture.rel_path + '/' + pub_picture.pic_name
         activity_pic['pub_name'] = pub.name
-    if county:
-        activity_pic['county'] = county.name
+    if county and province and city:
+        activity_pic['county'] = province.name + city.name + county.name
     return activity_pic
 
 
-def comment_user(count, activity):
+def comment_user(count, activity, resp_suc):
     """
         评论内容以及用户信息
     """
@@ -209,11 +214,12 @@ def comment_user(count, activity):
         for activity_comment in activity_comments:
             activity_pic = to_flatten(activity_comment, None)
             user_info(activity_comment, activity_pic)
+            resp_suc['comment_list'].append(activity_pic)
     else:
         activity_comment = ActivityComment.query.filter(ActivityComment.activity_id == activity.id).first()
         activity_pic = to_flatten(activity_comment, None)
         user_info(activity_comment, activity_pic)
-    return activity_pic
+        resp_suc['comment_list'].append(activity_pic)
 
 
 def user_info(activity_comment, pic):
@@ -221,10 +227,10 @@ def user_info(activity_comment, pic):
 
     """
     user = User.query.filter(User.id == activity_comment.user_id).first()
-    pic['user_name'] = ''
+    pic['nick_name'] = ''
     pic['picture_path'] = ''
     if user:
-        pic['user_name'] = user.nick_name
+        pic['nick_name'] = user.nick_name
         user_info = UserInfo.query.filter(UserInfo.user_id == user.id).first()
         if user_info:
             pic['picture_path'] = user_info.rel_path + '/' + user_info.pic_name
@@ -555,7 +561,6 @@ class ActivityInfo(restful.Resource):
         resp_suc = success_dic().dic
         resp_fail = fail_dic().dic
         resp_suc['activity_list'] = []
-        resp_suc['comment_list'] = []
 
         activity = Activity.query.filter(Activity.id == activity_id).first()
         if activity:
@@ -563,9 +568,138 @@ class ActivityInfo(restful.Resource):
             activity_comment_count = ActivityComment.query.filter(ActivityComment.activity_id == activity.id).count()
             activity_pic['comment_count'] = activity_comment_count
             resp_suc['activity_list'].append(activity_pic)
-            activity_comment_pic = comment_user(activity_comment_count, activity)
-            resp_suc['comment_list'].append(activity_comment_pic)
             return resp_suc
         else:
             return resp_fail
 
+
+class CommentActivity(restful.Resource):
+    """
+        活动评论
+    """
+    @staticmethod
+    def get():
+        """
+            参数：
+                activity_id: 活动id
+        """
+        parser = reqparse.RequestParser()
+        parser.add_argument('activity_id', type=str, required=True, help=u'activity_id必须。')
+
+        args = parser.parse_args()
+
+        resp_suc = success_dic().dic
+        resp_fail = fail_dic().dic
+        resp_suc['comment_list'] = []
+
+        activity_id = args['activity_id']
+        activity = Activity.query.filter(Activity.id == activity_id).first()
+        if activity:
+            activity_comment_count = ActivityComment.query.filter(ActivityComment.activity_id == activity.id).count()
+            resp_suc['comment_count'] = activity_comment_count
+            comment_user(activity_comment_count, activity, resp_suc)
+            return resp_suc
+        else:
+            return resp_fail
+
+
+class ActivityList(restful.Resource):
+    """
+        活动列表
+    """
+    @staticmethod
+    def get():
+        """
+            参数:
+                pub_id: 酒吧id么
+        """
+        parser = reqparse.RequestParser()
+        parser.add_argument('pub_id', type=str, required=False)
+
+        args = parser.parse_args()
+
+        pub_id = args['pub_id']
+
+        resp_suc = success_dic().dic
+        resp_fail = fail_dic().dic
+        resp_suc['host_list'] = []
+        resp_suc['activity_list'] = []
+        if pub_id:
+            get_activity_host_list_id(pub_id, resp_suc)
+            get_activity_list_id(pub_id, resp_suc)
+        else:
+            get_activity_host_list(resp_suc)
+            get_activity_list(resp_suc)
+        return resp_suc
+
+
+def get_activity_host_list_id(pub_id, resp_suc):
+    """
+        获取热门推荐活动
+    """
+    activity_host_count = Activity.query.filter(Activity.hot == 0, Activity.pub_id == pub_id).count()
+    if activity_host_count > 1:
+        activity_host = Activity.query.filter(Activity.hot == 0, Activity.pub_id == pub_id)
+        for host in activity_host:
+            host_pic = pub_activity(host)
+            resp_suc['host_list'].append(host_pic)
+    else:
+        activity_host = Activity.query.filter(Activity.hot == 0, Activity.pub_id == pub_id).first()
+        host_pic = None
+        if activity_host:
+            host_pic = pub_activity(activity_host)
+        resp_suc['host_list'].append(host_pic)
+
+
+def get_activity_list_id(pub_id, resp_suc):
+    """
+        获取活动
+    """
+    activity_host_count = Activity.query.filter(Activity.pub_id == pub_id).count()
+    if activity_host_count > 1:
+        activity_host = Activity.query.filter(Activity.pub_id == pub_id)
+        for host in activity_host:
+            activity_pic = pub_activity(host)
+            resp_suc['activity_list'].append(activity_pic)
+    else:
+        activity_host = Activity.query.filter(Activity.pub_id == pub_id).first()
+        activity_pic = None
+        if activity_host:
+            activity_pic = pub_activity(activity_host)
+        resp_suc['activity_list'].append(activity_pic)
+
+
+def get_activity_host_list(resp_suc):
+    """
+        获取热门推荐活动
+    """
+    activity_host_count = Activity.query.filter(Activity.hot == 0).count()
+    if activity_host_count > 1:
+        activity_host = Activity.query.filter(Activity.hot == 0)
+        for host in activity_host:
+            host_pic = pub_activity(host)
+            resp_suc['host_list'].append(host_pic)
+    else:
+        activity_host = Activity.query.filter(Activity.hot == 0).first()
+        host_pic = None
+        if activity_host:
+            host_pic = pub_activity(activity_host)
+        resp_suc['host_list'].append(host_pic)
+
+
+def get_activity_list(resp_suc):
+    """
+        获取活动
+    """
+    activity_host_count = Activity.query.filter().count()
+    if activity_host_count > 1:
+        activity_host = Activity.query.filter()
+        for hot in activity_host:
+            hot_pic = pub_activity(hot)
+            resp_suc['activity_list'].append(hot_pic)
+    else:
+        activity_host = Activity.query.filter().first()
+        activity_pic = None
+        if activity_host:
+            activity_pic = pub_activity(activity_host)
+        resp_suc['activity_list'].append(activity_pic)
