@@ -16,6 +16,7 @@ class Activity(Base):
             start_date	datetime	开始时间
             end_date	datetime	结束时间
             activity_info	varchar	活动详情
+            host : 0代表推荐 1代表不推荐
     """
     __tablename__ = ACTIVITY
     id = Column(Integer, primary_key=True)
@@ -27,6 +28,7 @@ class Activity(Base):
     base_path = Column(String(100), nullable=True)
     rel_path = Column(String(100), nullable=True)
     pic_name = Column(String(100), nullable=True)
+    hot = Column(Integer, nullable=True)
 
     def __init__(self, **kwargs):
         self.title = kwargs.pop('title')
