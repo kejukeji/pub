@@ -615,31 +615,34 @@ class ActivityList(restful.Resource):
         """
         parser = reqparse.RequestParser()
         parser.add_argument('pub_id', type=str, required=False)
+        parser.add_argument('page', type=str, required=True, help=u'page必须，当前页码。')
 
         args = parser.parse_args()
 
         pub_id = args['pub_id']
+        page = args['page']
 
         resp_suc = success_dic().dic
         resp_fail = fail_dic().dic
         resp_suc['hot_list'] = []
         resp_suc['activity_list'] = []
         if pub_id:
-            get_activity_host_list_id(pub_id, resp_suc)
-            get_activity_list_id(pub_id, resp_suc)
+            get_activity_host_list_id(pub_id, resp_suc, page)
+            get_activity_list_id(pub_id, resp_suc, page)
         else:
-            get_activity_host_list(resp_suc)
-            get_activity_list(resp_suc)
+            get_activity_host_list(resp_suc, page)
+            get_activity_list(resp_suc, page)
         return resp_suc
 
 
-def get_activity_host_list_id(pub_id, resp_suc):
+def get_activity_host_list_id(pub_id, resp_suc, page):
     """
         获取热门推荐活动
     """
     activity_host_count = Activity.query.filter(Activity.hot == 0, Activity.pub_id == pub_id).count()
+    page, per_page = page_utils(activity_host_count, page)
     if activity_host_count > 1:
-        activity_host = Activity.query.filter(Activity.hot == 0, Activity.pub_id == pub_id)
+        activity_host = Activity.query.filter(Activity.hot == 0, Activity.pub_id == pub_id)[per_page*(page-1):per_page*page]
         for host in activity_host:
             host_pic = pub_activity(host)
             resp_suc['hot_list'].append(host_pic)
@@ -651,13 +654,14 @@ def get_activity_host_list_id(pub_id, resp_suc):
         resp_suc['hot_list'].append(host_pic)
 
 
-def get_activity_list_id(pub_id, resp_suc):
+def get_activity_list_id(pub_id, resp_suc, page):
     """
         获取活动
     """
     activity_host_count = Activity.query.filter(Activity.pub_id == pub_id).count()
+    page, per_page = page_utils(activity_host_count, page)
     if activity_host_count > 1:
-        activity_host = Activity.query.filter(Activity.pub_id == pub_id)
+        activity_host = Activity.query.filter(Activity.pub_id == pub_id)[per_page*(page-1):per_page*page]
         for host in activity_host:
             activity_pic = pub_activity(host)
             resp_suc['activity_list'].append(activity_pic)
@@ -669,13 +673,14 @@ def get_activity_list_id(pub_id, resp_suc):
         resp_suc['activity_list'].append(activity_pic)
 
 
-def get_activity_host_list(resp_suc):
+def get_activity_host_list(resp_suc, page):
     """
         获取热门推荐活动
     """
     activity_host_count = Activity.query.filter(Activity.hot == 0).count()
+    page, per_page = page_utils(activity_host_count, page)
     if activity_host_count > 1:
-        activity_host = Activity.query.filter(Activity.hot == 0)
+        activity_host = Activity.query.filter(Activity.hot == 0)[per_page*(page-1):per_page*page]
         for host in activity_host:
             host_pic = pub_activity(host)
             resp_suc['hot_list'].append(host_pic)
@@ -687,13 +692,14 @@ def get_activity_host_list(resp_suc):
         resp_suc['hot_list'].append(host_pic)
 
 
-def get_activity_list(resp_suc):
+def get_activity_list(resp_suc, page):
     """
         获取活动
     """
     activity_host_count = Activity.query.filter().count()
+    page, per_page = page_utils(activity_host_count, page)
     if activity_host_count > 1:
-        activity_host = Activity.query.filter()
+        activity_host = Activity.query.filter()[per_page*(page-1):per_page*page]
         for hot in activity_host:
             hot_pic = pub_activity(hot)
             resp_suc['activity_list'].append(hot_pic)
