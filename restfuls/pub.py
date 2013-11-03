@@ -622,7 +622,7 @@ class ActivityList(restful.Resource):
 
         resp_suc = success_dic().dic
         resp_fail = fail_dic().dic
-        resp_suc['host_list'] = []
+        resp_suc['hot_list'] = []
         resp_suc['activity_list'] = []
         if pub_id:
             get_activity_host_list_id(pub_id, resp_suc)
@@ -642,13 +642,13 @@ def get_activity_host_list_id(pub_id, resp_suc):
         activity_host = Activity.query.filter(Activity.hot == 0, Activity.pub_id == pub_id)
         for host in activity_host:
             host_pic = pub_activity(host)
-            resp_suc['host_list'].append(host_pic)
+            resp_suc['hot_list'].append(host_pic)
     else:
         activity_host = Activity.query.filter(Activity.hot == 0, Activity.pub_id == pub_id).first()
         host_pic = None
         if activity_host:
             host_pic = pub_activity(activity_host)
-        resp_suc['host_list'].append(host_pic)
+        resp_suc['hot_list'].append(host_pic)
 
 
 def get_activity_list_id(pub_id, resp_suc):
@@ -678,13 +678,13 @@ def get_activity_host_list(resp_suc):
         activity_host = Activity.query.filter(Activity.hot == 0)
         for host in activity_host:
             host_pic = pub_activity(host)
-            resp_suc['host_list'].append(host_pic)
+            resp_suc['hot_list'].append(host_pic)
     else:
         activity_host = Activity.query.filter(Activity.hot == 0).first()
         host_pic = None
         if activity_host:
             host_pic = pub_activity(activity_host)
-        resp_suc['host_list'].append(host_pic)
+        resp_suc['hot_list'].append(host_pic)
 
 
 def get_activity_list(resp_suc):
