@@ -636,9 +636,11 @@ class FeedBackAdd(restful.Resource):
         """
             参数
                 content: 反馈内容
+                user_id: 登录用户id
         """
         parser = reqparse.RequestParser()
         parser.add_argument('content', type=str, required=True, help=u'content必须。')
+        parser.add_argument('user_id', type=str, required=True, help=u'user_id必须。')
 
         args = parser.parse_args()
 
@@ -646,7 +648,8 @@ class FeedBackAdd(restful.Resource):
         resp_fail = fail_dic().dic
 
         content = args['content']
-        feed_back = FeedBack(content=content)
+        user_id = args['user_id']
+        feed_back = FeedBack(content=content, user_id=user_id)
         db.add(feed_back)
         try:
             db.commit()
