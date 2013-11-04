@@ -165,7 +165,7 @@ class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True
     @staticmethod
     def post(user_id):
         parser = reqparse.RequestParser()
-        parser.add_argument('login_type', type=int, required=True)
+        parser.add_argument('login_type', type=int, required=False)
         parser.add_argument('password', type=str, required=False)
         parser.add_argument('open_id', type=str, required=False)
         parser.add_argument('new_password', type=str, required=False)
