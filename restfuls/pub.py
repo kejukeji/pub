@@ -2,12 +2,12 @@
 #!/usr/bin/python
 
 from flask.ext import restful
-from models import Pub, PubType, PubTypeMid, PubPicture, engine, County, View, UserInfo, User, db, Activity,\
-    ActivityComment, Province, City
+from models import Pub, PubType, PubTypeMid, PubPicture, engine, View, UserInfo, User, db, Activity,\
+    ActivityComment
 from utils import pickler, page_utils
 from flask.ext.restful import reqparse
 from sqlalchemy.orm import Session, sessionmaker
-from utils.others import success_dic, fail_dic
+from utils.others import success_dic, fail_dic, get_address
 
 
 Session = sessionmaker()
@@ -100,8 +100,7 @@ def pub_list_picture(pub_pictures, resp_suc):
         pub = Pub.query.filter(Pub.id == pub_picture.pub_id).first()
         change_latitude_longitude(pub_picture_pic, pub)
         picture_pub(pub_picture_pic, pub, pub_picture)
-        county = County.query.filter(County.id == pub.county_id).first()
-        to_city(pub_picture_pic, county)
+        resp_suc['county'] = get_address(pub.province_id, pub.city_id, pub.county_id)
         resp_suc['picture_list'].append(pub_picture_pic)
 
 
@@ -133,8 +132,7 @@ def pub_picture_only(pub_picture, resp_suc):
         pub = Pub.query.filter(Pub.id == pub_picture.pub_id).first()
         change_latitude_longitude(pub_picture_pic, pub)
         picture_pub(pub_picture_pic, pub, pub_picture)
-        county = County.query.filter(County.id == pub.county_id).first()
-        to_city(pub_picture_pic, county)
+        resp_suc['county'] = get_address(pub.province_id, pub.city_id, pub.county_id)
         resp_suc['picture_list'].append(pub_picture_pic)
 
 
@@ -160,8 +158,7 @@ def pub_list(pubs, resp_suc):
         pub_pic = to_flatten(pub, pub_picture)
         pub_pic.pop('longitude')
         pub_pic.pop('latitude')
-        county = County.query.filter(County.id == pub.county_id).first()
-        to_city(pub_pic, county)
+        resp_suc['county'] = get_address(pub.province_id, pub.city_id, pub.county_id)
         change_latitude_longitude(pub_pic, pub)
         resp_suc['pub_list'].append(pub_pic)
 
@@ -173,11 +170,10 @@ def pub_only(pub, resp_suc):
     if pub:
         pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub.id).first()
         pub_pic = to_flatten(pub, pub_picture)
-        county = County.query.filter(County.id == pub.county_id).first()
+        resp_suc['county'] = get_address(pub.province_id, pub.city_id, pub.county_id)
         pub_pic.pop('longitude')
         pub_pic.pop('latitude')
         to_pub_type(pub, pub_pic)
-        to_city(pub_pic, county)
         change_latitude_longitude(pub_pic, pub)
         resp_suc['pub_list'].append(pub_pic)
 
@@ -189,19 +185,14 @@ def pub_activity(activity):
     activity_pic = to_flatten(activity, activity)
     pub = Pub.query.filter(Pub.id == activity.pub_id).first()
 
-    county = County.query.filter(County.id == pub.county_id).first()
-    province = Province.query.filter(Province.id == pub.province_id).first()
-    city = City.query.filter(City.id == pub.city_id).first()
     activity_pic['picture_path'] = ''
-    activity_pic['county'] = ''
     activity_pic['pub_name'] = ''
     activity_pic['activity_picture_path'] = activity.rel_path + '/' + activity.pic_name
     if pub:
         pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub.id).first()
         activity_pic['pub_picture_path'] = pub_picture.rel_path + '/' + pub_picture.pic_name
         activity_pic['pub_name'] = pub.name
-    if county and province and city:
-        activity_pic['county'] = province.name + city.name + county.name
+    activity_pic['county'] = get_address(pub.province_id, pub.city_id, pub.county_id)
     return activity_pic
 
 
@@ -357,10 +348,9 @@ class PubDetail(restful.Resource):
         if pub_id:
             pub = Pub.query.filter(Pub.id == pub_id).first()
             pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub_id).first()
-            county = County.query.filter(County.id == pub.county_id).first()
+            resp_suc['county'] = get_address(pub.province_id, pub.city_id, pub.county_id)
             pub_pic = to_pub_longitude_latitude(pub, pub_picture)
             to_pub_type(pub, pub_pic)
-            to_city(pub_pic, county)
             resp_suc['pub_list'].append(pub_pic)
             view_check = View.query.filter(View.user_id == user_id, View.pub_id == pub_id).first()
             if view_check:

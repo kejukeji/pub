@@ -147,9 +147,11 @@ class FeedBack(Base):
     """
     __tablename__ = FEED_BACK
     id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey(User.id, ondelete='set null', onupdate='cascade'), nullable=False)
     content = Column(String(140), nullable=True)
 
     def __init__(self, **kwargs):
+        self.user_id = kwargs.pop('user_id')
         self.content = kwargs.pop('content')
 
 
@@ -166,7 +168,7 @@ class ActivityComment(Base):
     __tablename__ = ACTIVITY_COMMENT_TABLE
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey(User.id, ondelete='set null', onupdate='cascade'), nullable=True)
+    user_id = Column(Integer, ForeignKey(User.id, ondelete='set null', onupdate='cascade'), nullable=False)
     activity_id = Column(Integer, ForeignKey(Pub.id, ondelete='cascade', onupdate='cascade'), nullable=False)
     time = Column(DATETIME, nullable=False, server_default=None)
     content = Column(String(256), nullable=False)

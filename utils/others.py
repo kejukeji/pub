@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from wtforms import BooleanField
+from models.location import Province, City, County
 import jsonpickle
 import datetime
 
@@ -78,3 +79,18 @@ def time_to_str(time):
 
     """
     return time.strftime("%Y-%m-%d %H:%M:%S")
+
+
+def get_address(province_id, city_id, county_id):
+    """
+        参数
+            province_id: 省id
+            city_id: 市id
+            county_id: 区id
+    """
+    county = County.query.filter(County.id == county_id).first()
+    province = Province.query.filter(Province.id == province_id).first()
+    city = City.query.filter(City.id == city_id).first()
+    if province or city or county:
+        return province.name + city.name + county.name
+    return ''
