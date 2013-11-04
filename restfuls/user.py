@@ -165,7 +165,7 @@ class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True
     @staticmethod
     def post(user_id):
         parser = reqparse.RequestParser()
-        parser.add_argument('login_type', type=int, required=True, help=u'登陆必须需要login_type')
+        parser.add_argument('login_type', type=int, required=True)
         parser.add_argument('password', type=str, required=False)
         parser.add_argument('open_id', type=str, required=False)
         parser.add_argument('new_password', type=str, required=False)
@@ -191,7 +191,7 @@ class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True
         parser.add_argument('head_picture', type=werkzeug.datastructures.FileStorage, location='files')
         args = parser.parse_args()
 
-        login_type = args.get('login_type')
+        login_type = args.get('login_type', None)
         password = args.get('password', None)
         open_id = args.get('open_id', None)
         new_password = args.get('new_password', None)
@@ -217,6 +217,15 @@ class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True
         head_picture = args.get('head_picture', None)
 
         err = {'status': 1}
+
+        if not login_type:
+            user = User.query.filter(User.id == user_id).first()
+            user_info = UserInfoDb.query.filter(UserInfoDb.user_id == user_id).first()
+            if not user:
+                err['message'] = '用户不存在'
+                return err
+            else:
+                return {'user': pickler.flatten(user), 'user_info': pickler.flatten(user_info), 'status': 0}
 
         if login_type == 0:
             if not password:
@@ -372,6 +381,8 @@ class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True
             user_info = UserInfoDb.query.filter(UserInfoDb.user_id == user_id).first()
 
             return {'user': pickler.flatten(user), 'user_info': pickler.flatten(user_info), 'status': 0}
+
+        return err
 
 
 class UserOpenIdCheck(restful.Resource):
