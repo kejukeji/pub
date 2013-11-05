@@ -7,7 +7,7 @@ from models import Pub, PubType, PubTypeMid, PubPicture, engine, View, UserInfo,
 from utils import pickler, page_utils
 from flask.ext.restful import reqparse
 from sqlalchemy.orm import Session, sessionmaker
-from utils.others import success_dic, fail_dic, get_address
+from utils.others import success_dic, fail_dic, get_address, get_county
 
 
 Session = sessionmaker()
@@ -271,11 +271,12 @@ class PubListDetail(restful.Resource):
         参数:
             type_id:酒吧类型type_id
             page: 酒吧分页
+            city_id: 城市id
         """
         parser = reqparse.RequestParser()
         parser.add_argument('type_id', type=str, required=True, help=u'酒吧类型type_id必须。')
         parser.add_argument('page', type=str, required=True, help=u'分页page必须。')
-
+        parser.add_argument('city_id', type=str, required=False)
         args = parser.parse_args()
         resp_suc = {}
         resp_suc['pub_list'] = []
@@ -283,6 +284,7 @@ class PubListDetail(restful.Resource):
         Session = sessionmaker()
         Session.configure(bind=engine)
         session = Session()
+
         page = args['page']
         if args['type_id']:
             result_count = session.query(PubPicture).\
@@ -317,6 +319,8 @@ class PubListDetail(restful.Resource):
                     pub = Pub.query.filter(Pub.id == pub_type.pub_id).first()
                     pub_only(pub, resp_suc)
             resp_suc['status'] = 0
+            resp_suc['county'] = []
+            get_county(75, resp_suc)
             return resp_suc
         else:
             resp_suc['message'] = 'error'
@@ -343,6 +347,7 @@ class PubDetail(restful.Resource):
         resp_suc['picture_list'] = []
         resp_suc['pub_list'] = []
         pub_id = int(args['pub_id'])
+        resp_suc['county'] = []
 
         user_id = args['user_id']
         if pub_id:

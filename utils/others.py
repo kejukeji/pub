@@ -94,3 +94,14 @@ def get_address(province_id, city_id, county_id):
     if province or city or county:
         return province.name + city.name + county.name
     return ''
+
+
+def get_county(city_id, resp_suc):
+    """
+    某个区
+    """
+    countys = County.query.filter(County.city_id == city_id)
+    if countys:
+        for county in countys:
+            county_pic = pickler.flatten(county)
+            resp_suc['county'].append(county_pic)
