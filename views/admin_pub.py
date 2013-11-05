@@ -78,9 +78,6 @@ class PubTypeView(ModelView):
 
         return True
 
-    #def is_accessible(self):  # 登陆管理功能先关闭，后期添加
-    #    return current_user.is_admin()
-
 
 class PubView(ModelView):
     """定义酒吧视图"""

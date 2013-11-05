@@ -17,6 +17,7 @@ from restfuls import (UserInfo, UserLogin, UserRegister, PubGetType, PubListDeta
                       UserMessage, PubSearchView, GetPubTypeList, UserOpenIdCheck, UserMessageInfo, UserSenderMessage,
                       MessageFuck, ClearMessage, FeedBackAdd, ActivityInfo, CommentActivity, ActivityList)
 from views.admin_login import login_view, logout_view, register_view
+from views.admin_view import HomeView
 
 # 用户登陆管理
 # 用户登陆
@@ -25,7 +26,7 @@ app.add_url_rule('/register', 'register_view', register_view, methods=('GET', 'P
 app.add_url_rule('/logout', 'logout_view', logout_view, methods=('GET', 'POST'))
 
 # 后台管理系统路径管理
-admin = Admin(name=u'冒冒')
+admin = Admin(name=u'冒冒', index_view=HomeView())
 admin.init_app(app)
 admin.add_view(UserView(db, name=u'用户'))
 admin.add_view(UserMessageView(db, name=u'用户私信', category=u'功能'))

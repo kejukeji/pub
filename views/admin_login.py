@@ -7,7 +7,7 @@ from wtforms import form, fields, validators
 from flask.ext import login
 from flask.ext.admin import helpers
 
-from ..models import User, db
+from models import User, db
 from pub_app import app
 
 
