@@ -91,6 +91,15 @@ def get_address(province_id, city_id, county_id, sign=''):
     county = County.query.filter(County.id == county_id).first()
     province = Province.query.filter(Province.id == province_id).first()
     city = City.query.filter(City.id == city_id).first()
-    if province or city or county:
-        return province.name + sign + city.name + sign + county.name
-    return ''
+    return_string = ""
+    if province:
+        return_string += province.name + sign
+    else:
+        return_string += sign
+    if city:
+        return_string += city.name + sign
+    else:
+        return_string += sign
+    if county:
+        return_string += county.name
+    return return_string
