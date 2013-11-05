@@ -360,9 +360,9 @@ class PubDetail(restful.Resource):
         user_id = args['user_id']
         if pub_id:
             collect = Collect.query.filter(Collect.user_id == user_id, Collect.pub_id == pub_id).first()
-            resp_suc['is_collect'] = '未收藏'
+            resp_suc['is_collect'] = '收藏'
             if collect:
-                resp_suc['is_collect'] = '收藏'
+                resp_suc['is_collect'] = '已收藏'
             pub = Pub.query.filter(Pub.id == pub_id).first()
             pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub_id).first()
             resp_suc['county'] = get_address(pub.province_id, pub.city_id, pub.county_id)
