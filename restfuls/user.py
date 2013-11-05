@@ -11,6 +11,7 @@ from models import db, User
 from models import UserInfo as UserInfoDb  # 避免和下面的类冲突
 from utils import pickler, todayfstr, allowed_file_extension, time_file_name
 from ex_var import HEAD_PICTURE_ALLOWED_EXTENSION, HEAD_PICTURE_BASE_PATH, HEAD_PICTURE_UPLOAD_FOLDER
+from utils.others import get_address
 
 
 class UserRegister(restful.Resource):
@@ -91,7 +92,8 @@ class UserRegister(restful.Resource):
             db.add(user_info)
             db.commit()
 
-        return {'user': pickler.flatten(User.query.filter(User.nick_name == nick_name).first()), 'status': 0}
+        return_user = User.query.filter(User.nick_name == nick_name).first()
+        return wrap_user_json(return_user)
 
 
 class UserLogin(restful.Resource):
@@ -144,7 +146,7 @@ class UserLogin(restful.Resource):
                 err['message'] = '不存在这个open_id'
                 return err
 
-            return {'user': pickler.flatten(user), 'status': 0}
+            return wrap_user_json(user)
 
         if login_type == 2:
             if not open_id:
@@ -156,7 +158,7 @@ class UserLogin(restful.Resource):
                 err['message'] = '不存在这个open_id'
                 return err
 
-            return {'user': pickler.flatten(user), 'status': 0}
+            return wrap_user_json(user)
 
 
 class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True和false，设置消息使用1和0
@@ -225,7 +227,7 @@ class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True
                 err['message'] = '用户不存在'
                 return err
             else:
-                return {'user': pickler.flatten(user), 'user_info': pickler.flatten(user_info), 'status': 0}
+                return wrap_user_json(user, user_info)
 
         if login_type == 0:
             if not password:
@@ -308,7 +310,7 @@ class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True
             user = User.query.filter(User.id == user_id).first()
             user_info = UserInfoDb.query.filter(UserInfoDb.user_id == user_id).first()
 
-            return {'user': pickler.flatten(user), 'user_info': pickler.flatten(user_info), 'status': 0}
+            return wrap_user_json(user, user_info)
 
         if login_type == 1 or login_type == 2:
             if not open_id:
@@ -380,7 +382,7 @@ class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True
             user = User.query.filter(User.id == user_id).first()
             user_info = UserInfoDb.query.filter(UserInfoDb.user_id == user_id).first()
 
-            return {'user': pickler.flatten(user), 'user_info': pickler.flatten(user_info), 'status': 0}
+            return wrap_user_json(user, user_info)
 
         return err
 
@@ -413,3 +415,13 @@ class UserOpenIdCheck(restful.Resource):
             resp_suc['status'] = 1
             resp_suc['message'] = '填写nick_name'
         return resp_suc
+
+
+def wrap_user_json(user=None, user_info=None, status=0, sign='$'):
+    """将地址的ID转换为一个字符串，这里的字符串添加了一个county字段，返回一个json"""
+    user_json = pickler.flatten(user)
+    if user_info:
+        user_info_json = pickler.flatten(user_info)
+        user_info_json['county'] = get_address(user_info.province_id, user_info.city_id, user_info.county_id, sign=sign)
+        return {'user':user_json, 'user_info':user_info_json, 'status':status}
+    return {'user':user_json, 'status':status}

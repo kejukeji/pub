@@ -10,8 +10,9 @@ import os
 from flask.ext.admin.contrib.sqla import ModelView
 from flask import flash, request
 from flask.ext.admin.babel import gettext
-from wtforms.fields import TextField
+from wtforms.fields import TextField, TextAreaField
 from wtforms import validators
+from flask.ext import login
 
 from models import Pub, PubType, PubTypeMid, db, PubPicture
 from ex_var import PUB_PICTURE_BASE_PATH, PUB_PICTURE_UPLOAD_FOLDER, PUB_PICTURE_ALLOWED_EXTENSION
@@ -41,6 +42,9 @@ class PubTypeView(ModelView):
 
     def __init__(self, db, **kwargs):
         super(PubTypeView, self).__init__(PubType, db, **kwargs)
+
+    def is_accessible(self):
+        return login.current_user.is_admin()
 
     def create_model(self, form):
         """改写flask的新建model的函数"""
@@ -73,9 +77,6 @@ class PubTypeView(ModelView):
             self.after_model_change(form, model, False)
 
         return True
-
-    #def is_accessible(self):  # 登陆管理功能先关闭，后期添加
-    #    return current_user.is_admin()
 
 
 class PubView(ModelView):
@@ -126,6 +127,9 @@ class PubView(ModelView):
     )
     column_exclude_list = ('intro', 'web_url', 'mobile_list', 'tel_list', 'email',
                            'fax', 'street', 'longitude', 'latitude')
+    form_overrides = dict(
+        intro=TextAreaField
+    )
 
     form_ajax_refs = None
 
@@ -142,6 +146,9 @@ class PubView(ModelView):
 
     def __init__(self, db, **kwargs):
         super(PubView, self).__init__(Pub, db, **kwargs)
+
+    def is_accessible(self):
+        return login.current_user.is_admin()
 
     def create_model(self, form):
         """改写flask的新建model的函数"""

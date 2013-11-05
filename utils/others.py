@@ -9,6 +9,7 @@ import datetime
 from math import sin, asin, cos, radians, fabs, sqrt, degrees
 
 pickler = jsonpickle.pickler.Pickler(unpicklable=False, max_depth=2)
+EARTH_RADIUS=6371           # 地球平均半径，6371km
 
 
 def form_to_dict(form):
@@ -84,7 +85,7 @@ def time_to_str(time):
     return time.strftime("%Y-%m-%d %H:%M:%S")
 
 
-def get_address(province_id, city_id, county_id):
+def get_address(province_id, city_id, county_id, sign=''):
     """
         参数
             province_id: 省id
@@ -94,9 +95,20 @@ def get_address(province_id, city_id, county_id):
     county = County.query.filter(County.id == county_id).first()
     province = Province.query.filter(Province.id == province_id).first()
     city = City.query.filter(City.id == city_id).first()
-    if province or city or county:
-        return province.name + city.name + county.name
-    return ''
+
+    return_string = ""
+    if province:
+        return_string += province.name + sign
+    else:
+        return_string += sign
+    if city:
+        return_string += city.name + sign
+    else:
+        return_string += sign
+    if county:
+        return_string += county.name
+
+    return return_string
 
 
 def get_county(city_id, resp_suc):
@@ -111,8 +123,6 @@ def get_county(city_id, resp_suc):
             county_pic['area_id'] = county.id
             resp_suc['county'].append(county_pic)
 
-
-EARTH_RADIUS=6371           # 地球平均半径，6371km
 
 def hav(theta):
     s = sin(theta / 2)
@@ -142,7 +152,6 @@ def get_left_right_longitude_latitude(longitude, latitude):
     dlng = 2 * asin(sin(distance / (2 * EARTH_RADIUS)) / cos(latitude))
     dlng = degrees(dlng)        # 弧度转换成角度
 
-
     dlat = distance / EARTH_RADIUS
     dlat = degrees(dlat)     # 弧度转换成角度
     """
@@ -153,3 +162,4 @@ def get_left_right_longitude_latitude(longitude, latitude):
 $info_sql = "select id,locateinfo,lat,lng from `lbs_info` where lat<>0 and lat>{$squares['right-bottom']['lat']} and lat<{$squares['left-top']['lat']} and lng>{$squares['left-top']['lng']} and lng<{$squares['right-bottom']['lng']} ";
 sort_func = lambda park: calc_distance(lat1, lng1, park.latitude, park.longitude)
     """
+

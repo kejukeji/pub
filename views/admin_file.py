@@ -16,6 +16,7 @@ from flask.ext.admin._compat import as_unicode
 from flask.ext.admin.base import expose
 from flask.ext.admin.contrib.fileadmin import FileAdmin
 from flask.ext.admin.contrib.fileadmin import UploadForm
+from flask.ext import login
 
 from models import PubPicture, db
 from utils import allowed_file_extension, time_file_name
@@ -31,6 +32,9 @@ class PubFile(FileAdmin):
     can_delete_dirs = False
     can_mkdir = False
     can_rename = False
+
+    def is_accessible(self):
+        return login.current_user.is_admin()
 
 
 class PubPictureFile(FileAdmin):  # todo-lyw代码进一步完善中
@@ -70,6 +74,9 @@ class PubPictureFile(FileAdmin):  # todo-lyw代码进一步完善中
             raise IOError('FileAdmin path "%s" does not exist or is not accessible' % base_path)
 
         super(FileAdmin, self).__init__(name, category, endpoint, url)
+
+    def is_accessible(self):
+        return login.current_user.is_admin()
 
     def save_file(self, path, file_data):
         """保存图片"""
