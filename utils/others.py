@@ -81,7 +81,7 @@ def time_to_str(time):
     return time.strftime("%Y-%m-%d %H:%M:%S")
 
 
-def get_address(province_id, city_id, county_id):
+def get_address(province_id, city_id, county_id, sign=''):
     """
         参数
             province_id: 省id
@@ -92,5 +92,5 @@ def get_address(province_id, city_id, county_id):
     province = Province.query.filter(Province.id == province_id).first()
     city = City.query.filter(City.id == city_id).first()
     if province or city or county:
-        return province.name + city.name + county.name
+        return province.name + sign + city.name + sign + county.name
     return ''
