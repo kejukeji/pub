@@ -104,4 +104,6 @@ def get_county(city_id, resp_suc):
     if countys:
         for county in countys:
             county_pic = pickler.flatten(county)
+            county_pic.pop('id')
+            county_pic['area_id'] = county.id
             resp_suc['county'].append(county_pic)
