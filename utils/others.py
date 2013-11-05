@@ -151,5 +151,5 @@ def get_left_right_longitude_latitude(longitude, latitude):
     left-bottom : (lat - dlat, lng - dlng)
     right-bottom: (lat - dlat, lng + dlng)
 $info_sql = "select id,locateinfo,lat,lng from `lbs_info` where lat<>0 and lat>{$squares['right-bottom']['lat']} and lat<{$squares['left-top']['lat']} and lng>{$squares['left-top']['lng']} and lng<{$squares['right-bottom']['lng']} ";
-
+sort_func = lambda park: calc_distance(lat1, lng1, park.latitude, park.longitude)
     """
