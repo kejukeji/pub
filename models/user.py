@@ -7,12 +7,11 @@
     UserInfo: UserInfo类，主要是用户个人信息。
 """
 
-import bcrypt
-
 from sqlalchemy import Column, Integer, String, Boolean, DATETIME, ForeignKey, text
 
 from .database import Base
 from utils import todayfstr
+from utils.ex_password import check_password, generate_password
 
 USER_TABLE = 'user'
 USER_INFO_TABLE = 'user_info'
@@ -51,7 +50,7 @@ class User(Base):
 
         password = kwargs.pop('password', None)
         if password is not None:
-            self.password = bcrypt.hashpw(password, bcrypt.gensalt())
+            self.password = generate_password(password)
         else:
             self.password = password
 
@@ -71,7 +70,7 @@ class User(Base):
         password = kwargs.pop('password', None)
         if password is not None:
             if self.password != password:
-                self.password = bcrypt.hashpw(password, bcrypt.gensalt())
+                self.password = generate_password(password)
         else:
             self.password = password
 
@@ -87,13 +86,13 @@ class User(Base):
 
         if old_password is None:
             if self.password is None:
-                self.password = bcrypt.hashpw(new_password, bcrypt.gensalt())
+                self.password = generate_password(new_password)
                 return True
             else:
                 return False
         else:
             if self.check_password(old_password):
-                self.password = bcrypt.hashpw(new_password, bcrypt.gensalt())
+                self.password = generate_password(new_password)
                 return True
             else:
                 return False
@@ -107,7 +106,7 @@ class User(Base):
         if (password is None) or (self.password is None):
             return False
 
-        return bcrypt.checkpw(password, self.password)
+        return check_password(password, self.password)
 
     def is_authenticated(self):  # todo-lyw 静态method是如何用的，和类方法的不同
         return True
