@@ -12,6 +12,7 @@ from flask import flash, request
 from flask.ext.admin.babel import gettext
 from wtforms.fields import TextField
 from wtforms import validators
+from flask.ext import login
 
 from models import Pub, PubType, PubTypeMid, db, PubPicture
 from ex_var import PUB_PICTURE_BASE_PATH, PUB_PICTURE_UPLOAD_FOLDER, PUB_PICTURE_ALLOWED_EXTENSION
@@ -41,6 +42,9 @@ class PubTypeView(ModelView):
 
     def __init__(self, db, **kwargs):
         super(PubTypeView, self).__init__(PubType, db, **kwargs)
+
+    def is_accessible(self):
+        return login.current_user.is_admin()
 
     def create_model(self, form):
         """改写flask的新建model的函数"""
@@ -142,6 +146,9 @@ class PubView(ModelView):
 
     def __init__(self, db, **kwargs):
         super(PubView, self).__init__(Pub, db, **kwargs)
+
+    def is_accessible(self):
+        return login.current_user.is_admin()
 
     def create_model(self, form):
         """改写flask的新建model的函数"""
