@@ -3,7 +3,7 @@
 
 from flask.ext import restful
 from models import Pub, PubType, PubTypeMid, PubPicture, engine, View, UserInfo, User, db, Activity,\
-    ActivityComment
+    ActivityComment, Collect
 from utils import pickler, page_utils
 from flask.ext.restful import reqparse
 from sqlalchemy.orm import Session, sessionmaker
@@ -359,6 +359,10 @@ class PubDetail(restful.Resource):
 
         user_id = args['user_id']
         if pub_id:
+            collect = Collect.query.filter(Collect.user_id == user_id, Collect.pub_id == pub_id).first()
+            resp_suc['is_collect'] = '未收藏'
+            if collect:
+                resp_suc['is_collect'] = '收藏'
             pub = Pub.query.filter(Pub.id == pub_id).first()
             pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub_id).first()
             resp_suc['county'] = get_address(pub.province_id, pub.city_id, pub.county_id)
@@ -736,6 +740,8 @@ class ScreeningPub(restful.Resource):
         """
             参数
                county_ic: 区域id
+               page: 分页
+               type_id: 所在酒吧类型
         """
         parser = reqparse.RequestParser()
         parser.add_argument('county_id', type=str, required=True, help=u'county_id必须')
