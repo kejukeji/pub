@@ -19,6 +19,12 @@ class Activity(Base):
             host : 0代表推荐 1代表不推荐
     """
     __tablename__ = ACTIVITY
+
+    __table_args__ = {
+        'mysql_engine': 'InnoDB',
+        'mysql_charset': 'utf8'
+    }
+
     id = Column(Integer, primary_key=True)
     title = Column(String(50), nullable=True)
     pub_id = Column(Integer, ForeignKey(Pub.id, ondelete='set null', onupdate='cascade'), nullable=True)

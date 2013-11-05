@@ -26,6 +26,11 @@ class Province(Base):
 
     __tablename__ = PROVINCE_TABLE
 
+    __table_args__ = {
+        'mysql_engine': 'InnoDB',
+        'mysql_charset': 'utf8'
+    }
+
     id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False)
     code = Column(String(4), nullable=False)
@@ -50,6 +55,11 @@ class City(Base):
 
     __tablename__ = CITY_TABLE
 
+    __table_args__ = {
+        'mysql_engine': 'InnoDB',
+        'mysql_charset': 'utf8'
+    }
+
     id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False)
     code = Column(String(4), nullable=False)
@@ -73,6 +83,11 @@ class County(Base):
     """
 
     __tablename__ = COUNTY_TABLE
+
+    __table_args__ = {
+        'mysql_engine': 'InnoDB',
+        'mysql_charset': 'utf8'
+    }
 
     id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False)

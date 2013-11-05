@@ -23,6 +23,11 @@ $(document).ready(function(){
 
 	add_select();
 
+    function change_textarea() {
+        $("#intro").css('width', '552px').css('height', '400px');
+    };
+    change_textarea();
+
     // 定义获取当前url属性的函数
     function gup( name ) {
         name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");

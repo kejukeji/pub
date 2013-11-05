@@ -13,6 +13,7 @@ from flask import flash
 from utils import form_to_dict
 from models import Message, Collect, User, Pub
 from flask.ext.admin._backwards import ObsoleteAttr
+from flask.ext import login
 
 
 class UserMessageView(ModelView):
@@ -40,6 +41,9 @@ class UserMessageView(ModelView):
 
     #def is_accessible(self):  # 登陆管理功能先关闭，后期添加
     #    return current_user.is_admin()
+
+    def is_accessible(self):
+        return login.current_user.is_admin()
 
     def create_model(self, form):
         """改写flask的新建model的函数"""
@@ -108,3 +112,6 @@ class UserCollectView(ModelView):
 
     def __init__(self, db, **kwargs):
         super(UserCollectView, self).__init__(Collect, db, **kwargs)
+
+    def is_accessible(self):
+        return login.current_user.is_admin()
