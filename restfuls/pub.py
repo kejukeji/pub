@@ -7,7 +7,7 @@ from models import Pub, PubType, PubTypeMid, PubPicture, engine, View, UserInfo,
 from utils import pickler, page_utils
 from flask.ext.restful import reqparse
 from sqlalchemy.orm import Session, sessionmaker
-from utils.others import success_dic, fail_dic, get_address, get_county
+from utils.others import success_dic, fail_dic, get_address, get_county, get_distance_hav
 
 
 Session = sessionmaker()
@@ -729,6 +729,8 @@ class NearPub(restful.Resource):
            longitude: 经度
            latitude: 维度
         """
+        distance = get_distance_hav(21.2, 32.12, 12.2, 34.3)
+        return distance
 
 
 class ScreeningPub(restful.Resource):
@@ -754,11 +756,14 @@ class ScreeningPub(restful.Resource):
         page = args['page']
         resp_suc = success_dic().dic
         resp_fail = fail_dic().dic
-
         resp_suc['pub_list'] = []
         type_id = args['type_id']
-        get_pub(type_id, resp_suc, page, county_id)
-        return resp_suc
+        if county_id == '0':
+            by_type_id(type_id, resp_suc, page)
+            return resp_suc
+        else:
+            get_pub(type_id, resp_suc, page, county_id)
+            return resp_suc
 
 
 def get_pub(type_id, resp_suc, page, county_id):

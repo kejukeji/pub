@@ -5,6 +5,9 @@ from models.location import Province, City, County
 import jsonpickle
 import datetime
 
+
+from math import sin, asin, cos, radians, fabs, sqrt, degrees
+
 pickler = jsonpickle.pickler.Pickler(unpicklable=False, max_depth=2)
 
 
@@ -107,3 +110,46 @@ def get_county(city_id, resp_suc):
             county_pic.pop('id')
             county_pic['area_id'] = county.id
             resp_suc['county'].append(county_pic)
+
+
+EARTH_RADIUS=6371           # 地球平均半径，6371km
+
+def hav(theta):
+    s = sin(theta / 2)
+    return s * s
+
+def get_distance_hav(lat0, lng0, lat1, lng1):
+    "用haversine公式计算球面两点间的距离。"
+    # 经纬度转换成弧度
+    lat0 = radians(lat0)
+    lat1 = radians(lat1)
+    lng0 = radians(lng0)
+    lng1 = radians(lng1)
+
+    dlng = fabs(lng0 - lng1)
+    dlat = fabs(lat0 - lat1)
+    h = hav(dlat) + cos(lat0) * cos(lat1) * hav(dlng)
+    distance = 2 * EARTH_RADIUS * asin(sqrt(h))
+
+    return distance
+
+
+def get_left_right_longitude_latitude(longitude, latitude):
+    """
+
+    """
+    distance = get_distance_hav(12.2, 3.2, 12.3, 2.3)
+    dlng = 2 * asin(sin(distance / (2 * EARTH_RADIUS)) / cos(latitude))
+    dlng = degrees(dlng)        # 弧度转换成角度
+
+
+    dlat = distance / EARTH_RADIUS
+    dlat = degrees(dlat)     # 弧度转换成角度
+    """
+    left-top    : (lat + dlat, lng - dlng)
+    right-top   : (lat + dlat, lng + dlng)
+    left-bottom : (lat - dlat, lng - dlng)
+    right-bottom: (lat - dlat, lng + dlng)
+$info_sql = "select id,locateinfo,lat,lng from `lbs_info` where lat<>0 and lat>{$squares['right-bottom']['lat']} and lat<{$squares['left-top']['lat']} and lng>{$squares['left-top']['lng']} and lng<{$squares['right-bottom']['lng']} ";
+
+    """
