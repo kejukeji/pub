@@ -34,6 +34,11 @@ class Collect(Base):
 
     __tablename__ = COLLECT_TABLE
 
+    __table_args__ = {
+        'mysql_engine': 'InnoDB',
+        'mysql_charset': 'utf8'
+    }
+
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey(User.id, ondelete='cascade', onupdate='cascade'), nullable=False)
     user = relationship(User)
@@ -61,6 +66,11 @@ class Comment(Base):
     """
 
     __tablename__ = COMMENT_TABLE
+
+    __table_args__ = {
+        'mysql_engine': 'InnoDB',
+        'mysql_charset': 'utf8'
+    }
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey(User.id, ondelete='set null', onupdate='cascade'), nullable=True)
@@ -92,6 +102,11 @@ class View(Base):
 
     __tablename__ = VIEW_TABLE
 
+    __table_args__ = {
+        'mysql_engine': 'InnoDB',
+        'mysql_charset': 'utf8'
+    }
+
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey(User.id, ondelete='cascade', onupdate='cascade'), nullable=False)
     pub_id = Column(Integer, ForeignKey(Pub.id, ondelete='cascade', onupdate='cascade'), nullable=False)
@@ -120,6 +135,11 @@ class Message(Base):
 
     __tablename__ = MESSAGE_TABLE
 
+    __table_args__ = {
+        'mysql_engine': 'InnoDB',
+        'mysql_charset': 'utf8'
+    }
+
     id = Column(Integer, primary_key=True)
     sender_id = Column(Integer, ForeignKey(User.id, ondelete='set null', onupdate='cascade'), nullable=True)
     receiver_id = Column(Integer, ForeignKey(User.id, ondelete='set null', onupdate='cascade'), nullable=True)
@@ -146,6 +166,12 @@ class FeedBack(Base):
             content：内容
     """
     __tablename__ = FEED_BACK
+
+    __table_args__ = {
+        'mysql_engine': 'InnoDB',
+        'mysql_charset': 'utf8'
+    }
+
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey(User.id, ondelete='set null', onupdate='cascade'), nullable=False)
     content = Column(String(140), nullable=True)
@@ -166,6 +192,11 @@ class ActivityComment(Base):
     """
 
     __tablename__ = ACTIVITY_COMMENT_TABLE
+
+    __table_args__ = {
+        'mysql_engine': 'InnoDB',
+        'mysql_charset': 'utf8'
+    }
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey(User.id, ondelete='set null', onupdate='cascade'), nullable=False)

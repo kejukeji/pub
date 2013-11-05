@@ -21,6 +21,11 @@ class SystemMessage(Base):
 
     __tablename__ = SYSTEM_MESSAGE_TABLE
 
+    __table_args__ = {
+        'mysql_engine': 'InnoDB',
+        'mysql_charset': 'utf8'
+    }
+
     id = Column(Integer, primary_key=True)
     content = Column(String(128), nullable=False)
     time = Column(DATETIME, nullable=True, server_default=None)

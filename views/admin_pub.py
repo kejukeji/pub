@@ -10,7 +10,7 @@ import os
 from flask.ext.admin.contrib.sqla import ModelView
 from flask import flash, request
 from flask.ext.admin.babel import gettext
-from wtforms.fields import TextField
+from wtforms.fields import TextField, TextAreaField
 from wtforms import validators
 from flask.ext import login
 
@@ -127,6 +127,9 @@ class PubView(ModelView):
     )
     column_exclude_list = ('intro', 'web_url', 'mobile_list', 'tel_list', 'email',
                            'fax', 'street', 'longitude', 'latitude')
+    form_overrides = dict(
+        intro=TextAreaField
+    )
 
     form_ajax_refs = None
 

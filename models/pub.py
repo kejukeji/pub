@@ -43,11 +43,16 @@ class Pub(Base):
 
     __tablename__ = PUB_TABLE
 
+    __table_args__ = {
+        'mysql_engine': 'InnoDB',
+        'mysql_charset': 'utf8'
+    }
+
     id = Column(Integer, primary_key=True)
     name = Column(String(64), nullable=False)
     recommend = Column(Boolean, nullable=False, server_default='0')
     view_number = Column(Integer, nullable=False, server_default='0')
-    intro = Column(String(256), nullable=False)
+    intro = Column(String(2048), nullable=False)
     web_url = Column(String(64), nullable=True, server_default=None)
     mobile_list = Column(String(128), nullable=True, server_default=None)
     tel_list = Column(String(128), nullable=True, server_default=None)
@@ -107,6 +112,11 @@ class PubType(Base):
 
     __tablename__ = PUB_TYPE_TABLE
 
+    __table_args__ = {
+        'mysql_engine': 'InnoDB',
+        'mysql_charset': 'utf8'
+    }
+
     id = Column(Integer, primary_key=True)
     name = Column(String(16), nullable=False)
     code = Column(String(4), nullable=False)
@@ -144,6 +154,11 @@ class PubPicture(Base):
 
     __tablename__ = PUB_PICTURE_TABLE
 
+    __table_args__ = {
+        'mysql_engine': 'InnoDB',
+        'mysql_charset': 'utf8'
+    }
+
     id = Column(Integer, primary_key=True)
     pub_id = Column(Integer, ForeignKey(Pub.id, ondelete='cascade', onupdate='cascade'), nullable=False)
     base_path = Column(String(128), nullable=False)
@@ -176,6 +191,11 @@ class PubTypeMid(Base):
     """
 
     __tablename__ = PUB_TYPE_MID_TABLE
+
+    __table_args__ = {
+        'mysql_engine': 'InnoDB',
+        'mysql_charset': 'utf8'
+    }
 
     id = Column(Integer, primary_key=True)
     pub_id = Column(Integer, ForeignKey(Pub.id, ondelete='cascade', onupdate='cascade'), nullable=False)
