@@ -144,21 +144,46 @@ def get_distance_hav(lat0, lng0, lat1, lng1):
     return distance
 
 
-def get_left_right_longitude_latitude(longitude, latitude):
+
+#周俊的计算方法
+def calc_distance( l1,  n1 ,   l2,  n2 ):
+    import math
+    try:
+        lat1 ,longt1 ,lat2 ,longt2 = float(l1),float(n1),float(l2),float(n2)
+    except:
+        return (math.pi * 2 * 6371229)
+
+    PI = math.pi # 圆周率
+    R = 6371229; #地球的半径
+
+    x = (longt2 - longt1) * PI * R * math.cos(((lat1 + lat2) / 2) * PI / 180) / 180;
+    y = (lat2 - lat1) * PI * R / 180;
+
+    distance = math.sqrt(math.pow(x, 2) + math.pow(y,2))  #两者的平方和开根号
+
+    return distance
+
+
+def get_left_right_longitude_latitude(longitude, latitude, pubs):
     """
 
     """
-    distance = get_distance_hav(12.2, 3.2, 12.3, 2.3)
+    #fr = (page-1)*page_size
+    #to = page*page_size
+    distance = 0.05
+
+    ##排序后就返回fr:to
+    #pubs = pubs[fr:to]
+    #return pubs
+
     dlng = 2 * asin(sin(distance / (2 * EARTH_RADIUS)) / cos(latitude))
     dlng = degrees(dlng)        # 弧度转换成角度
 
     dlat = distance / EARTH_RADIUS
     dlat = degrees(dlat)     # 弧度转换成角度
-    """
-    left-top    : (lat + dlat, lng - dlng)
-    right-top   : (lat + dlat, lng + dlng)
-    left-bottom : (lat - dlat, lng - dlng)
-    right-bottom: (lat - dlat, lng + dlng)
-$info_sql = "select id,locateinfo,lat,lng from `lbs_info` where lat<>0 and lat>{$squares['right-bottom']['lat']} and lat<{$squares['left-top']['lat']} and lng>{$squares['left-top']['lng']} and lng<{$squares['right-bottom']['lng']} ";
+    array = {'left_top': (latitude + dlat, longitude - dlng),
+     'right_top': (latitude + dlat, longitude + dlng),
+     'left_bottom': (latitude - dlat, longitude - dlng),
+     'right_bottom': (latitude - dlat, longitude + dlng)}
+    return array
 
-    """

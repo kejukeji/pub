@@ -7,7 +7,7 @@ from models import Pub, PubType, PubTypeMid, PubPicture, engine, View, UserInfo,
 from utils import pickler, page_utils
 from flask.ext.restful import reqparse
 from sqlalchemy.orm import Session, sessionmaker
-from utils.others import success_dic, fail_dic, get_address, get_county, get_distance_hav
+from utils.others import success_dic, fail_dic, get_address, get_county, calc_distance
 
 
 Session = sessionmaker()
@@ -718,6 +718,10 @@ def get_activity_list(resp_suc, page):
         resp_suc['activity_list'].append(activity_pic)
 
 
+EARTH_RADIUS=6371           # 地球平均半径，6371km
+from math import sin, asin, cos, radians, fabs, sqrt, degrees
+
+
 class NearPub(restful.Resource):
     """
     附近酒吧查询
@@ -729,8 +733,66 @@ class NearPub(restful.Resource):
            longitude: 经度
            latitude: 维度
         """
-        distance = get_distance_hav(21.2, 32.12, 12.2, 34.3)
-        return distance
+        parser = reqparse.RequestParser()
+        parser.add_argument('longitude', type=str, required=True, help=u'longitude必须')
+        parser.add_argument('latitude', type=str, required=True, help=u'latitude必须')
+
+        args = parser.parse_args()
+
+        longitude = float(args['longitude'])
+        latitude = float(args['latitude'])
+
+        resp_suc = success_dic().dic
+        resp_suc['pub_list'] = []
+        pubs = Pub.query.filter().all()
+
+        for pub in pubs:
+            distance = get_distance_hav(latitude, longitude, pub.latitude, pub.longitude)
+
+        east_west_longitude = 2 * asin(sin(distance / (2 * EARTH_RADIUS)) / cos(latitude))
+        east_west_longitude = degrees(east_west_longitude)        # 弧度转换成角度
+
+        south_north_latitude = distance / EARTH_RADIUS
+        south_north_latitude = degrees(south_north_latitude)     # 弧度转换成角度
+        array = {'left_top': (latitude + south_north_latitude, longitude - east_west_longitude),
+        'right_top': (latitude + south_north_latitude, longitude + east_west_longitude),
+        'left_bottom': (latitude - south_north_latitude, longitude - east_west_longitude),
+        'right_bottom': (latitude - south_north_latitude, longitude + east_west_longitude)}
+        left_top = array['left_top']
+        right_top = array['right_top']
+        left_bottom = array['left_bottom']
+        right_bottom = array['right_bottom']
+        pub_count = Pub.query.filter(Pub.latitude > right_bottom[0], Pub.latitude < left_top[0],
+                                Pub.longitude > left_bottom[1], Pub.longitude < right_top[1]).count()
+        if pub_count > 1:
+            pubs = Pub.query.filter(Pub.latitude > right_bottom[0], Pub.latitude < left_top[0],
+                                Pub.longitude > left_bottom[1], Pub.longitude < right_top[1])
+            for pub in pubs:
+                pub_only(pub, resp_suc)
+
+        return resp_suc
+
+
+def hav(theta):
+    s = sin(theta / 2)
+    return s * s
+
+def get_distance_hav(lat0, lng0, lat1, lng1):
+    "用haversine公式计算球面两点间的距离。"
+    # 经纬度转换成弧度
+    lat0 = radians(lat0)
+    lat1 = radians(lat1)
+    lng0 = radians(lng0)
+    lng1 = radians(lng1)
+
+    dlng = fabs(lng0 - lng1)
+    dlat = fabs(lat0 - lat1)
+    h = hav(dlat) + cos(lat0) * cos(lat1) * hav(dlng)
+    distance = 2 * EARTH_RADIUS * asin(sqrt(h))
+
+    return distance
+
+
 
 
 class ScreeningPub(restful.Resource):
