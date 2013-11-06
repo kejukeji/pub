@@ -220,7 +220,7 @@ class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True
 
         err = {'status': 1}
 
-        if not login_type:
+        if (login_type != 0) and (login_type != 1) and (login_type != 2):
             user = User.query.filter(User.id == user_id).first()
             user_info = UserInfoDb.query.filter(UserInfoDb.user_id == user_id).first()
             if not user:
