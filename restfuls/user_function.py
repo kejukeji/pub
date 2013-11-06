@@ -163,6 +163,7 @@ def traverse_messages_receiver(receiver_messages, sender_message, resp_suc):
             resp_suc['list'].append(user_pic)
     if sender_message:
         for message in sender_message:
+            message.view = 1
             user_pic = to_messages_sender(message.content, message.receiver_id)
             user_pic['sender_id'] = message.sender_id
             user_pic['receiver_id'] = message.receiver_id
@@ -213,6 +214,7 @@ def traverse_message_receiver(message, sender_message, resp_suc):
         user_pic['time'] = time
         resp_suc['list'].append(user_pic)
     if sender_message:
+        sender_message.view = 1
         user_pic = to_messages(times, content, sender_message.receiver_id)
         user_pic['sender_id'] = sender_message.sender_id
         user_pic['receiver_id'] = sender_message.receiver_id
@@ -496,7 +498,7 @@ class UserMessageInfo(restful.Resource):
         message_receiver_count = Message.query.filter(Message.sender_id == receiver_id, Message.receiver_id == sender_id).count()
         if message_count > 1 or message_receiver_count > 1:
             messages = Message.query.filter(Message.sender_id == sender_id).order_by(Message.time.asc())
-            message_receivers = Message.query.filter(Message.sender_id == receiver_id, Message.receiver_id == sender_id).\
+            message_receivers = Message.query.filter(Message.sender_id == sender_id, Message.receiver_id == receiver_id).\
                 order_by(Message.time.desc())
             if messages or message_receivers:
                 traverse_messages_receiver(messages, message_receivers, resp_suc)
@@ -530,16 +532,18 @@ class UserSenderMessage(restful.Resource):
         parser.add_argument('sender_id', type=str, required=True, help=u'sender_id必须。')
         parser.add_argument('receiver_id', type=str, required=True, help=u'receiver_id必须。')
         parser.add_argument('content', type=str, required=True, help=u'content必须。')
+        parser.add_argument('date', type=str, required=True, help=u'date必须.')
 
         args = parser.parse_args()
         sender_id = args['sender_id']
         receiver_id = args['receiver_id']
         content = args['content']
+        date = args['date']
         resp_suc = success_dic().dic
         resp_fail = fail_dic().dic
         resp_suc['sender_list'] = []
 
-        message = Message(receiver_id, sender_id, content, view=0)
+        message = Message(receiver_id, sender_id, content, date, view=0)
         db.add(message)
         try:
             db.commit()
