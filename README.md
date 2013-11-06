@@ -17,3 +17,7 @@ pub_uwsgi.ini
 所有改变的文件有：
     secret.py
     ex_var.py
+
+
+# 代码控制
+    实用不同的分支
