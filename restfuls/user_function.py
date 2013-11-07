@@ -34,10 +34,13 @@ def change_latitude_longitude(pub_pic, pub):
 
 
 def get_year(time):
-    dt = datetime.strptime(str(time), "%Y-%m-%d %H:%M:%S")
-    today = datetime.today()
-    s = int((today - dt).total_seconds())
-    return str(s / 3600 / 24 / 365)
+    if time:
+        dt = datetime.strptime(str(time), "%Y-%m-%d %H:%M:%S")
+        today = datetime.today()
+        s = int((today - dt).total_seconds())
+        return str(s / 3600 / 24 / 365)
+    else:
+        return 0
 
 
 def to_messages(times, content, message_id):
@@ -50,7 +53,9 @@ def to_messages(times, content, message_id):
     json_pic = pickler._flatten(user)
     if user_info:
         sex = user_info.sex
-        birthday = user_info.birthday
+        birthday = None
+        if user_info.birthday:
+            birthday = user_info.birthday
         age = get_year(birthday)
         json_pic = pickler._flatten(user)
         if user_info.rel_path and user_info.pic_name:
@@ -302,7 +307,7 @@ def traverse_system_message(resp_suc):
     system_count = SystemMessage.query.filter().count()
     resp_suc['system_count'] = system_count
     if system_count > 1:
-        system_messages = SystemMessage.query.filter()
+        system_messages = SystemMessage.query.filter().all()
         return system_messages
     else:
         system_message = SystemMessage.query.filter().first()
@@ -320,7 +325,7 @@ def traverse_direct_message(user_id, resp_suc):
     if message_count > 1:
         direct_messages = session.query(Message).\
             filter(Message.receiver_id == user_id, Message.view == 0).order_by(Message.time.desc()).\
-            group_by(Message.sender_id)
+            group_by(Message.sender_id).all()
         return direct_messages
     else:
         direct_message = session.query(Message). \
@@ -589,13 +594,24 @@ class MessageFuck(restful.Resource):
             else:
                 system_message_pickler(system_message, resp_suc)
             if type(direct_message) is list:
-                for direct in direct_message:
-                    traverse_messages_sender(direct, resp_suc)
+                traverse_messages_sender(direct_message, resp_suc)
             else:
                 traverse_message_sender(direct_message, resp_suc)
             return resp_suc
         else:
             return resp_fail
+
+
+class MessageByTypeInfo(restful.Resource):
+    '''根据消息类型进入详情'''
+    @staticmethod
+    def get():
+        """
+        参数，
+           type: 详细类型
+           system_message_id: 系统消息
+           sender_id
+        """
 
 
 class ClearMessage(restful.Resource):
