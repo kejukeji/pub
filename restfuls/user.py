@@ -220,13 +220,18 @@ class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True
 
         err = {'status': 1}
 
-        if not login_type:
+        if (login_type != 0) and (login_type != 1) and (login_type != 2):
             user = User.query.filter(User.id == user_id).first()
             user_info = UserInfoDb.query.filter(UserInfoDb.user_id == user_id).first()
             if not user:
                 err['message'] = '用户不存在'
                 return err
             else:
+                if not user_info:
+                    create_user_info(user.id)
+                    user_info = UserInfoDb.query.filter(UserInfoDb.user_id == user_id).first()
+                    user = User.query.filter(User.id == user_id).first()
+
                 return wrap_user_json(user, user_info)
 
         if login_type == 0:
@@ -310,6 +315,11 @@ class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True
             user = User.query.filter(User.id == user_id).first()
             user_info = UserInfoDb.query.filter(UserInfoDb.user_id == user_id).first()
 
+            if not user_info:
+                create_user_info(user.id)
+                user_info = UserInfoDb.query.filter(UserInfoDb.user_id == user_id).first()
+                user = User.query.filter(User.id == user_id).first()
+
             return wrap_user_json(user, user_info)
 
         if login_type == 1 or login_type == 2:
@@ -382,6 +392,11 @@ class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True
             user = User.query.filter(User.id == user_id).first()
             user_info = UserInfoDb.query.filter(UserInfoDb.user_id == user_id).first()
 
+            if not user_info:
+                create_user_info(user.id)
+                user_info = UserInfoDb.query.filter(UserInfoDb.user_id == user_id).first()
+                user = User.query.filter(User.id == user_id).first()
+
             return wrap_user_json(user, user_info)
 
         return err
@@ -419,9 +434,28 @@ class UserOpenIdCheck(restful.Resource):
 
 def wrap_user_json(user=None, user_info=None, status=0, sign='$'):
     """将地址的ID转换为一个字符串，这里的字符串添加了一个county字段，返回一个json"""
+    # db.commit()  # todo-lyw 试图修复后台注册后第一次获取不到user消息的bug，sqlalchemy和mysql的工作模式不理解，变成更大的bug了，不理解
     user_json = pickler.flatten(user)
     if user_info:
         user_info_json = pickler.flatten(user_info)
         user_info_json['county'] = get_address(user_info.province_id, user_info.city_id, user_info.county_id, sign=sign)
+        bool_to_int(user_info_json)
         return {'user':user_json, 'user_info':user_info_json, 'status':status}
+        # todo-lyw 这里如果是后台注册用户，刚刚注册，然后立即获取用户消息，会额外添加一个地区的位置，为何啊
     return {'user':user_json, 'status':status}
+
+
+def create_user_info(user_id):
+    """通过user_id创建user_info"""
+    user_info = UserInfoDb(user_id=user_id)
+    db.add(user_info)
+    db.commit()
+
+def bool_to_int(json):
+    """把字典的bool类型换成int的01"""
+    if json['sex'] == True:
+        json['sex'] = 1
+    elif json['sex'] == False:
+        json['sex'] = 0
+    else:
+        pass
