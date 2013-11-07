@@ -387,7 +387,7 @@ class PubDetail(restful.Resource):
                 results = session.query(UserInfo). \
                     join(User). \
                     join(View). \
-                    filter(View.pub_id == pub_id).order_by(View.time.desc())[:5]
+                    filter(View.pub_id == pub_id).order_by(View.time.desc()).all()
                 user_list_picture(results, resp_suc)
             else:
                 result = session.query(UserInfo). \
