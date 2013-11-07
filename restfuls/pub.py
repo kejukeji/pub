@@ -744,10 +744,13 @@ class NearPub(restful.Resource):
 
         resp_suc = success_dic().dic
         resp_suc['pub_list'] = []
+        scope = 5000
         pubs = Pub.query.filter().all()
-
-        for pub in pubs:
-            distance = get_distance_hav(latitude, longitude, pub.latitude, pub.longitude)
+        longitude_left = longitude + 0.00001 * scope;
+        longitude_right = longitude - 0.00001 * scope;
+        latitude_top = latitude + 0.00001 * 1.1 * scope;
+        latitude_bottom = latitude - 0.00001 * 1.1 * scope;
+        distance = get_distance_hav(latitude_top, longitude_left, latitude_bottom, longitude_right)
 
         east_west_longitude = 2 * asin(sin(distance / (2 * EARTH_RADIUS)) / cos(latitude))
         east_west_longitude = degrees(east_west_longitude)        # 弧度转换成角度
