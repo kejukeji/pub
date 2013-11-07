@@ -133,9 +133,9 @@ class PubView(ModelView):
 
     form_ajax_refs = None
 
-    edit_template = 'admin_pub/edit.html'
-    create_template = 'admin_pub/create.html'
-    list_template = 'admin_pub/list.html'
+    edit_template = 'admin_pub/pub_edit.html'
+    create_template = 'admin_pub/pub_create.html'
+    list_template = 'admin_pub/pub_list.html'
 
     def scaffold_form(self):
         form_class = super(PubView, self).scaffold_form()

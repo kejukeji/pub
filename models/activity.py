@@ -1,6 +1,6 @@
 # coding: UTF-8
 
-from sqlalchemy import Column, Integer, String, DATETIME, ForeignKey
+from sqlalchemy import Column, Integer, String, DATETIME, ForeignKey, Boolean
 from database import Base
 from pub import Pub
 
@@ -26,15 +26,15 @@ class Activity(Base):
     }
 
     id = Column(Integer, primary_key=True)
-    title = Column(String(50), nullable=True)
-    pub_id = Column(Integer, ForeignKey(Pub.id, ondelete='set null', onupdate='cascade'), nullable=True)
-    activity_info = Column(String(500), nullable=True)
-    start_date = Column(DATETIME, nullable=True)
-    end_date = Column(DATETIME, nullable=True)
+    title = Column(String(50), nullable=False)
+    pub_id = Column(Integer, ForeignKey(Pub.id, ondelete='cascade', onupdate='cascade'), nullable=False)
+    activity_info = Column(String(500), nullable=False)
+    start_date = Column(DATETIME, nullable=False)
+    end_date = Column(DATETIME, nullable=False)
     base_path = Column(String(100), nullable=True)
     rel_path = Column(String(100), nullable=True)
     pic_name = Column(String(100), nullable=True)
-    hot = Column(Integer, nullable=True)
+    hot = Column(Boolean, nullable=True, server_default='0')
 
     def __init__(self, **kwargs):
         self.title = kwargs.pop('title')
