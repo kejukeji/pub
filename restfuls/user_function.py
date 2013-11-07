@@ -652,11 +652,12 @@ class MessageByTypeInfo(restful.Resource):
                     user_system_message.view = 1
                     db.commit()
             else:
-                system_message_pickler(system_message, resp_suc)
-                user_system_message = UserSystemMessage.query.filter(UserSystemMessage.user_id == user_id,
-                                                                     UserSystemMessage.system_message_id == system_message.id).first()
-                user_system_message.view = 1
-                db.commit()
+                if system_message:
+                    system_message_pickler(system_message, resp_suc)
+                    user_system_message = UserSystemMessage.query.filter(UserSystemMessage.user_id == user_id,
+                                                                         UserSystemMessage.system_message_id == system_message.id).first()
+                    user_system_message.view = 1
+                    db.commit()
         else:
             if type(direct_message) is list:
                 traverse_messages_sender(direct_message, resp_suc)
