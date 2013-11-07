@@ -4,6 +4,7 @@ from wtforms import BooleanField
 from models.location import Province, City, County
 import jsonpickle
 import datetime
+import time
 
 
 from math import sin, asin, cos, radians, fabs, sqrt, degrees
@@ -83,6 +84,21 @@ def time_to_str(time):
 
     """
     return time.strftime("%Y-%m-%d %H:%M:%S")
+
+
+#把字符串转成datetime
+def string_toDatetime(string):
+    return datetime.strptime(string, "%Y-%m-%d-%H")
+
+
+def is_valid_date(str):
+    '''判断是否是一个有效的日期字符串'''
+    try:
+        time.strptime(str, "%Y-%m-%d")
+        return True
+    except:
+        return False
+
 
 
 def get_address(province_id, city_id, county_id, sign=''):
