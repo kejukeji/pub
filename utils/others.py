@@ -101,7 +101,7 @@ def is_valid_date(str):
 
 
 
-def get_address(province_id, city_id, county_id, sign=''):
+def get_address(province_id, city_id, county_id, sign='$'):
     """
         参数
             province_id: 省id
