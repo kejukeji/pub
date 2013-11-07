@@ -2,7 +2,7 @@
 
 from flask.ext import restful
 from sqlalchemy.orm import Session, sessionmaker
-from models import Collect, Pub, User, engine, db, Message, UserInfo, PubPicture, County, SystemMessage, FeedBack
+from models import Collect, Pub, User, engine, db, Message, UserInfo, PubPicture, County, SystemMessage, FeedBack, UserSystemMessage
 from flask.ext.restful import reqparse
 from utils import pickler, time_diff, page_utils
 from datetime import datetime
@@ -305,20 +305,30 @@ def direct_message_pickler(direct_message, resp_suc):
     resp_suc['direct_message_list'].append(direct_message_pic)
 
 
-def traverse_system_message(resp_suc):
+def traverse_system_message(user_id, resp_suc):
     """
         遍历系统消息
     """
     resp_suc['system_message_list'] = []
-
-    system_count = SystemMessage.query.filter().count()
+    system_count = session.query(SystemMessage).\
+        filter(UserSystemMessage.view == 0, UserSystemMessage.user_id == user_id).count()
     resp_suc['system_count'] = system_count
     if system_count > 1:
-        system_messages = SystemMessage.query.filter().all()
+        system_messages = session.query(SystemMessage).\
+            filter(UserSystemMessage.view == 0, UserSystemMessage.user_id == user_id).all()
         return system_messages
     else:
-        system_message = SystemMessage.query.filter().first()
+        system_message = session.query(SystemMessage).\
+            filter(UserSystemMessage.view == 0, UserSystemMessage.user_id == user_id).first()
         return system_message
+    #system_count = SystemMessage.query.filter().count()
+    #
+    #if system_count > 1:
+    #    system_messages = SystemMessage.query.filter().all()
+    #    return system_messages
+    #else:
+    #    system_message = SystemMessage.query.filter().first()
+    #    return system_message
 
 
 def traverse_direct_message(user_id, resp_suc):
@@ -592,7 +602,7 @@ class MessageFuck(restful.Resource):
         resp_suc['sender_list'] = []
         resp_suc['system_message_list'] = []
         user_id = args['user_id']
-        system_message = traverse_system_message(resp_suc)
+        system_message = traverse_system_message(user_id, resp_suc)
         direct_message = traverse_direct_message(user_id, resp_suc)
         if system_message or direct_message:
             #if type(system_message) is list:
@@ -617,34 +627,41 @@ class MessageByTypeInfo(restful.Resource):
         """
         参数，
            type: 详细类型
-           system_message_id: 系统消息
            user_id: 用户登录id
         """
         parser = reqparse.RequestParser()
         parser.add_argument('types', type=str, required=True, help=u'type选择信息类型,0:系统，1私信')
-        parser.add_argument('system_message', type=str, required=False)
-        parser.add_argument('user_id', type=str, required=False)
+        parser.add_argument('user_id', type=str, required=True, help=u'user_id。用户登陆id')
 
         args = parser.parse_args()
 
         types = args['types']
-        system_message = args['system_message']
         user_id = args['user_id']
         resp_suc = success_dic().dic
         resp_fail = fail_dic().dic
         resp_suc['sender_list'] = []
 
-        system_message = traverse_system_message(resp_suc)
+        system_message = traverse_system_message(user_id, resp_suc)
         direct_message = traverse_direct_message(user_id, resp_suc)
-        if type(system_message) is list:
-            for system in system_message:
-                system_message_pickler(system, resp_suc)
+        if types == '0':
+            if type(system_message) is list:
+                for system in system_message:
+                    system_message_pickler(system, resp_suc)
+                    user_system_message = UserSystemMessage.query.filter(UserSystemMessage.user_id == user_id,
+                                                                         UserSystemMessage.system_message_id == system.id).first()
+                    user_system_message.view = 1
+                    db.commit()
+            else:
+                system_message_pickler(system_message, resp_suc)
+                user_system_message = UserSystemMessage.query.filter(UserSystemMessage.user_id == user_id,
+                                                                     UserSystemMessage.system_message_id == system_message.id).first()
+                user_system_message.view = 1
+                db.commit()
         else:
-            system_message_pickler(system_message, resp_suc)
-        if type(direct_message) is list:
-            traverse_messages_sender(direct_message, resp_suc)
-        else:
-            traverse_message_sender(direct_message, resp_suc)
+            if type(direct_message) is list:
+                traverse_messages_sender(direct_message, resp_suc)
+            else:
+                traverse_message_sender(direct_message, resp_suc)
         return resp_suc
 
 
@@ -711,8 +728,9 @@ class FeedBackAdd(restful.Resource):
         content = args['content']
         user_id = args['user_id']
         feed_back = FeedBack(content=content, user_id=user_id)
-        db.add(feed_back)
+
         try:
+            db.add(feed_back)
             db.commit()
         except:
             return resp_fail
