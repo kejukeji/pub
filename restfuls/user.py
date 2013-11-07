@@ -220,7 +220,15 @@ class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True
 
         err = {'status': 1}
 
-        if (login_type != 0) and (login_type != 1) and (login_type != 2):
+        if not login_type:
+            login_type = get_login_type(user_id)
+
+        if login_type is None:
+            err['message'] = '用户不存在'
+            return err
+
+        if ((login_type == 0) and (password is None)) or \
+                (((login_type == 1) or (login_type == 2)) and (open_id is None)):
             user = User.query.filter(User.id == user_id).first()
             user_info = UserInfoDb.query.filter(UserInfoDb.user_id == user_id).first()
             if not user:
@@ -459,3 +467,12 @@ def bool_to_int(json):
         json['sex'] = 0
     else:
         pass
+
+def get_login_type(user_id):
+    """通过用户id获取用户类型"""
+    user = User.query.filter(User.id == user_id).first()
+
+    if user:
+        return user.login_type
+
+    return None
