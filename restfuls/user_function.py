@@ -34,10 +34,12 @@ def change_latitude_longitude(pub_pic, pub):
 
 
 def get_year(time):
-    dt = datetime.strptime(str(time), "%Y-%m-%d %H:%M:%S")
-    today = datetime.today()
-    s = int((today - dt).total_seconds())
-    return str(s / 3600 / 24 / 365)
+    if time:
+        dt = datetime.strptime(str(time), "%Y-%m-%d %H:%M:%S")
+        today = datetime.today()
+        s = int((today - dt).total_seconds())
+        return str(s / 3600 / 24 / 365)
+    return ''
 
 
 def to_messages(times, content, message_id):
@@ -76,7 +78,9 @@ def to_messages_no_time(content, message_id):
         json_pic = pickler._flatten(user)
         if user_info:
             sex = user_info.sex
-            birthday = user_info.birthday
+            birthday = None
+            if user_info.birthday:
+                birthday = user_info.birthday
             age = get_year(birthday)
             json_pic = pickler._flatten(user)
             if user_info.rel_path and user_info.pic_name:
@@ -103,7 +107,9 @@ def to_messages_sender(content, message_id):
         json_pic = pickler._flatten(user)
         if user_info:
             sex = user_info.sex
-            birthday = user_info.birthday
+            birthday = None
+            if user_info.birthday:
+                birthday = user_info.birthday
             age = get_year(birthday)
             json_pic = pickler._flatten(user)
             if user_info.rel_path and user_info.pic_name:
@@ -149,7 +155,7 @@ def traverse_messages_sender(messages, resp_suc):
             resp_suc['sender_list'].append(user_pic)
 
 
-def traverse_messages_receiver(receiver_messages, sender_message, resp_suc):
+def traverse_messages_receiver(sender_message, resp_suc):
     """
         遍历接收多条消息
     """
@@ -322,7 +328,7 @@ def traverse_direct_message(user_id, resp_suc):
     if message_count > 1:
         direct_messages = session.query(Message).\
             filter(Message.receiver_id == user_id, Message.view == 0).order_by(Message.time.desc()).\
-            group_by(Message.sender_id)
+            group_by(Message.sender_id).all()
         return direct_messages
     else:
         direct_message = session.query(Message). \
@@ -585,16 +591,16 @@ class MessageFuck(restful.Resource):
         system_message = traverse_system_message(resp_suc)
         direct_message = traverse_direct_message(user_id, resp_suc)
         if system_message or direct_message:
-            if type(system_message) is list:
-                for system in system_message:
-                    system_message_pickler(system, resp_suc)
-            else:
-                system_message_pickler(system_message, resp_suc)
-            if type(direct_message) is list:
-                for direct in direct_message:
-                    traverse_messages_sender(direct, resp_suc)
-            else:
-                traverse_message_sender(direct_message, resp_suc)
+            #if type(system_message) is list:
+            #    for system in system_message:
+            #        system_message_pickler(system, resp_suc)
+            #else:
+            #    system_message_pickler(system_message, resp_suc)
+            #if type(direct_message) is list:
+            #    for direct in direct_message:
+            #        traverse_messages_sender(direct, resp_suc)
+            #else:
+            #    traverse_message_sender(direct_message, resp_suc)
             return resp_suc
         else:
             return resp_fail
@@ -611,17 +617,18 @@ class MessageByTypeInfo(restful.Resource):
            user_id: 用户登录id
         """
         parser = reqparse.RequestParser()
-        parser.add_argument('type', type=str, required=True, help=u'type选择信息类型,0:系统，1私信')
+        parser.add_argument('types', type=str, required=True, help=u'type选择信息类型,0:系统，1私信')
         parser.add_argument('system_message', type=str, required=False)
         parser.add_argument('user_id', type=str, required=False)
 
         args = parser.parse_args()
 
-        type = args['type']
+        types = args['types']
         system_message = args['system_message']
         user_id = args['user_id']
         resp_suc = success_dic().dic
         resp_fail = fail_dic().dic
+        resp_suc['sender_list'] = []
 
         system_message = traverse_system_message(resp_suc)
         direct_message = traverse_direct_message(user_id, resp_suc)
@@ -631,10 +638,10 @@ class MessageByTypeInfo(restful.Resource):
         else:
             system_message_pickler(system_message, resp_suc)
         if type(direct_message) is list:
-            for direct in direct_message:
-                traverse_messages_sender(direct, resp_suc)
+            traverse_messages_sender(direct_message, resp_suc)
         else:
             traverse_message_sender(direct_message, resp_suc)
+        return resp_suc
 
 
 class ClearMessage(restful.Resource):
