@@ -439,6 +439,8 @@ def wrap_user_json(user=None, user_info=None, status=0, sign='$'):
     if user_info:
         user_info_json = pickler.flatten(user_info)
         user_info_json['county'] = get_address(user_info.province_id, user_info.city_id, user_info.county_id, sign=sign)
+        if user_info.rel_path and user_info.pic_name:
+            user_info_json['pic_path'] = user_info.rel_path + '/' + user_info.pic_name
         bool_to_int(user_info_json)
         return {'user':user_json, 'user_info':user_info_json, 'status':status}
         # todo-lyw 这里如果是后台注册用户，刚刚注册，然后立即获取用户消息，会额外添加一个地区的位置，为何啊
