@@ -139,9 +139,9 @@ class PubView(ModelView):
 
     def scaffold_form(self):
         form_class = super(PubView, self).scaffold_form()
-        form_class.pub_type = TextField(label='酒吧类型', validators=[validators.input_required()],
+        form_class.pub_type = TextField(label=u'酒吧类型', validators=[validators.input_required()],
                                         description=u'酒吧类型')
-        form_class.picture = TextField(label='酒吧图片', description=u'酒吧图片，按control键可以选择多张图片')
+        form_class.picture = TextField(label=u'酒吧图片', description=u'酒吧图片，按control键可以选择多张图片')
         return form_class
 
     def __init__(self, db, **kwargs):

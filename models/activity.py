@@ -28,7 +28,7 @@ class Activity(Base):
     id = Column(Integer, primary_key=True)
     title = Column(String(50), nullable=False)
     pub_id = Column(Integer, ForeignKey(Pub.id, ondelete='cascade', onupdate='cascade'), nullable=False)
-    activity_info = Column(String(500), nullable=False)
+    activity_info = Column(String(2048), nullable=False)
     start_date = Column(DATETIME, nullable=False)
     end_date = Column(DATETIME, nullable=False)
     base_path = Column(String(100), nullable=True)
