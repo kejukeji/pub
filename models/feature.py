@@ -148,12 +148,12 @@ class Message(Base):
     introduction_time = Column(DATETIME, nullable=True, server_default=None)
     view = Column(Boolean, nullable=False, server_default='0')
 
-    def __init__(self, sender_id, receiver_id, content, introduction_time, view=0):
+    def __init__(self, sender_id, receiver_id, content, view=0):
         self.sender_id = sender_id
         self.receiver_id = receiver_id
         self.content = content
         self.time = todayfstr()
-        self.introduction_time = introduction_time
+        self.introduction_time = todayfstr()
         self.view = view
 
     def __repr__(self):
