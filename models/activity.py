@@ -41,3 +41,9 @@ class Activity(Base):
         self.start_date = kwargs.pop('start_date')
         self.end_date = kwargs.pop('end_date')
         self.activity_info = kwargs.pop('activity_info')
+
+    def update(self, **kwargs):
+        self.title = kwargs.pop('title')
+        self.start_date = kwargs.pop('start_date')
+        self.end_date = kwargs.pop('end_date')
+        self.activity_info = kwargs.pop('activity_info')
