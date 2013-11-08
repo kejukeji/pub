@@ -736,20 +736,22 @@ class NearPub(restful.Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('longitude', type=str, required=True, help=u'longitude必须')
         parser.add_argument('latitude', type=str, required=True, help=u'latitude必须')
+        parser.add_argument('page', type=str, required=True, help=u'page当前页必须')
 
         args = parser.parse_args()
 
         longitude = float(args['longitude'])
         latitude = float(args['latitude'])
+        page = int(args['page'])
 
         resp_suc = success_dic().dic
         resp_suc['pub_list'] = []
         scope = 5000
         pubs = Pub.query.filter().all()
-        longitude_left = longitude + 0.00001 * scope;
-        longitude_right = longitude - 0.00001 * scope;
-        latitude_top = latitude + 0.00001 * 1.1 * scope;
-        latitude_bottom = latitude - 0.00001 * 1.1 * scope;
+        longitude_left = longitude + 0.00001 * scope
+        longitude_right = longitude - 0.00001 * scope
+        latitude_top = latitude + 0.00001 * 1.1 * scope
+        latitude_bottom = latitude - 0.00001 * 1.1 * scope
         distance = get_distance_hav(latitude_top, longitude_left, latitude_bottom, longitude_right)
 
         east_west_longitude = 2 * asin(sin(distance / (2 * EARTH_RADIUS)) / cos(latitude))
@@ -767,11 +769,16 @@ class NearPub(restful.Resource):
         right_bottom = array['right_bottom']
         pub_count = Pub.query.filter(Pub.latitude > right_bottom[0], Pub.latitude < left_top[0],
                                 Pub.longitude > left_bottom[1], Pub.longitude < right_top[1]).count()
+        page, per_page = page_utils(pub_count, page)
         if pub_count > 1:
             pubs = Pub.query.filter(Pub.latitude > right_bottom[0], Pub.latitude < left_top[0],
-                                Pub.longitude > left_bottom[1], Pub.longitude < right_top[1])
+                                Pub.longitude > left_bottom[1], Pub.longitude < right_top[1])[per_page*(page-1):per_page*page]
             for pub in pubs:
                 pub_only(pub, resp_suc)
+        else:
+            pub = Pub.query.filter(Pub.latitude > right_bottom[0], Pub.latitude < left_top[0],
+                                Pub.longitude > left_bottom[1], Pub.longitude < right_top[1]).first()
+            pub_only(pub, resp_suc)
 
         return resp_suc
 
