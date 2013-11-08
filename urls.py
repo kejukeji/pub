@@ -19,6 +19,7 @@ from restfuls import (UserInfo, UserLogin, UserRegister, PubGetType, PubListDeta
                       NearPub, MessageByTypeInfo)
 from views.admin_login import login_view, logout_view, register_view
 from views.admin_view import HomeView
+from views.admin_system_message import SystemMessageView
 
 # 用户登陆管理
 # 用户登陆
@@ -35,6 +36,7 @@ admin.add_view(UserCollectView(db, name=u'用户收藏', category=u'功能'))
 
 admin.add_view(PubTypeView(db, name=u'酒吧类型', category=u'酒吧'))
 admin.add_view(PubView(db, name=u'酒吧详情', category=u'酒吧'))
+admin.add_view(SystemMessageView(db, name=u'系统消息'))
 
 ### 文件管理
 file_path = os.path.join(os.path.dirname(__file__), 'static')
