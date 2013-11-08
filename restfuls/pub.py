@@ -170,9 +170,10 @@ def pub_only(pub, resp_suc):
     if pub:
         pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub.id).first()
         pub_pic = to_flatten(pub, pub_picture)
-        resp_suc['county'] = get_address(pub.province_id, pub.city_id, pub.county_id)
         pub_pic.pop('longitude')
         pub_pic.pop('latitude')
+        pub_pic.pop('county_id')
+        pub_pic['county'] = '上海市'
         to_pub_type(pub, pub_pic)
         change_latitude_longitude(pub_pic, pub)
         resp_suc['pub_list'].append(pub_pic)
