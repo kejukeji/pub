@@ -38,6 +38,9 @@ class SystemMessage(Base):
         self.time = todayfstr()
         self.view = 0
 
+    def update(self, **kwargs):
+        self.content = kwargs.pop('content')
+
     def __repr__(self):
         return '<SystemMessage(content: %s, time: %s)>' % (self.content, self.time)
 
