@@ -27,6 +27,11 @@ def close_db(exception=None):
         print('++++' + str(exception) + '++++')
     db.remove()
 
+@app.teardown_request
+def teardown_request(exception):
+    if db is not None:
+        db.close()
+
 from urls import *
 
 if __name__ == '__main__':

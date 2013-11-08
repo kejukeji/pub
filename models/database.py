@@ -10,6 +10,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 
 from ex_var import SQLALCHEMY_DATABASE_URI, SQLALCHEMY_ECHO
 
+#engine = create_engine('postgresql://me@localhost/mydb', pool_size=20, max_overflow=0)
 engine = create_engine(SQLALCHEMY_DATABASE_URI, echo=SQLALCHEMY_ECHO)
 db = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
 Base = declarative_base()
