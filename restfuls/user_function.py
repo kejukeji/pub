@@ -577,7 +577,7 @@ class UserSenderMessage(restful.Resource):
             db.commit()
         except:
             return resp_fail
-        message = Message.query.filter()[-1]
+        message = Message.query.filter(Message.id == message.id).first()
         traverse_message_sender(message, resp_suc)
         return resp_suc
 
