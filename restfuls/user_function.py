@@ -117,7 +117,7 @@ def to_messages_sender(content, message_id):
             age = get_year(birthday)
             json_pic = pickler._flatten(user)
             if user_info.rel_path and user_info.pic_name:
-                json_pic['sender_path'] = user_info.rel_path + '/' + user_info.pic_name
+                json_pic['receiver_path'] = user_info.rel_path + '/' + user_info.pic_name
             if sex == 1:
                 json_pic['sex'] = '男'
             else:
@@ -159,7 +159,7 @@ def traverse_messages_sender(messages, resp_suc):
             resp_suc['sender_list'].append(user_pic)
 
 
-def traverse_messages_receiver(sender_message, resp_suc):
+def traverse_messages_receiver(messages, resp_suc):
     """
         遍历接收多条消息
     """
@@ -171,11 +171,12 @@ def traverse_messages_receiver(sender_message, resp_suc):
     #        time = time_to_str(message.time)
     #        user_pic['time'] = time
     #        resp_suc['list'].append(user_pic)
-    if sender_message:
-        for message in sender_message:
+    if messages:
+        for message in messages:
             message.view = 1
             db.commit()
-            user_pic = to_messages_sender(message.content, message.receiver_id)
+            times = time_diff(message.time)
+            user_pic = to_messages(times, message.content, message.sender_id)
             user_pic['sender_id'] = message.sender_id
             user_pic['receiver_id'] = message.receiver_id
             time = time_to_str(message.time)
@@ -449,17 +450,17 @@ class UserMessage(restful.Resource):
         resp_suc['list'] = []
         if user_id:
             message_count = session.query(Message).\
-                filter(Message.receiver_id == user_id, Message.view == 0).group_by(Message.sender_id).count()
+                filter(Message.receiver_id == user_id).group_by(Message.sender_id).count()
             page, per_page = page_utils(message_count, page)
             if message_count > 1:
                 # messages = Message.query.filter(Message.receiver_id == user_id, Message.view == 0).order_by
                 # (Message.time.desc()).group_by(Message.receiver_id)[per_page*(page-1):per_page*page]
                 messages = session.query(Message).\
-                    filter(Message.receiver_id == user_id, Message.view == 0).order_by(Message.time.desc()).\
+                    filter(Message.receiver_id == user_id).order_by(Message.time.desc()).\
                     group_by(Message.sender_id)[per_page*(page-1):per_page*page]
                 traverse_messages(messages, resp_suc)
             else:
-                message = Message.query.filter(Message.receiver_id == user_id, Message.view == 0).first()
+                message = Message.query.filter(Message.receiver_id == user_id).first()
                 traverse_message(message, resp_suc)
             resp_suc['status'] = 0
             resp_suc['message'] = 'success'
