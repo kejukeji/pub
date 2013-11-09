@@ -522,8 +522,17 @@ class UserMessageInfo(restful.Resource):
 
         # message_count = Message.query.filter(Message.sender_id == sender_id).count()
         message_receiver_count = Message.query.filter(Message.sender_id == sender_id, Message.receiver_id == receiver_id).count()
+        message_sender_count = Message.query.filter(Message.sender_id == receiver_id, Message.receiver_id == sender_id).count()
         if message_receiver_count > 1:
             # messages = Message.query.filter(Message.sender_id == sender_id).order_by(Message.time.asc())
+            if message_sender_count > 1:
+                message_senders = Message.query.filter(Message.sender_id == receiver_id, Message.receiver_id == sender_id).\
+                    order_by(Message.time.desc())
+                traverse_messages_receiver(message_senders, resp_suc)
+            else:
+                message_senders = Message.query.filter(Message.sender_id == receiver_id, Message.receiver_id == sender_id).first()
+                traverse_message_receiver(message_senders, resp_suc)
+
             message_receivers = Message.query.filter(Message.sender_id == sender_id, Message.receiver_id == receiver_id).\
                 order_by(Message.time.desc())
             if message_receivers:
