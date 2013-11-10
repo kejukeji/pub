@@ -344,7 +344,7 @@ class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True
                 if not allowed_file_extension(head_picture.stream.filename, HEAD_PICTURE_ALLOWED_EXTENSION):
                     err['message'] = '图片的格式不支持，png jpg jpeg gif支持'
                     return err
-                old_head_picture = user_info.base_path + user_info.rel_path + '/' + user_info.pic_name
+                old_head_picture = str(user_info.base_path) + str(user_info.rel_path) + '/' + str(user_info.pic_name)
                 user_info.upload_name = head_picture.stream.filename
                 user_info.base_path = HEAD_PICTURE_BASE_PATH
                 user_info.rel_path = HEAD_PICTURE_UPLOAD_FOLDER
