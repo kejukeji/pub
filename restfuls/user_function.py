@@ -527,14 +527,14 @@ class UserMessageInfo(restful.Resource):
             # messages = Message.query.filter(Message.sender_id == sender_id).order_by(Message.time.asc())
             if message_sender_count > 1:
                 message_senders = Message.query.filter(Message.sender_id == receiver_id, Message.receiver_id == sender_id).\
-                    order_by(Message.time.desc())
+                    order_by(Message.time)
                 traverse_messages_receiver(message_senders, resp_suc)
             else:
                 message_senders = Message.query.filter(Message.sender_id == receiver_id, Message.receiver_id == sender_id).first()
                 traverse_message_receiver(message_senders, resp_suc)
 
             message_receivers = Message.query.filter(Message.sender_id == sender_id, Message.receiver_id == receiver_id).\
-                order_by(Message.time.desc())
+                order_by(Message.time)
             if message_receivers:
                 traverse_messages_receiver(message_receivers, resp_suc)
                 return resp_suc
@@ -698,14 +698,14 @@ class ClearMessage(restful.Resource):
 
         message_count = Message.query.filter(Message.receiver_id == user_id).count()
         if message_count > 1:
-            messages = Message.query.filter(Message.receiver_id == user_id)
+            messages = Message.query.filter(Message.receiver_id == user_id).all()
             for message in messages:
                 db.delete(message)
                 try:
                     db.commit()
                 except:
                     return resp_fail
-                return resp_suc
+            return resp_suc
         else:
             message = Message.query.filter(Message.receiver_id == user_id).first()
             db.delete(message)
