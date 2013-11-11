@@ -271,5 +271,6 @@ def delete_pub_picture(pub_id):
         try:
             os.remove(os.path.join(picture.base_path+picture.rel_path+'/', picture.pic_name))
             os.remove(os.path.join(picture.base_path+picture.rel_path+'/', picture.thumbnail))
-        except:
-            pass
+        except OSError:
+            message = "Error while os.remove on %s" % str(picture)
+            flash(message, 'error')

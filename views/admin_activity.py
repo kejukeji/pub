@@ -142,8 +142,9 @@ def save_activity_pictures(activity_id, pictures):
                 db.commit()
                 try:
                     os.remove(old_picture)
-                except:
-                    pass
+                except OSError:
+                    message = "Error while os.remove on %s" % str(picture)
+                    flash(message, 'error')
 
 
 def delete_activity_picture(activity_id):
