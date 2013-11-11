@@ -12,6 +12,7 @@ from flask.ext import restful
 from pub_app import app
 from models import db
 from views import UserView, PubTypeView, PubView, PubFile, UserMessageView, UserCollectView, PubPictureFile
+from views.admin_activity import ActivityView
 from restfuls import (UserInfo, UserLogin, UserRegister, PubGetType, PubListDetail, PubDetail, UserCollect,
                       PubCollect, PubPictureDetail, PubSearch, GetPubType, GetProvince, GetCity, GetCounty,
                       UserMessage, PubSearchView, GetPubTypeList, UserOpenIdCheck, UserMessageInfo, UserSenderMessage,
@@ -37,6 +38,7 @@ admin.add_view(UserCollectView(db, name=u'用户收藏', category=u'功能'))
 admin.add_view(PubTypeView(db, name=u'酒吧类型', category=u'酒吧'))
 admin.add_view(PubView(db, name=u'酒吧详情', category=u'酒吧'))
 admin.add_view(SystemMessageView(db, name=u'系统消息'))
+admin.add_view(ActivityView(db, name=u'酒吧活动', category=u'酒吧'))
 
 ### 文件管理
 file_path = os.path.join(os.path.dirname(__file__), 'static')

@@ -133,15 +133,15 @@ class PubView(ModelView):
 
     form_ajax_refs = None
 
-    edit_template = 'admin_pub/edit.html'
-    create_template = 'admin_pub/create.html'
-    list_template = 'admin_pub/list.html'
+    edit_template = 'admin_pub/pub_edit.html'
+    create_template = 'admin_pub/pub_create.html'
+    list_template = 'admin_pub/pub_list.html'
 
     def scaffold_form(self):
         form_class = super(PubView, self).scaffold_form()
-        form_class.pub_type = TextField(label='酒吧类型', validators=[validators.input_required()],
+        form_class.pub_type = TextField(label=u'酒吧类型', validators=[validators.input_required()],
                                         description=u'酒吧类型')
-        form_class.picture = TextField(label='酒吧图片', description=u'酒吧图片，按control键可以选择多张图片')
+        form_class.picture = TextField(label=u'酒吧图片', description=u'酒吧图片，按control键可以选择多张图片')
         return form_class
 
     def __init__(self, db, **kwargs):
@@ -271,5 +271,6 @@ def delete_pub_picture(pub_id):
         try:
             os.remove(os.path.join(picture.base_path+picture.rel_path+'/', picture.pic_name))
             os.remove(os.path.join(picture.base_path+picture.rel_path+'/', picture.thumbnail))
-        except:
-            pass
+        except OSError:
+            message = "Error while os.remove on %s" % str(picture)
+            flash(message, 'error')
