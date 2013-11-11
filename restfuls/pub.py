@@ -6,7 +6,7 @@ from models import Pub, PubType, PubTypeMid, PubPicture, engine, View, UserInfo,
     ActivityComment, Collect
 from utils import pickler, page_utils
 from flask.ext.restful import reqparse
-from utils.others import success_dic, fail_dic, get_address, get_county, calc_distance
+from utils.others import success_dic, fail_dic, get_address, get_county, flatten
 
 
 def to_flatten(obj, obj2):
@@ -15,7 +15,7 @@ def to_flatten(obj, obj2):
     """
     obj_pic = None
     if obj:
-        obj_pic = pickler.flatten(obj)
+        obj_pic = flatten(obj)
     if obj2:
         if obj2.rel_path and obj2.pic_name:
             obj_pic['pic_path'] = obj2.rel_path + '/' + obj2.pic_name
@@ -39,7 +39,7 @@ def to_pub_longitude_latitude(pub, picture):
 
             return distance
     """
-    pub_pic = pickler.flatten(pub)
+    pub_pic = flatten(pub)
     if picture:
         pub_pic['pic_path'] = picture.rel_path + '/' + picture.pic_name
     pub_pic.pop('longitude')
@@ -521,7 +521,7 @@ class PubSearchView(restful.Resource):
         resp_suc['pub_list'] = []
         if pub_types:
             for pub_type in pub_types:
-                pub_type_pic = pickler.flatten(pub_type)
+                pub_type_pic = flatten(pub_type)
                 resp_suc['pub_type_list'].append(pub_type_pic)
         else:
             resp_suc['status'] = 1

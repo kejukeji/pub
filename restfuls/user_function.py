@@ -7,14 +7,14 @@ from flask.ext.restful import reqparse
 from utils import pickler, time_diff, page_utils
 from datetime import datetime
 from utils.others import success_dic, fail_dic
-from utils.others import time_to_str, is_valid_date
+from utils.others import time_to_str, flatten
 
 
 def differences(obj, time_dif):
     """
     计算时间差
     """
-    obj_pic = pickler.flatten(obj)
+    obj_pic = flatten(obj)
     obj_pic['difference'] = time_dif
     return obj_pic
 
@@ -46,14 +46,14 @@ def to_messages(times, content, message_id):
     """
     user = User.query.filter(User.id == message_id).first()
     user_info = UserInfo.query.filter(UserInfo.user_id == user.id).first()
-    json_pic = pickler._flatten(user)
+    json_pic = flatten(user)
     if user_info:
         sex = user_info.sex
         birthday = None
         if user_info.birthday:
             birthday = user_info.birthday
         age = get_year(birthday)
-        json_pic = pickler._flatten(user)
+        json_pic = flatten(user)
         if user_info.rel_path and user_info.pic_name:
             json_pic['pic_path'] = user_info.rel_path + '/' + user_info.pic_name
         if sex == 1:
@@ -74,14 +74,14 @@ def to_messages_no_time(content, message_id):
     user = User.query.filter(User.id == message_id).first()
     if user:
         user_info = UserInfo.query.filter(UserInfo.user_id == user.id).first()
-        json_pic = pickler._flatten(user)
+        json_pic = flatten(user)
         if user_info:
             sex = user_info.sex
             birthday = None
             if user_info.birthday:
                 birthday = user_info.birthday
             age = get_year(birthday)
-            json_pic = pickler._flatten(user)
+            json_pic = flatten(user)
             if user_info.rel_path and user_info.pic_name:
                 json_pic['receiver_path'] = user_info.rel_path + '/' + user_info.pic_name
             if sex == 1:
@@ -103,14 +103,14 @@ def to_messages_sender(content, message_id):
     user = User.query.filter(User.id == message_id).first()
     if user:
         user_info = UserInfo.query.filter(UserInfo.user_id == user.id).first()
-        json_pic = pickler._flatten(user)
+        json_pic = flatten(user)
         if user_info:
             sex = user_info.sex
             birthday = None
             if user_info.birthday:
                 birthday = user_info.birthday
             age = get_year(birthday)
-            json_pic = pickler._flatten(user)
+            json_pic = flatten(user)
             if user_info.rel_path and user_info.pic_name:
                 json_pic['receiver_path'] = user_info.rel_path + '/' + user_info.pic_name
             if sex == 1:
@@ -289,7 +289,7 @@ def system_message_pickler(system_message, resp_suc):
     """
         转换json
     """
-    system_message_pic = pickler.flatten(system_message)
+    system_message_pic = flatten(system_message)
     resp_suc['system_message_list'].append(system_message_pic)
 
 
@@ -297,7 +297,7 @@ def direct_message_pickler(direct_message, resp_suc):
     """
         转换json
     """
-    direct_message_pic = pickler.flatten(direct_message)
+    direct_message_pic = flatten(direct_message)
     resp_suc['direct_message_list'].append(direct_message_pic)
 
 
