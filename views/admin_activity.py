@@ -153,5 +153,6 @@ def delete_activity_picture(activity_id):
 
         try:
             os.remove(picture)
-        except:
-            pass
+        except OSError:
+            message = "Error while os.remove on %s" % str(picture)
+            flash(message, 'error')
