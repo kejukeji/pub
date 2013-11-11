@@ -6,13 +6,7 @@ from models import Pub, PubType, PubTypeMid, PubPicture, engine, View, UserInfo,
     ActivityComment, Collect
 from utils import pickler, page_utils
 from flask.ext.restful import reqparse
-from sqlalchemy.orm import Session, sessionmaker
 from utils.others import success_dic, fail_dic, get_address, get_county, calc_distance
-
-
-Session = sessionmaker()
-Session.configure(bind=engine)
-session = Session()
 
 
 def to_flatten(obj, obj2):
@@ -282,26 +276,23 @@ class PubListDetail(restful.Resource):
         resp_suc = {}
         resp_suc['pub_list'] = []
         resp_suc['picture_list'] = []
-        Session = sessionmaker()
-        Session.configure(bind=engine)
-        session = Session()
         type_id = args['type_id']
         page = args['page']
         if args['type_id']:
-            result_count = session.query(PubPicture).\
+            result_count = db.query(PubPicture).\
                 join(Pub).\
                 join(PubTypeMid).\
                 filter(PubTypeMid.pub_type_id == int(args['type_id']), Pub.recommend == 1).\
                 group_by(PubPicture.pub_id).count()
             if result_count > 1:
-                results = session.query(PubPicture). \
+                results = db.query(PubPicture). \
                     join(Pub). \
                     join(PubTypeMid).\
                     filter(PubTypeMid.pub_type_id == int(args['type_id']), Pub.recommend == 1).\
                     group_by(PubPicture.pub_id)
                 pub_list_picture(results, resp_suc)
             else:
-                result = session.query(PubPicture). \
+                result = db.query(PubPicture). \
                     join(Pub). \
                     join(PubTypeMid).\
                     filter(PubTypeMid.pub_type_id == int(args['type_id']), Pub.recommend == 1).\
@@ -380,18 +371,18 @@ class PubDetail(restful.Resource):
                     view = View(user_id, pub_id, 1)
                     db.add(view)
                     db.commit()
-            result_count = session.query(UserInfo).\
+            result_count = db.query(UserInfo).\
                 join(User).\
                 join(View).\
                 filter(View.pub_id == pub_id).order_by(View.time.desc()).count()
             if result_count > 1:
-                results = session.query(UserInfo). \
+                results = db.query(UserInfo). \
                     join(User). \
                     join(View). \
                     filter(View.pub_id == pub_id).order_by(View.time.desc()).all()
                 user_list_picture(results, resp_suc)
             else:
-                result = session.query(UserInfo). \
+                result = db.query(UserInfo). \
                     join(User). \
                     join(View). \
                     filter(View.pub_id == pub_id).order_by(View.time.desc()).first()
@@ -423,18 +414,18 @@ class PubPictureDetail(restful.Resource):
         resp_suc = {}
         pub_id = args['pub_id']
         resp_suc['picture_list'] = []
-        # result_count = session.query(UserInfo). \
+        # result_count = db.query(UserInfo). \
         #     join(User). \
         #     join(View). \
         #     filter(View.pub_id == pub_id).order_by(View.time.desc()).count()
         # if result_count > 1:
-        #     results = session.query(UserInfo). \
+        #     results = db.query(UserInfo). \
         #         join(User). \
         #         join(View). \
         #         filter(View.pub_id == pub_id).order_by(View.time.desc())
         #     user_list_picture(results, resp_suc)
         # else:
-        #     result = session.query(UserInfo). \
+        #     result = db.query(UserInfo). \
         #         join(User). \
         #         join(View). \
         #         filter(View.pub_id == pub_id).order_by(View.time.desc()).first()
@@ -481,17 +472,17 @@ class PubSearch(restful.Resource):
             content = str(args['content'])
             s = "%" + content + "%"
             if args['type_id']:
-                pub_count = session.query(Pub).\
+                pub_count = db.query(Pub).\
                     join(PubTypeMid).\
                     filter(Pub.name.like(s), PubTypeMid.pub_type_id == int(args['type_id'])).count()
                 page, per_page = page_utils(pub_count, page)
                 if pub_count > 1:
-                    pubs = session.query(Pub). \
+                    pubs = db.query(Pub). \
                         join(PubTypeMid). \
                         filter(Pub.name.like(s), PubTypeMid.pub_type_id == int(args['type_id']))[per_page*(page-1):per_page*page]
                     pub_list(pubs, resp_suc)
                 else:
-                    pub = session.query(Pub). \
+                    pub = db.query(Pub). \
                         join(PubTypeMid). \
                         filter(Pub.name.like(s), PubTypeMid.pub_type_id == int(args['type_id'])).first()
                     pub_only(pub, resp_suc)

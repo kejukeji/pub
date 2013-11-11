@@ -10,11 +10,6 @@ from utils.others import success_dic, fail_dic
 from utils.others import time_to_str, is_valid_date
 
 
-Session = sessionmaker()
-Session.configure(bind=engine)
-session = Session()
-
-
 def differences(obj, time_dif):
     """
     计算时间差
@@ -311,15 +306,15 @@ def traverse_system_message(user_id, resp_suc):
         遍历系统消息
     """
     resp_suc['system_message_list'] = []
-    system_count = session.query(SystemMessage).\
+    system_count = db.query(SystemMessage).\
         filter(UserSystemMessage.view == 0, UserSystemMessage.user_id == user_id).count()
     resp_suc['system_count'] = system_count
     if system_count > 1:
-        system_messages = session.query(SystemMessage).\
+        system_messages = db.query(SystemMessage).\
             filter(UserSystemMessage.view == 0, UserSystemMessage.user_id == user_id).all()
         return system_messages
     else:
-        system_message = session.query(SystemMessage).\
+        system_message = db.query(SystemMessage).\
             filter(UserSystemMessage.view == 0, UserSystemMessage.user_id == user_id).first()
         return system_message
     #system_count = SystemMessage.query.filter().count()
@@ -336,17 +331,17 @@ def traverse_direct_message(user_id, resp_suc):
     """
        私信消息
     """
-    message_count = session.query(Message).\
+    message_count = db.query(Message).\
         filter(Message.receiver_id == user_id, Message.view == 0).order_by(Message.time.desc()).\
         group_by(Message.sender_id).count()
     resp_suc['direct_count'] = message_count
     if message_count > 1:
-        direct_messages = session.query(Message).\
+        direct_messages = db.query(Message).\
             filter(Message.receiver_id == user_id, Message.view == 0).order_by(Message.time.desc()).\
             group_by(Message.sender_id).all()
         return direct_messages
     else:
-        direct_message = session.query(Message). \
+        direct_message = db.query(Message). \
             filter(Message.receiver_id == user_id, Message.view == 0).order_by(Message.time.desc()). \
             group_by(Message.sender_id).first()
         return direct_message
@@ -372,17 +367,17 @@ class UserCollect(restful.Resource):
         resp_suc = {}
         resp_suc['list'] = []
         if user_id:
-            result_count = session.query(Pub).\
+            result_count = db.query(Pub).\
                 join(Collect).\
                 filter(Collect.user_id == user_id).count()
             page, per_page = page_utils(result_count, page)
             if result_count > 1:
-                results = session.query(Pub).\
+                results = db.query(Pub).\
                     join(Collect).\
                     filter(Collect.user_id == user_id).order_by(Collect.time.desc())[per_page*(page-1):per_page*page]
                 traverse_collects(results, user_id, resp_suc)
             else:
-                result = session.query(Pub).\
+                result = db.query(Pub).\
                     join(Collect).\
                     filter(Collect.user_id == user_id).first()
                 traverse_collect(result, user_id, resp_suc)
@@ -449,13 +444,13 @@ class UserMessage(restful.Resource):
         resp_suc = {}
         resp_suc['list'] = []
         if user_id:
-            message_count = session.query(Message).\
+            message_count = db.query(Message).\
                 filter(Message.receiver_id == user_id).group_by(Message.sender_id).count()
             page, per_page = page_utils(message_count, page)
             if message_count > 1:
                 # messages = Message.query.filter(Message.receiver_id == user_id, Message.view == 0).order_by
                 # (Message.time.desc()).group_by(Message.receiver_id)[per_page*(page-1):per_page*page]
-                messages = session.query(Message).\
+                messages = db.query(Message).\
                     filter(Message.receiver_id == user_id).order_by(Message.time.desc()).\
                     group_by(Message.sender_id)[per_page*(page-1):per_page*page]
                 traverse_messages(messages, resp_suc)
