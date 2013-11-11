@@ -11,7 +11,7 @@ from models import db, User
 from models import UserInfo as UserInfoDb  # 避免和下面的类冲突
 from utils import pickler, todayfstr, allowed_file_extension, time_file_name
 from ex_var import HEAD_PICTURE_ALLOWED_EXTENSION, HEAD_PICTURE_BASE_PATH, HEAD_PICTURE_UPLOAD_FOLDER
-from utils.others import get_address
+from utils.others import get_address, flatten
 
 
 class UserRegister(restful.Resource):
@@ -131,7 +131,7 @@ class UserLogin(restful.Resource):
                 return err
 
             if user.check_password(password):
-                return {'user': pickler.flatten(user), 'status': 0}
+                return {'user': flatten(user), 'status': 0}
             else:
                 err['message'] = '密码错误'
                 return err
@@ -443,9 +443,9 @@ class UserOpenIdCheck(restful.Resource):
 def wrap_user_json(user=None, user_info=None, status=0, sign='$'):
     """将地址的ID转换为一个字符串，这里的字符串添加了一个county字段，返回一个json"""
     # db.commit()  # todo-lyw 试图修复后台注册后第一次获取不到user消息的bug，sqlalchemy和mysql的工作模式不理解，变成更大的bug了，不理解
-    user_json = pickler.flatten(user)
+    user_json = flatten(user)
     if user_info:
-        user_info_json = pickler.flatten(user_info)
+        user_info_json = flatten(user_info)
         user_info_json['county'] = get_address(user_info.province_id, user_info.city_id, user_info.county_id, sign=sign)
         if user_info.rel_path and user_info.pic_name:
             user_info_json['pic_path'] = user_info.rel_path + '/' + user_info.pic_name
