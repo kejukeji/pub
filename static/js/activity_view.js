@@ -28,4 +28,22 @@ $(document).ready(function(){
             return true;
         }
     });
+
+    // 列表页面，如果没有pub_id参数，屏蔽create，如果有更改create的链接，改变cancel的链接
+    var pub_id = gup('pub_id')
+    if (pub_id) { // 有参数
+        var create = $(".nav-tabs li:nth-child(2) a")
+        var href = create.attr('href')
+        create.attr('href', href+'&pub_id='+pub_id)
+        var cancel = $(".control-group .controls a")
+        var cancel_href = cancel.attr('href') + '?pub_id=' + pub_id
+        cancel.attr('href', cancel_href)
+        var edit = $("table tbody a")  // more than on
+        for (var i= 0; i < edit.length; i++) {
+            var edithref = $(edit[i]).attr('href') + '&pub_id=' + pub_id
+            $(edit[i]).attr('href', edithref)
+        }
+    } else {  // 没有参数
+        $(".nav-tabs li:nth-child(2)").remove()
+    }
 });

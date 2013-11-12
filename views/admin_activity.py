@@ -6,14 +6,13 @@ import os
 from flask.ext.admin.contrib.sqla import ModelView
 from flask import flash, request
 from flask.ext.admin.babel import gettext
-from wtforms.fields import TextAreaField, FileField
+from wtforms.fields import TextAreaField, FileField, TextField
 from flask.ext import login
 
 from models import db, Activity
 from ex_var import ACTIVITY_PICTURE_BASE_PATH, ACTIVITY_PICTURE_UPLOAD_FOLDER, ACTIVITY_PICTURE_ALLOWED_EXTENSION
 from utils import time_file_name, allowed_file_extension, form_to_dict
 from werkzeug import secure_filename
-from flask.ext.admin.contrib.sqla.filters import FilterEqual
 from flask.ext.admin.base import expose
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
@@ -69,6 +68,9 @@ class ActivityView(ModelView):
         """改写flask的新建model的函数"""
 
         try:
+            pub_id = request.args.get('pub_id')
+            form._fields['pub_id'] = TextField()
+            form._fields['pub_id'].data = int(pub_id)
             model = self.model(**form_to_dict(form))
             self.session.add(model)  # 保存酒吧基本资料
             self.session.commit()
@@ -342,7 +344,7 @@ def save_activity_pictures(activity_id, pictures):
             pic_name = time_file_name(secure_filename(upload_name), sign=activity_id)
             activity = Activity.query.filter(Activity.id == activity_id).first()
             if activity:
-                old_picture = activity.base_path + activity.rel_path + '/' + activity.pic_name
+                old_picture = str(activity.base_path) + str(activity.rel_path) + '/' + str(activity.pic_name)
                 picture.save(os.path.join(base_path+rel_path+'/', pic_name))
                 activity.pic_name = pic_name
                 activity.base_path = base_path
@@ -358,7 +360,7 @@ def save_activity_pictures(activity_id, pictures):
 def delete_activity_picture(activity_id):
     activity = Activity.query.filter(Activity.id == activity_id).first()
     if activity:
-        picture = activity.base_path + activity.rel_path + '/' + activity.pic_name
+        picture = str(activity.base_path) + str(activity.rel_path) + '/' + str(activity.pic_name)
 
         try:
             os.remove(picture)
