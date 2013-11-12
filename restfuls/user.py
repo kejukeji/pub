@@ -291,7 +291,8 @@ class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True
             if real_name:
                 user_info.real_name = real_name
             if sex:
-                user_info.sex = sex
+                if sex == 1 or sex == 0:
+                    user_info.sex = sex
             if birthday_type:
                 user_info.birthday_type = birthday_type
             if birthday:
@@ -368,7 +369,8 @@ class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True
             if real_name:
                 user_info.real_name = real_name
             if sex:
-                user_info.sex = sex
+                if sex == 0 or sex == 1:
+                    user_info.sex = sex
             if birthday_type:
                 user_info.birthday_type = birthday_type
             if birthday:

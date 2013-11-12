@@ -107,10 +107,12 @@ $(document).ready(function(){
         init_loacation(9, 75, 794);
     }
 
-    // 如果不是新建的话，添加一个图片管理的东西，到哪里去
+    // 如果不是新建的话，添加一个图片管理和活动管理的东西，到哪里去
     if (g_province_id != "") {
         var manager_link = $.parseHTML("<p><a class='btn btn-danger' href='/admin/pubpicturefile?pub_id="+gup('id')+"'>图片管理</a></p>");
+        var activity_link = $.parseHTML("<p><a class='btn btn-danger' href='/admin/activityview?pub_id="+gup('id')+"'>活动管理</a></p>");
         $("#picture").after(manager_link)
+        $("#picture").after(activity_link)
         $("#picture").remove()  // 去掉图片上传
     }
 
