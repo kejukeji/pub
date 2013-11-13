@@ -6,7 +6,7 @@ from models import Pub, PubType, PubTypeMid, PubPicture, engine, View, UserInfo,
     ActivityComment, Collect
 from utils import pickler, page_utils
 from flask.ext.restful import reqparse
-from utils.others import success_dic, fail_dic, get_address, get_county, flatten
+from utils.others import success_dic, fail_dic, get_address, get_county, flatten, max_page
 
 
 def to_flatten(obj, obj2):
@@ -315,16 +315,22 @@ def by_type_id(type_id, resp_suc, page):
     """
     pub_type_count = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).count()
     if pub_type_count > 1:
-        page, per_page = page_utils(pub_type_count, page)
+        temp_page = page
+        page, per_page, max = page_utils(pub_type_count, page)
+        is_max = max_page(temp_page, max, resp_suc)
+        if is_max:
+            return resp_suc
         pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id)[per_page*(page-1):per_page*page]
         for pub_type in pub_types:
             pub = Pub.query.filter(Pub.id == pub_type.pub_id).first()
             pub_only(pub, resp_suc)
+        return resp_suc
     else:
         pub_type = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).first()
         if pub_type:
             pub = Pub.query.filter(Pub.id == pub_type.pub_id).first()
             pub_only(pub, resp_suc)
+        return resp_suc
 
 
 
@@ -475,7 +481,11 @@ class PubSearch(restful.Resource):
                 pub_count = db.query(Pub).\
                     join(PubTypeMid).\
                     filter(Pub.name.like(s), PubTypeMid.pub_type_id == int(args['type_id'])).count()
+                temp_page = page
                 page, per_page = page_utils(pub_count, page)
+                is_max = max_page(temp_page, max, resp_suc)
+                if is_max:
+                    return resp_suc
                 if pub_count > 1:
                     pubs = db.query(Pub). \
                         join(PubTypeMid). \
@@ -488,7 +498,11 @@ class PubSearch(restful.Resource):
                     pub_only(pub, resp_suc)
             else:
                 pub_count = Pub.query.filter(Pub.name.like(s)).count()
+                temp_page = page
                 page, per_page = page_utils(pub_count, page)
+                is_max = max_page(temp_page, max, resp_suc)
+                if is_max:
+                    return resp_suc
                 if pub_count > 1:
                     pubs = Pub.query.filter(Pub.name.like(s))[per_page*(page-1):per_page*page]
                     pub_list(pubs, resp_suc)
@@ -626,11 +640,11 @@ class ActivityList(restful.Resource):
         resp_suc['hot_list'] = []
         resp_suc['activity_list'] = []
         if pub_id:
-            get_activity_host_list_id(pub_id, resp_suc, page)
-            get_activity_list_id(pub_id, resp_suc, page)
+            resp_suc = get_activity_host_list_id(pub_id, resp_suc, page)
+            resp_suc = get_activity_list_id(pub_id, resp_suc, page)
         else:
-            get_activity_host_list(resp_suc, page)
-            get_activity_list(resp_suc, page)
+            resp_suc = get_activity_host_list(resp_suc, page)
+            resp_suc = get_activity_list(resp_suc, page)
         return resp_suc
 
 
@@ -639,18 +653,24 @@ def get_activity_host_list_id(pub_id, resp_suc, page):
         获取热门推荐活动
     """
     activity_host_count = Activity.query.filter(Activity.hot == 0, Activity.pub_id == pub_id).count()
-    page, per_page = page_utils(activity_host_count, page)
+    temp_page = page
+    page, per_page, max = page_utils(activity_host_count, page)
+    is_max = max_page(temp_page, max, resp_suc)
+    if is_max:
+        return resp_suc
     if activity_host_count > 1:
         activity_host = Activity.query.filter(Activity.hot == 0, Activity.pub_id == pub_id)[per_page*(page-1):per_page*page]
         for host in activity_host:
             host_pic = pub_activity(host)
             resp_suc['hot_list'].append(host_pic)
+        return resp_suc
     else:
         activity_host = Activity.query.filter(Activity.hot == 0, Activity.pub_id == pub_id).first()
         host_pic = None
         if activity_host:
             host_pic = pub_activity(activity_host)
         resp_suc['hot_list'].append(host_pic)
+        return resp_suc
 
 
 def get_activity_list_id(pub_id, resp_suc, page):
@@ -658,18 +678,24 @@ def get_activity_list_id(pub_id, resp_suc, page):
         获取活动
     """
     activity_host_count = Activity.query.filter(Activity.pub_id == pub_id).count()
-    page, per_page = page_utils(activity_host_count, page)
+    temp_page = page
+    page, per_page, max = page_utils(activity_host_count, page)
+    is_max = max_page(temp_page, max, resp_suc)
+    if is_max:
+        return resp_suc
     if activity_host_count > 1:
         activity_host = Activity.query.filter(Activity.pub_id == pub_id)[per_page*(page-1):per_page*page]
         for host in activity_host:
             activity_pic = pub_activity(host)
             resp_suc['activity_list'].append(activity_pic)
+        return resp_suc
     else:
         activity_host = Activity.query.filter(Activity.pub_id == pub_id).first()
         activity_pic = None
         if activity_host:
             activity_pic = pub_activity(activity_host)
         resp_suc['activity_list'].append(activity_pic)
+        return resp_suc
 
 
 def get_activity_host_list(resp_suc, page):
@@ -677,18 +703,24 @@ def get_activity_host_list(resp_suc, page):
         获取热门推荐活动
     """
     activity_host_count = Activity.query.filter(Activity.hot == 0).count()
-    page, per_page = page_utils(activity_host_count, page)
+    temp_page = page
+    page, per_page, max = page_utils(activity_host_count, page)
+    is_max = max_page(temp_page, max , resp_suc)
+    if is_max:
+        return resp_suc
     if activity_host_count > 1:
         activity_host = Activity.query.filter(Activity.hot == 0)[per_page*(page-1):per_page*page]
         for host in activity_host:
             host_pic = pub_activity(host)
             resp_suc['hot_list'].append(host_pic)
+        return resp_suc
     else:
         activity_host = Activity.query.filter(Activity.hot == 0).first()
         host_pic = None
         if activity_host:
             host_pic = pub_activity(activity_host)
         resp_suc['hot_list'].append(host_pic)
+        return resp_suc
 
 
 def get_activity_list(resp_suc, page):
@@ -696,18 +728,24 @@ def get_activity_list(resp_suc, page):
         获取活动
     """
     activity_host_count = Activity.query.filter().count()
-    page, per_page = page_utils(activity_host_count, page)
+    temp_page = page
+    page, per_page, max = page_utils(activity_host_count, page)
+    is_max = max_page(temp_page, max, resp_suc)
+    if is_max:
+        return resp_suc
     if activity_host_count > 1:
         activity_host = Activity.query.filter()[per_page*(page-1):per_page*page]
         for hot in activity_host:
             hot_pic = pub_activity(hot)
             resp_suc['activity_list'].append(hot_pic)
+        return resp_suc
     else:
         activity_host = Activity.query.filter().first()
         activity_pic = None
         if activity_host:
             activity_pic = pub_activity(activity_host)
         resp_suc['activity_list'].append(activity_pic)
+        return resp_suc
 
 
 EARTH_RADIUS=6371           # 地球平均半径，6371km
@@ -761,7 +799,11 @@ class NearPub(restful.Resource):
         right_bottom = array['right_bottom']
         pub_count = Pub.query.filter(Pub.latitude > right_bottom[0], Pub.latitude < left_top[0],
                                 Pub.longitude > left_bottom[1], Pub.longitude < right_top[1]).count()
-        page, per_page = page_utils(pub_count, page)
+        temp_page = page
+        page, per_page, max = page_utils(pub_count, page)
+        is_max = max_page(temp_page, max, resp_suc)
+        if is_max:
+            return resp_suc
         if pub_count > 1:
             pubs = Pub.query.filter(Pub.latitude > right_bottom[0], Pub.latitude < left_top[0],
                                 Pub.longitude > left_bottom[1], Pub.longitude < right_top[1])[per_page*(page-1):per_page*page]
@@ -823,10 +865,10 @@ class ScreeningPub(restful.Resource):
         resp_suc['pub_list'] = []
         type_id = args['type_id']
         if county_id == '0':
-            by_type_id(type_id, resp_suc, page)
+            resp_suc = by_type_id(type_id, resp_suc, page)
             return resp_suc
         else:
-            get_pub(type_id, resp_suc, page, county_id)
+            resp_suc = get_pub(type_id, resp_suc, page, county_id)
             return resp_suc
 
 
@@ -836,13 +878,19 @@ def get_pub(type_id, resp_suc, page, county_id):
     """
     pub_type_count = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).count()
     if pub_type_count > 1:
-        page, per_page = page_utils(pub_type_count, page)
+        temp_page = page
+        page, per_page,max = page_utils(pub_type_count, page)
+        is_max = max_page(temp_page, max, resp_suc)
+        if is_max:
+            return resp_suc
         pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id)[per_page*(page-1):per_page*page]
         for pub_type in pub_types:
             pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.county_id == county_id).first()
             pub_only(pub, resp_suc)
+        return resp_suc
     else:
         pub_type = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id, Pub.county_id == county_id).first()
         if pub_type:
             pub = Pub.query.filter(Pub.id == pub_type.pub_id).first()
             pub_only(pub, resp_suc)
+        return resp_suc

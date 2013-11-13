@@ -7,7 +7,7 @@ from flask.ext.restful import reqparse
 from utils import pickler, time_diff, page_utils
 from datetime import datetime
 from utils.others import success_dic, fail_dic
-from utils.others import time_to_str, flatten
+from utils.others import time_to_str, flatten, max_page
 
 
 def differences(obj, time_dif):
@@ -370,7 +370,11 @@ class UserCollect(restful.Resource):
             result_count = db.query(Pub).\
                 join(Collect).\
                 filter(Collect.user_id == user_id).count()
-            page, per_page = page_utils(result_count, page)
+            temp_page = page
+            page, per_page, max = page_utils(result_count, page)
+            is_max = max_page(temp_page, max, resp_suc)
+            if is_max:
+                return resp_suc
             if result_count > 1:
                 results = db.query(Pub).\
                     join(Collect).\
@@ -446,7 +450,11 @@ class UserMessage(restful.Resource):
         if user_id:
             message_count = db.query(Message).\
                 filter(Message.receiver_id == user_id).group_by(Message.sender_id).count()
-            page, per_page = page_utils(message_count, page)
+            temp_page = page
+            page, per_page, max = page_utils(message_count, page)
+            is_max = max_page(temp_page, max, resp_suc)
+            if is_max:
+                return resp_suc
             if message_count > 1:
                 # messages = Message.query.filter(Message.receiver_id == user_id, Message.view == 0).order_by
                 # (Message.time.desc()).group_by(Message.receiver_id)[per_page*(page-1):per_page*page]
