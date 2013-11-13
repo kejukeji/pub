@@ -58,7 +58,7 @@ def page_utils(count, page, per_page=5):
     max = count / per_page if count % per_page == 0 else count / per_page + 1
     page = page if ( page >= min and page <= max  ) else 1
 
-    return page, per_page
+    return page, per_page, max
 
 
 #取得一个正确的返回字典
@@ -208,4 +208,16 @@ def get_left_right_longitude_latitude(longitude, latitude, pubs):
      'left_bottom': (latitude - dlat, longitude - dlng),
      'right_bottom': (latitude - dlat, longitude + dlng)}
     return array
+
+
+def max_page(page, max, resp_suc):
+    if max == 0:
+        return False
+    if int(page) > max:
+        resp_suc['status'] = 1
+        prompt = ['最多只有', str(max), '页']
+        resp_suc['message'] = ''.join(prompt)
+        return True
+    else:
+        return False
 
