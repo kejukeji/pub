@@ -29,7 +29,7 @@ def close_db(exception=None):
 @app.teardown_request
 def teardown_request(exception=None):
     if db is not None:
-        db.close()
+        db.remove()
 
 from urls import *
 
