@@ -17,16 +17,16 @@ SQLALCHEMY_ECHO = False  # 是否显示SQL语句
 # ===============================================================
 # 用户头像
 HEAD_PICTURE_UPLOAD_FOLDER = '/static/system/head_picture'  # 运行目录的相对目录，URL获取图片的路径
-HEAD_PICTURE_BASE_PATH = '/mnt/web/www/pub'  # pub运行文件的目录，图片的绝对路径使用
-HEAD_PICTURE_ALLOWED_EXTENSION = ('png', 'jpg', 'jpeg', 'gif')  # 允许的拓展名
+HEAD_PICTURE_BASE_PATH = '/www/pub_py'  # pub运行文件的目录，图片的绝对路径使用
+HEAD_PICTURE_ALLOWED_EXTENSION = ('png', 'jpg', 'jpeg')  # 允许的拓展名
 # 酒吧图片
 PUB_PICTURE_UPLOAD_FOLDER = '/static/system/pub_picture'  # 运行目录的相对目录，URL获取图片的路径
-PUB_PICTURE_BASE_PATH = '/mnt/web/www/pub'  # pub运行文件的目录，图片的绝对路径使用
-PUB_PICTURE_ALLOWED_EXTENSION = ('png', 'jpg', 'jpeg', 'gif')  # 允许的拓展名
+PUB_PICTURE_BASE_PATH = '/www/pub_py'  # pub运行文件的目录，图片的绝对路径使用
+PUB_PICTURE_ALLOWED_EXTENSION = ('png', 'jpg', 'jpeg')  # 允许的拓展名
 # 活动图片
 ACTIVITY_PICTURE_UPLOAD_FOLDER = '/static/system/activity_picture'  # 运行目录的相对目录，URL获取图片的路径
-ACTIVITY_PICTURE_BASE_PATH = '/mnt/web/www/pub'  # pub运行文件的目录，图片的绝对路径使用
-ACTIVITY_PICTURE_ALLOWED_EXTENSION = ('png', 'jpg', 'jpeg', 'gif')  # 允许的拓展名
+ACTIVITY_PICTURE_BASE_PATH = '/www/pub_py'  # pub运行文件的目录，图片的绝对路径使用
+ACTIVITY_PICTURE_ALLOWED_EXTENSION = ('png', 'jpg', 'jpeg')  # 允许的拓展名
 
 # 其他配置参数
 # ===============================================================

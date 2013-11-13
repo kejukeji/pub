@@ -169,10 +169,10 @@ class FeedBack(Base):
     """
     __tablename__ = FEED_BACK
 
-    #__table_args__ = {
-    #    'mysql_engine': 'InnoDB',
-    #    'mysql_charset': 'utf8'
-    #}
+    __table_args__ = {
+        'mysql_engine': 'InnoDB',
+        'mysql_charset': 'utf8'
+    }
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey(User.id,  ondelete='cascade', onupdate='cascade'), nullable=False)
