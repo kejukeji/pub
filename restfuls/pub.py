@@ -472,6 +472,7 @@ class PubSearch(restful.Resource):
         args = parser.parse_args()
         resp_suc = {}
         resp_suc['pub_list'] = []
+        resp_fail = fail_dic().dic
         pub_pic = None
         page = args['page']
         if args['content']:
@@ -482,10 +483,12 @@ class PubSearch(restful.Resource):
                     join(PubTypeMid).\
                     filter(Pub.name.like(s), PubTypeMid.pub_type_id == int(args['type_id'])).count()
                 temp_page = page
-                page, per_page = page_utils(pub_count, page)
+                page, per_page, max = page_utils(pub_count, page)
                 is_max = max_page(temp_page, max, resp_suc)
                 if is_max:
                     return resp_suc
+                if pub_count == 0:
+                    return resp_fail()
                 if pub_count > 1:
                     pubs = db.query(Pub). \
                         join(PubTypeMid). \
@@ -499,10 +502,12 @@ class PubSearch(restful.Resource):
             else:
                 pub_count = Pub.query.filter(Pub.name.like(s)).count()
                 temp_page = page
-                page, per_page = page_utils(pub_count, page)
+                page, per_page, max = page_utils(pub_count, page)
                 is_max = max_page(temp_page, max, resp_suc)
                 if is_max:
                     return resp_suc
+                if pub_count == 0:
+                    return resp_fail
                 if pub_count > 1:
                     pubs = Pub.query.filter(Pub.name.like(s))[per_page*(page-1):per_page*page]
                     pub_list(pubs, resp_suc)
