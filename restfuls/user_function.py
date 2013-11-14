@@ -309,14 +309,17 @@ def traverse_system_message(user_id, resp_suc):
     #system_count = db.query(SystemMessage).\
     #    filter(UserSystemMessage.view == 0, UserSystemMessage.user_id == user_id).count()
     user = User.query.filter(User.id == user_id).first()
-    system_count = SystemMessage.query.filter(SystemMessage.time > user.system_message_time).count()
-    resp_suc['system_count'] = system_count
-    if system_count > 1:
-        system_messages = SystemMessage.query.filter(SystemMessage.time > user.system_message_time).all()
-        return system_messages
+    if user.system_message_time:
+        system_count = SystemMessage.query.filter(SystemMessage.time > user.system_message_time).count()
+        resp_suc['system_count'] = system_count
+        if system_count > 1:
+            system_messages = SystemMessage.query.filter(SystemMessage.time > user.system_message_time).all()
+            return system_messages
+        else:
+            system_message = SystemMessage.query.filter(SystemMessage.time > user.system_message_time).first()
+            return system_message
     else:
-        system_message = SystemMessage.query.filter(SystemMessage.time > user.system_message_time).first()
-        return system_message
+        return None
 
 
 def traverse_direct_message(user_id, resp_suc):
