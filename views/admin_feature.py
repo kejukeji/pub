@@ -85,30 +85,14 @@ class UserCollectView(ModelView):
     can_create = False
     can_delete = True
     can_edit = False
-    # column_hide_backrefs = False
-    collects = Collect.query.filter().all()
-    #user_name = '用户'
-    #pub_name = '收藏酒吧'
-    #collect_time = '收藏时间'
-    #list = [user_name, pub_name, collect_time]
-    #for collect in collects:
-    #    user = User.query.filter(User.id == collect.user_id).first()
-    #    pub = Pub.query.filter(Pub.id == collect.pub_id).first()
-    #    user_name = user.nick_name
-    #    pub_name = pub.name
+    column_labels = {
+        'id':u'ID',
+        'user.nick_name':u'用户昵称',
+        'pub.name':u'酒吧',
+        'time':u'收藏时间'
+    }
 
-    # column_list = ObsoleteAttr(user_name, pub_name, list)
-    column_list = ('id', 'user', 'pub', 'time')
-    # column_filters = (User.login_type, )
-    # column_select_related_list = ('user', User.nick_name)
-    # form_ajax_refs = {
-    #     'user': {
-    #         'fields': (User, )
-    #     },
-    #     'pub': {
-    #         'fields': (Pub.name, None)
-    #     }
-    # }
+    column_list = ('id', 'user.nick_name', 'pub.name', 'time')
 
     def __init__(self, db, **kwargs):
         super(UserCollectView, self).__init__(Collect, db, **kwargs)
