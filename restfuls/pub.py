@@ -143,6 +143,7 @@ def picture_pub(pub_picture_pic, pub, pub_picture):
     pub_picture_pic.pop('pub_id')
     pub_picture_pic['name'] = pub.name
     pub_picture_pic['id'] = pub_picture.pub_id
+    pub_picture_pic['picture_id'] = pub_picture.id
     pub_picture_pic['intro'] = pub.intro
     pub_picture_pic['view_number'] = pub.view_number
     to_pub_type(pub, pub_picture_pic)
@@ -448,7 +449,7 @@ class PubPictureDetail(restful.Resource):
             pub_id = int(args['pub_id'])
             pub_picture_count = PubPicture.query.filter(PubPicture.pub_id == pub_id).count()
             if pub_picture_count > 1:
-                pub_pictures = PubPicture.query.filter(PubPicture.pub_id == pub_id)
+                pub_pictures = PubPicture.query.filter(PubPicture.pub_id == pub_id).all()
                 pub_list_picture(pub_pictures, resp_suc)
             else:
                 pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub_id).first()
