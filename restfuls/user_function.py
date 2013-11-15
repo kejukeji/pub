@@ -4,7 +4,7 @@ from flask.ext import restful
 from sqlalchemy.orm import Session, sessionmaker
 from models import Collect, Pub, User, engine, db, Message, UserInfo, PubPicture, County, SystemMessage, FeedBack, UserSystemMessage
 from flask.ext.restful import reqparse
-from utils import pickler, time_diff, page_utils
+from utils import pickler, time_diff, page_utils, todayfstr
 from datetime import datetime
 from utils.others import success_dic, fail_dic
 from utils.others import time_to_str, flatten, max_page
@@ -306,25 +306,20 @@ def traverse_system_message(user_id, resp_suc):
         遍历系统消息
     """
     resp_suc['system_message_list'] = []
-    system_count = db.query(SystemMessage).\
-        filter(UserSystemMessage.view == 0, UserSystemMessage.user_id == user_id).count()
-    resp_suc['system_count'] = system_count
-    if system_count > 1:
-        system_messages = db.query(SystemMessage).\
-            filter(UserSystemMessage.view == 0, UserSystemMessage.user_id == user_id).all()
-        return system_messages
+    #system_count = db.query(SystemMessage).\
+    #    filter(UserSystemMessage.view == 0, UserSystemMessage.user_id == user_id).count()
+    user = User.query.filter(User.id == user_id).first()
+    if user.system_message_time:
+        system_count = SystemMessage.query.filter(SystemMessage.time > user.system_message_time).count()
+        resp_suc['system_count'] = system_count
+        if system_count > 1:
+            system_messages = SystemMessage.query.filter(SystemMessage.time > user.system_message_time).all()
+            return system_messages
+        else:
+            system_message = SystemMessage.query.filter(SystemMessage.time > user.system_message_time).first()
+            return system_message
     else:
-        system_message = db.query(SystemMessage).\
-            filter(UserSystemMessage.view == 0, UserSystemMessage.user_id == user_id).first()
-        return system_message
-    #system_count = SystemMessage.query.filter().count()
-    #
-    #if system_count > 1:
-    #    system_messages = SystemMessage.query.filter().all()
-    #    return system_messages
-    #else:
-    #    system_message = SystemMessage.query.filter().first()
-    #    return system_message
+        return None
 
 
 def traverse_direct_message(user_id, resp_suc):
@@ -378,7 +373,7 @@ class UserCollect(restful.Resource):
             if result_count > 1:
                 results = db.query(Pub).\
                     join(Collect).\
-                    filter(Collect.user_id == user_id).order_by(Collect.time.desc())[per_page*(page-1):per_page*page]
+                    filter(Collect.user_id == user_id).order_by(Collect.time.desc())[per_page*(int(temp_page)-1):per_page*int(temp_page)]
                 traverse_collects(results, user_id, resp_suc)
             else:
                 result = db.query(Pub).\
@@ -460,7 +455,7 @@ class UserMessage(restful.Resource):
                 # (Message.time.desc()).group_by(Message.receiver_id)[per_page*(page-1):per_page*page]
                 messages = db.query(Message).\
                     filter(Message.receiver_id == user_id).order_by(Message.time.desc()).\
-                    group_by(Message.sender_id)[per_page*(page-1):per_page*page]
+                    group_by(Message.sender_id)[per_page*(int(temp_page)-1):per_page*int(temp_page)]
                 traverse_messages(messages, resp_suc)
             else:
                 message = Message.query.filter(Message.receiver_id == user_id).first()
@@ -657,19 +652,16 @@ class MessageByTypeInfo(restful.Resource):
         system_message = traverse_system_message(user_id, resp_suc)
         direct_message = traverse_direct_message(user_id, resp_suc)
         if types == '0':
+            user = User.query.filter(User.id == user_id).first()
             if type(system_message) is list:
                 for system in system_message:
                     system_message_pickler(system, resp_suc)
-                    user_system_message = UserSystemMessage.query.filter(UserSystemMessage.user_id == user_id,
-                                                                         UserSystemMessage.system_message_id == system.id).first()
-                    user_system_message.view = 1
+                    user.system_message_time = todayfstr()
                     db.commit()
             else:
                 if system_message:
                     system_message_pickler(system_message, resp_suc)
-                    user_system_message = UserSystemMessage.query.filter(UserSystemMessage.user_id == user_id,
-                                                                         UserSystemMessage.system_message_id == system_message.id).first()
-                    user_system_message.view = 1
+                    user.system_message_time = todayfstr()
                     db.commit()
         else:
             if type(direct_message) is list:
