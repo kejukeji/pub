@@ -17,8 +17,12 @@ def to_flatten(obj, obj2):
     if obj:
         obj_pic = flatten(obj)
     if obj2:
-        if obj2.rel_path and obj2.thumbnail:
-            obj_pic['pic_path'] = obj2.rel_path + '/' + obj2.thumbnail
+        try:
+            if obj2.rel_path and obj2.thumbnail:
+                obj_pic['pic_path'] = obj2.rel_path + '/' + obj2.thumbnail
+        except:
+            if obj2.rel_path and obj2.pic_name:
+                obj_pic['pic_path'] = obj2.rel_path + '/' + obj2.pic_name
     return obj_pic
 
 
