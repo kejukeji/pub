@@ -320,11 +320,11 @@ def by_type_id(type_id, resp_suc, page):
     pub_type_count = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).count()
     if pub_type_count > 1:
         temp_page = page
-        page, per_page, max = page_utils(pub_type_count, page)
+        page, per_page, max = page_utils(pub_type_count, page, per_page=5)
         is_max = max_page(temp_page, max, resp_suc)
         if is_max:
             return resp_suc
-        pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id)[per_page*(page-1):per_page*page]
+        pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).order_by(PubTypeMid.id)[per_page*(int(temp_page)-1):per_page*int(temp_page)]
         for pub_type in pub_types:
             pub = Pub.query.filter(Pub.id == pub_type.pub_id).first()
             pub_only(pub, resp_suc)
@@ -496,7 +496,7 @@ class PubSearch(restful.Resource):
                 if pub_count > 1:
                     pubs = db.query(Pub). \
                         join(PubTypeMid). \
-                        filter(Pub.name.like(s), PubTypeMid.pub_type_id == int(args['type_id']))[per_page*(page-1):per_page*page]
+                        filter(Pub.name.like(s), PubTypeMid.pub_type_id == int(args['type_id']))[per_page*(int(temp_page)-1):per_page*int(temp_page)]
                     pub_list(pubs, resp_suc)
                 else:
                     pub = db.query(Pub). \
@@ -513,7 +513,7 @@ class PubSearch(restful.Resource):
                 if pub_count == 0:
                     return resp_fail
                 if pub_count > 1:
-                    pubs = Pub.query.filter(Pub.name.like(s))[per_page*(page-1):per_page*page]
+                    pubs = Pub.query.filter(Pub.name.like(s))[per_page*(int(temp_page)- 1):per_page*int(temp_page)]
                     pub_list(pubs, resp_suc)
                 else:
                     pub = Pub.query.filter(Pub.name.like(s)).first()
@@ -668,7 +668,7 @@ def get_activity_host_list_id(pub_id, resp_suc, page):
     if is_max:
         return resp_suc
     if activity_host_count > 1:
-        activity_host = Activity.query.filter(Activity.hot == 0, Activity.pub_id == pub_id)[per_page*(page-1):per_page*page]
+        activity_host = Activity.query.filter(Activity.hot == 0, Activity.pub_id == pub_id)[per_page*(int(temp_page)-1):per_page*int(temp_page)]
         for host in activity_host:
             host_pic = pub_activity(host)
             resp_suc['hot_list'].append(host_pic)
@@ -693,7 +693,7 @@ def get_activity_list_id(pub_id, resp_suc, page):
     if is_max:
         return resp_suc
     if activity_host_count > 1:
-        activity_host = Activity.query.filter(Activity.pub_id == pub_id)[per_page*(page-1):per_page*page]
+        activity_host = Activity.query.filter(Activity.pub_id == pub_id)[per_page*(int(temp_page)-1):per_page*int(temp_page)]
         for host in activity_host:
             activity_pic = pub_activity(host)
             resp_suc['activity_list'].append(activity_pic)
@@ -718,7 +718,7 @@ def get_activity_host_list(resp_suc, page):
     if is_max:
         return resp_suc
     if activity_host_count > 1:
-        activity_host = Activity.query.filter(Activity.hot == 0)[per_page*(page-1):per_page*page]
+        activity_host = Activity.query.filter(Activity.hot == 0)[per_page*(int(temp_page)-1):per_page*int(temp_page)]
         for host in activity_host:
             host_pic = pub_activity(host)
             resp_suc['hot_list'].append(host_pic)
@@ -743,7 +743,7 @@ def get_activity_list(resp_suc, page):
     if is_max:
         return resp_suc
     if activity_host_count > 1:
-        activity_host = Activity.query.filter()[per_page*(page-1):per_page*page]
+        activity_host = Activity.query.filter()[per_page*(int(temp_page)-1):per_page*int(temp_page)]
         for hot in activity_host:
             hot_pic = pub_activity(hot)
             resp_suc['activity_list'].append(hot_pic)
@@ -815,7 +815,7 @@ class NearPub(restful.Resource):
             return resp_suc
         if pub_count > 1:
             pubs = Pub.query.filter(Pub.latitude > right_bottom[0], Pub.latitude < left_top[0],
-                                Pub.longitude > left_bottom[1], Pub.longitude < right_top[1])[per_page*(page-1):per_page*page]
+                                Pub.longitude > left_bottom[1], Pub.longitude < right_top[1])[per_page*(int(temp_page)-1):per_page*int(temp_page)]
             for pub in pubs:
                 pub_only(pub, resp_suc)
         else:
@@ -892,7 +892,7 @@ def get_pub(type_id, resp_suc, page, county_id):
         is_max = max_page(temp_page, max, resp_suc)
         if is_max:
             return resp_suc
-        pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id)[per_page*(page-1):per_page*page]
+        pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id)[per_page*(int(temp_page)-1):per_page*int(temp_page)]
         for pub_type in pub_types:
             pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.county_id == county_id).first()
             pub_only(pub, resp_suc)

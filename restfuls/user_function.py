@@ -373,7 +373,7 @@ class UserCollect(restful.Resource):
             if result_count > 1:
                 results = db.query(Pub).\
                     join(Collect).\
-                    filter(Collect.user_id == user_id).order_by(Collect.time.desc())[per_page*(page-1):per_page*page]
+                    filter(Collect.user_id == user_id).order_by(Collect.time.desc())[per_page*(int(temp_page)-1):per_page*int(temp_page)]
                 traverse_collects(results, user_id, resp_suc)
             else:
                 result = db.query(Pub).\
@@ -455,7 +455,7 @@ class UserMessage(restful.Resource):
                 # (Message.time.desc()).group_by(Message.receiver_id)[per_page*(page-1):per_page*page]
                 messages = db.query(Message).\
                     filter(Message.receiver_id == user_id).order_by(Message.time.desc()).\
-                    group_by(Message.sender_id)[per_page*(page-1):per_page*page]
+                    group_by(Message.sender_id)[per_page*(int(temp_page)-1):per_page*int(temp_page)]
                 traverse_messages(messages, resp_suc)
             else:
                 message = Message.query.filter(Message.receiver_id == user_id).first()
