@@ -17,8 +17,8 @@ def to_flatten(obj, obj2):
     if obj:
         obj_pic = flatten(obj)
     if obj2:
-        if obj2.rel_path and obj2.pic_name:
-            obj_pic['pic_path'] = obj2.rel_path + '/' + obj2.pic_name
+        if obj2.rel_path and obj2.thumbnail:
+            obj_pic['pic_path'] = obj2.rel_path + '/' + obj2.thumbnail
     return obj_pic
 
 
@@ -41,7 +41,8 @@ def to_pub_longitude_latitude(pub, picture):
     """
     pub_pic = flatten(pub)
     if picture:
-        pub_pic['pic_path'] = picture.rel_path + '/' + picture.pic_name
+        if picture.rel_path and picture.thumbnail:
+            pub_pic['pic_path'] = picture.rel_path + '/' + picture.thumbnail
     pub_pic.pop('longitude')
     pub_pic.pop('latitude')
     pub_pic['longitude'] = str(pub.longitude)
@@ -182,10 +183,12 @@ def pub_activity(activity):
 
     activity_pic['picture_path'] = ''
     activity_pic['pub_name'] = ''
-    activity_pic['activity_picture_path'] = activity.rel_path + '/' + activity.pic_name
+    if activity.rel_path and activity.pic_name:
+        activity_pic['activity_picture_path'] = activity.rel_path + '/' + activity.pic_name
     if pub:
         pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub.id).first()
-        activity_pic['pub_picture_path'] = pub_picture.rel_path + '/' + pub_picture.pic_name
+        if pub_picture.rel_path and pub_picture.thumbnail:
+            activity_pic['pub_picture_path'] = pub_picture.rel_path + '/' + pub_picture.thumbnail
         activity_pic['pub_name'] = pub.name
     activity_pic['county'] = get_address(pub.province_id, pub.city_id, pub.county_id)
     return activity_pic
@@ -219,7 +222,8 @@ def user_info(activity_comment, pic):
         pic['nick_name'] = user.nick_name
         user_info = UserInfo.query.filter(UserInfo.user_id == user.id).first()
         if user_info:
-            pic['picture_path'] = user_info.rel_path + '/' + user_info.pic_name
+            if user_info.rel_path and user_info.pic_name:
+                pic['picture_path'] = user_info.rel_path + '/' + user_info.pic_name
 
 
 def change_latitude_longitude(pub_pic, pub):
@@ -298,9 +302,9 @@ class PubListDetail(restful.Resource):
                     filter(PubTypeMid.pub_type_id == int(args['type_id']), Pub.recommend == 1).\
                     group_by(PubPicture.pub_id).first()
                 pub_picture_only(result, resp_suc)
-            by_type_id(type_id, resp_suc, page)
             resp_suc['status'] = 0
             resp_suc['county'] = []
+            resp_suc = by_type_id(type_id, resp_suc, page)
             get_county(75, resp_suc)
             return resp_suc
         else:
