@@ -25,11 +25,10 @@ class UserView(ModelView):
     column_searchable_list = ('login_name', 'nick_name')
     column_display_pk = True
     column_choices = {
-        'login_type': [
-            (0, u'注册用户'),
-            (1, u'微博用户'),
-            (2, u'QQ用户')
-        ]
+        'login_type':[(0, u'注册用户'), (1, u'微博用户'), (2, u'QQ用户')]
+    }
+    form_choices = {
+        'login_type':[('0', u'注册用户'), ('1', u'微博用户'), ('2', u'QQ用户')]
     }
     column_labels = dict(id=u'ID', login_name=u'登录名', password=u'密码', login_type=u'登陆类型', nick_name=u'昵称',
                          open_id=u'第三方登陆ID', sign_up_date=u'注册时间', system_message_time=u'系统消息',
