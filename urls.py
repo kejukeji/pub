@@ -42,7 +42,7 @@ admin.add_view(ActivityView(db, name=u'酒吧活动', category=u'酒吧'))
 
 ### 文件管理
 file_path = os.path.join(os.path.dirname(__file__), 'static')
-admin.add_view(PubFile(file_path, '/static/', name='文件'))
+#admin.add_view(PubFile(file_path, '/static/', name='文件'))
 picture_path = os.path.join(os.path.dirname(__file__), 'static/system/pub_picture')
 admin.add_view(PubPictureFile(picture_path, '/static/system/pub_picture/', name='酒吧图片', category=u'酒吧'))  # todo-lyw 后期开启
 
