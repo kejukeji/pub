@@ -11,7 +11,7 @@ from flask.ext.login import current_user
 from flask import flash
 
 from utils import form_to_dict
-from models import Message, Collect, User, Pub
+from models import Message, Collect, User, Pub, FeedBack
 from flask.ext.admin._backwards import ObsoleteAttr
 from flask.ext import login
 
@@ -96,6 +96,28 @@ class UserCollectView(ModelView):
 
     def __init__(self, db, **kwargs):
         super(UserCollectView, self).__init__(Collect, db, **kwargs)
+
+    def is_accessible(self):
+        return login.current_user.is_admin()
+
+
+class UserFeedbackView(ModelView):
+    """
+        用户收藏
+    """
+    can_create = False
+    can_delete = True
+    can_edit = False
+    column_labels = {
+        'id':u'ID',
+        'user.nick_name':u'用户昵称',
+        'content':u'内容'
+    }
+
+    column_list = ('id', 'user.nick_name', 'content')
+
+    def __init__(self, db, **kwargs):
+        super(UserFeedbackView, self).__init__(FeedBack, db, **kwargs)
 
     def is_accessible(self):
         return login.current_user.is_admin()

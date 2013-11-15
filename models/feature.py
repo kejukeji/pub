@@ -176,6 +176,7 @@ class FeedBack(Base):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey(User.id,  ondelete='cascade', onupdate='cascade'), nullable=False)
+    user = relationship(User)
     content = Column(String(140), nullable=True)
 
     def __init__(self, **kwargs):
