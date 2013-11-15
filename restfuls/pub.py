@@ -320,7 +320,7 @@ def by_type_id(type_id, resp_suc, page):
     pub_type_count = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).count()
     if pub_type_count > 1:
         temp_page = page
-        page, per_page, max = page_utils(pub_type_count, page, per_page=5)
+        page, per_page, max = page_utils(pub_type_count, page)
         is_max = max_page(temp_page, max, resp_suc)
         if is_max:
             return resp_suc
