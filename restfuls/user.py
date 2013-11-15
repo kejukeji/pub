@@ -282,7 +282,7 @@ class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True
             if system_message_time:  # 1
                 if not user.system_message_time:
                     user.system_message_time = todayfstr()
-            else:
+            elif system_message_time == 0:
                 user.system_message_time = None
             if mobile:
                 user_info.mobile = mobile
@@ -360,7 +360,7 @@ class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True
             if system_message_time:  # 1
                 if not user.system_message_time:
                     user.system_message_time = todayfstr()
-            else:
+            elif system_message_time == 0:
                 user.system_message_time = None
             if mobile:
                 user_info.mobile = mobile
