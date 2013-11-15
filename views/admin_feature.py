@@ -111,10 +111,11 @@ class UserFeedbackView(ModelView):
     column_labels = {
         'id':u'ID',
         'user.nick_name':u'用户昵称',
-        'content':u'内容'
+        'content':u'内容',
+        'time':u'时间'
     }
 
-    column_list = ('id', 'user.nick_name', 'content')
+    column_list = ('id', 'user.nick_name', 'content', 'time')
 
     def __init__(self, db, **kwargs):
         super(UserFeedbackView, self).__init__(FeedBack, db, **kwargs)

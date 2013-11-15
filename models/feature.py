@@ -166,6 +166,7 @@ class FeedBack(Base):
         意见反馈
             id: 主键
             content：内容
+            time: 插入时间
     """
     __tablename__ = FEED_BACK
 
@@ -178,10 +179,12 @@ class FeedBack(Base):
     user_id = Column(Integer, ForeignKey(User.id,  ondelete='cascade', onupdate='cascade'), nullable=False)
     user = relationship(User)
     content = Column(String(140), nullable=True)
+    time = Column(DATETIME, nullable=True, server_default=None)
 
     def __init__(self, **kwargs):
         self.user_id = kwargs.pop('user_id')
         self.content = kwargs.pop('content')
+        self.time = todayfstr()
 
 
 class ActivityComment(Base):
