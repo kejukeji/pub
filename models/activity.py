@@ -17,6 +17,7 @@ class Activity(Base):
             end_date	datetime	结束时间
             activity_info	varchar	活动详情
             host : 0代表推荐 1代表不推荐
+            join_people_number 参加人数
     """
     __tablename__ = ACTIVITY
 
@@ -35,6 +36,7 @@ class Activity(Base):
     rel_path = Column(String(100), nullable=True)
     pic_name = Column(String(100), nullable=True)
     hot = Column(Boolean, nullable=True, server_default='0')
+    join_people_number = Column(Integer, nullable=True)
 
     def __init__(self, **kwargs):
         self.title = kwargs.pop('title')
@@ -43,6 +45,7 @@ class Activity(Base):
         self.activity_info = kwargs.pop('activity_info')
         self.hot = kwargs.pop('hot', 0)
         self.pub_id = kwargs.pop('pub_id')
+        self.join_people_number = kwargs.pop('join_people_number')
 
     def update(self, **kwargs):
         self.title = kwargs.pop('title')
