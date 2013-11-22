@@ -10,7 +10,7 @@ import os
 from flask.ext.admin.contrib.sqla import ModelView
 from flask import flash, request
 from flask.ext.admin.babel import gettext
-from wtforms.fields import TextField, TextAreaField
+from wtforms.fields import TextField, TextAreaField, FileField
 from wtforms import validators
 from flask.ext import login
 
@@ -34,7 +34,8 @@ class PubTypeView(ModelView):
     column_display_pk = True
     column_searchable_list = ('name', 'code')
     column_default_sort = ('id', False)
-    column_labels = dict(name=u'类型名称', code=u'类型编号', id=u'ID')
+    column_labels = dict(name=u'类型名称', code=u'类型编号', id=u'ID', pic_name=u'图片名')
+    column_exclude_list = ('base_path', 'rel_path')
     column_descriptions = dict(
         name=u'比如：花吧',
         code=u'必须是两位，比如：01'
@@ -42,6 +43,14 @@ class PubTypeView(ModelView):
 
     def __init__(self, db, **kwargs):
         super(PubTypeView, self).__init__(PubType, db, **kwargs)
+
+    def scaffold_form(self):
+        form_class = super(PubTypeView, self).scaffold_form()
+        form_class.picture = FileField(label=u'分类图片', description=u'妹纸，别轻易换啊。。。注意图片格式！ -- 开发者友情提醒')
+        delattr(form_class, 'base_path')
+        delattr(form_class, 'rel_path')
+        delattr(form_class, 'pic_name')
+        return form_class
 
     def is_accessible(self):
         return login.current_user.is_admin()
