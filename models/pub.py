@@ -64,6 +64,7 @@ class Pub(Base):
     street = Column(String(64), nullable=True, server_default=None)
     longitude = Column(DOUBLE, nullable=False)
     latitude = Column(DOUBLE, nullable=False)
+    stopped = Column(Boolean, nullable=False, server_default='0')
 
     def __init__(self, **kwargs):
         self.name = kwargs.pop('name')
@@ -72,6 +73,7 @@ class Pub(Base):
         self.province_id = kwargs.pop('province_id')
         self.city_id = kwargs.pop('city_id')
         self.county_id = kwargs.pop('county_id')
+        self.stopped = kwargs.pop('stopped')
         self.street = kwargs.pop('street', None)
         self.recommend = kwargs.pop('recommend', 0)
         self.view_number = kwargs.pop('view_number', 0)
@@ -89,6 +91,7 @@ class Pub(Base):
         self.province_id = kwargs.pop('province_id')
         self.city_id = kwargs.pop('city_id')
         self.county_id = kwargs.pop('county_id')
+        self.stopped = kwargs.pop('stopped')
         self.street = kwargs.pop('street', None)
         self.recommend = kwargs.pop('recommend', 0)
         self.view_number = kwargs.pop('view_number', 0)

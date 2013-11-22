@@ -105,7 +105,8 @@ class PubView(ModelView):
         county_id=u'区县',
         street=u'详细地址',
         longitude=u'经度',
-        latitude=u'纬度'
+        latitude=u'纬度',
+        stopped=u'运营'
     )
     column_descriptions = dict(
         id=u'ID',
@@ -123,14 +124,19 @@ class PubView(ModelView):
         county_id=u'区县，比如上海的闵行区',
         street=u'下一级的详细地址描述',
         longitude=u'经度 - 填写酒吧名之后，默认搜索，点击位置方可更新',
-        latitude=u'纬度 - 搜索之后，点选位置方可更新',
+        latitude=u'纬度 - 搜索之后，点选位置方可更新'
     )
     column_exclude_list = ('intro', 'web_url', 'mobile_list', 'tel_list', 'email',
                            'fax', 'street', 'longitude', 'latitude')
     form_overrides = dict(
         intro=TextAreaField
     )
-
+    column_choices = dict(
+        stopped=[(0, u'正常'), (1, u'停止')]
+    )
+    form_choices = dict(
+        stopped=[('0', u'正常'), ('1', u'停止')]
+    )
     form_ajax_refs = None
 
     edit_template = 'admin_pub/pub_edit.html'
