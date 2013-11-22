@@ -192,8 +192,9 @@ def pub_activity(activity):
         activity_pic['activity_picture_path'] = activity.rel_path + '/' + activity.pic_name
     if pub:
         pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub.id).first()
-        if pub_picture.rel_path and pub_picture.thumbnail:
-            activity_pic['pub_picture_path'] = pub_picture.rel_path + '/' + pub_picture.thumbnail
+        if pub_picture:
+            if pub_picture.rel_path and pub_picture.thumbnail:
+                activity_pic['pub_picture_path'] = pub_picture.rel_path + '/' + pub_picture.thumbnail
         activity_pic['pub_name'] = pub.name
     activity_pic['county'] = get_address(pub.province_id, pub.city_id, pub.county_id)
     return activity_pic
