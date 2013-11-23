@@ -282,13 +282,36 @@ class PubListDetail(restful.Resource):
         parser.add_argument('type_id', type=str, required=True, help=u'酒吧类型type_id必须。')
         parser.add_argument('page', type=str, required=True, help=u'分页page必须。')
         parser.add_argument('city_id', type=str, required=False)
+        parser.add_argument('province_id', type=str, required=False)
         args = parser.parse_args()
         resp_suc = {}
         resp_suc['pub_list'] = []
         resp_suc['picture_list'] = []
         type_id = args['type_id']
         page = args['page']
-        if args['type_id']:
+        city_id = args.get('city_id', None)
+        province_id = args['province_id']
+        if city_id:
+            result_count = db.query(PubPicture).\
+                join(Pub).\
+                join(PubTypeMid).\
+                filter(PubTypeMid.pub_type_id == int(args['type_id']), Pub.recommend == 1, Pub.county_id == city_id).\
+                group_by(PubPicture.pub_id).count()
+            if result_count > 1:
+                results = db.query(PubPicture). \
+                    join(Pub). \
+                    join(PubTypeMid).\
+                    filter(PubTypeMid.pub_type_id == int(args['type_id']), Pub.recommend == 1, Pub.county_id == city_id).\
+                    group_by(PubPicture.pub_id)
+                pub_list_picture(results, resp_suc)
+            else:
+                result = db.query(PubPicture). \
+                    join(Pub). \
+                    join(PubTypeMid).\
+                    filter(PubTypeMid.pub_type_id == int(args['type_id']), Pub.recommend == 1, Pub.county_id == city_id).\
+                    group_by(PubPicture.pub_id).first()
+                pub_picture_only(result, resp_suc)
+        else:
             result_count = db.query(PubPicture).\
                 join(Pub).\
                 join(PubTypeMid).\
@@ -308,39 +331,55 @@ class PubListDetail(restful.Resource):
                     filter(PubTypeMid.pub_type_id == int(args['type_id']), Pub.recommend == 1).\
                     group_by(PubPicture.pub_id).first()
                 pub_picture_only(result, resp_suc)
-            resp_suc['status'] = 0
-            resp_suc['county'] = []
-            resp_suc = by_type_id(type_id, resp_suc, page)
-            get_county(75, resp_suc)
-            return resp_suc
-        else:
-            resp_suc['message'] = 'error'
-            resp_suc['status'] = 1
-            return resp_suc
+        resp_suc['status'] = 0
+        resp_suc['county'] = []
+        resp_suc = by_type_id(type_id, resp_suc, page, city_id)
+        get_county(75, resp_suc)
+        return resp_suc
 
 
-def by_type_id(type_id, resp_suc, page):
+def by_type_id(type_id, resp_suc, page, city_id):
     """
        根据type_id来获取酒吧
     """
-    pub_type_count = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).count()
-    if pub_type_count > 1:
-        temp_page = page
-        page, per_page, max = page_utils(pub_type_count, page)
-        is_max = max_page(temp_page, max, resp_suc)
-        if is_max:
+    if city_id:
+        pub_type_count = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).count()
+        if pub_type_count > 1:
+            temp_page = page
+            page, per_page, max = page_utils(pub_type_count, page)
+            is_max = max_page(temp_page, max, resp_suc)
+            if is_max:
+                return resp_suc
+            pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).order_by(PubTypeMid.id)[per_page*(int(temp_page)-1):per_page*int(temp_page)]
+            for pub_type in pub_types:
+                pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.county_id == city_id).first()
+                pub_only(pub, resp_suc)
             return resp_suc
-        pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).order_by(PubTypeMid.id)[per_page*(int(temp_page)-1):per_page*int(temp_page)]
-        for pub_type in pub_types:
-            pub = Pub.query.filter(Pub.id == pub_type.pub_id).first()
-            pub_only(pub, resp_suc)
-        return resp_suc
+        else:
+            pub_type = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).first()
+            if pub_type:
+                pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.county_id == city_id).first()
+                pub_only(pub, resp_suc)
+            return resp_suc
     else:
-        pub_type = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).first()
-        if pub_type:
-            pub = Pub.query.filter(Pub.id == pub_type.pub_id).first()
-            pub_only(pub, resp_suc)
-        return resp_suc
+        pub_type_count = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).count()
+        if pub_type_count > 1:
+            temp_page = page
+            page, per_page, max = page_utils(pub_type_count, page)
+            is_max = max_page(temp_page, max, resp_suc)
+            if is_max:
+                return resp_suc
+            pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).order_by(PubTypeMid.id)[per_page*(int(temp_page)-1):per_page*int(temp_page)]
+            for pub_type in pub_types:
+                pub = Pub.query.filter(Pub.id == pub_type.pub_id).first()
+                pub_only(pub, resp_suc)
+            return resp_suc
+        else:
+            pub_type = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).first()
+            if pub_type:
+                pub = Pub.query.filter(Pub.id == pub_type.pub_id).first()
+                pub_only(pub, resp_suc)
+            return resp_suc
 
 
 
@@ -791,7 +830,7 @@ class NearPub(restful.Resource):
 
         resp_suc = success_dic().dic
         resp_suc['pub_list'] = []
-        scope = 5000
+        scope = 50000
         pubs = Pub.query.filter().all()
         longitude_left = longitude + 0.00001 * scope
         longitude_right = longitude - 0.00001 * scope
@@ -880,7 +919,7 @@ class ScreeningPub(restful.Resource):
         resp_suc['pub_list'] = []
         type_id = args['type_id']
         if county_id == '0':
-            resp_suc = by_type_id(type_id, resp_suc, page)
+            resp_suc = by_type_id(type_id, resp_suc, page, '75')
             return resp_suc
         else:
             resp_suc = get_pub(type_id, resp_suc, page, county_id)
