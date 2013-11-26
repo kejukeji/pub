@@ -426,23 +426,24 @@ class PubDetail(restful.Resource):
                     view = View(user_id, pub_id, 1)
                     db.add(view)
                     db.commit()
-            result_count = db.query(UserInfo).\
-                join(User).\
-                join(View).\
-                filter(View.pub_id == pub_id).order_by(View.time.desc()).count()
-            if result_count > 1:
-                results = db.query(UserInfo). \
-                    join(User). \
-                    join(View). \
-                    filter(View.pub_id == pub_id).order_by(View.time.desc()).all()
-                user_list_picture(results, resp_suc)
-            else:
-                result = db.query(UserInfo). \
-                    join(User). \
-                    join(View). \
-                    filter(View.pub_id == pub_id).order_by(View.time.desc()).first()
-                user_picture_only(result, resp_suc)
-
+            view_count = View.query.filter(View.pub_id == pub_id).count()
+            #result_count = db.query(UserInfo).\
+            #    join(User).\
+            #    join(View).\
+            #    filter(View.pub_id == pub_id).order_by(View.time.desc()).count()
+            #if result_count > 1:
+            #    results = db.query(UserInfo). \
+            #        join(User). \
+            #        join(View). \
+            #        filter(View.pub_id == pub_id).order_by(View.time.desc()).all()
+            #    user_list_picture(results, resp_suc)
+            #else:
+            #    result = db.query(UserInfo). \
+            #        join(User). \
+            #        join(View). \
+            #        filter(View.pub_id == pub_id).order_by(View.time.desc()).first()
+            #    user_picture_only(result, resp_suc)
+            resp_suc['show_count'] = view_count
             resp_suc['status'] = 0
             resp_suc['message'] = 'success'
             return resp_suc
