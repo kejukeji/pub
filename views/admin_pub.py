@@ -6,6 +6,7 @@
 
 import logging
 import os
+import copy
 
 from flask.ext.admin.contrib.sqla import ModelView
 from flask import flash, request
@@ -15,9 +16,11 @@ from wtforms import validators
 from flask.ext import login
 
 from models import Pub, PubType, PubTypeMid, db, PubPicture
-from ex_var import PUB_PICTURE_BASE_PATH, PUB_PICTURE_UPLOAD_FOLDER, PUB_PICTURE_ALLOWED_EXTENSION
+from ex_var import (PUB_PICTURE_BASE_PATH, PUB_PICTURE_UPLOAD_FOLDER, PUB_PICTURE_ALLOWED_EXTENSION,
+                    PUB_TYPE_BASE_PATH, PUB_TYPE_UPLOAD_FOLDER, PUB_TYPE_ALLOWED_EXTENSION)
 from utils import time_file_name, allowed_file_extension, form_to_dict
 from werkzeug import secure_filename
+import Image
 
 from .tools import save_thumbnail
 
@@ -59,7 +62,10 @@ class PubTypeView(ModelView):
         """改写flask的新建model的函数"""
 
         try:
-            model = self.model(**form_to_dict(form))
+            pub_type_pictures = request.files.getlist("picture")  # 获取分类图片
+            model = self.model(**form_to_dict(form))  # 更新pub_type的消息
+            if not check_save_pub_type_pictures(pub_type_pictures, model):
+              return False  # 保存图片， 同时更新model的路径消息，不删除历史图片
             self.session.add(model)  # 保存酒吧基本资料
             self.session.commit()
         except Exception, ex:
@@ -75,7 +81,10 @@ class PubTypeView(ModelView):
     def update_model(self, form, model):
         """改写了update函数"""
         try:
+            pub_type_pictures = request.files.getlist("picture")  # 获取分类图片
             model.update(**form_to_dict(form))
+            if not check_save_pub_type_pictures(pub_type_pictures, model):
+              return False  # 保存图片， 同时更新model的路径消息，不删除历史图片
             self.session.commit()
         except Exception, ex:
             flash(gettext('Failed to update model. %(error)s', error=str(ex)), 'error')
@@ -289,3 +298,43 @@ def delete_pub_picture(pub_id):
         except OSError:
             message = "Error while os.remove on %s" % str(picture)
             flash(message, 'error')
+
+def check_save_pub_type_pictures(pub_type_pictures, model=None):
+    """图片的长宽比例的保证，其中有两个可能，如果是更新的话，id为1的像素是585-284,其他id的是281-170
+    如果是新建的话，默认就是281-170的格式吧, 为None的话就是新建了"""
+    for picture in pub_type_pictures:
+        if picture.filename == '':  # 或许没有图片
+            return True
+        if not allowed_file_extension(picture.filename, PUB_TYPE_ALLOWED_EXTENSION):
+            flash(u'图片格式不支持啊，png，jpeg支持', 'error')
+            return False
+        upload_name = picture.filename
+        base_path = PUB_TYPE_BASE_PATH
+        rel_path = PUB_TYPE_UPLOAD_FOLDER
+        pic_name = time_file_name(secure_filename(upload_name))
+        picture.save(os.path.join(base_path+rel_path+'/', pic_name))
+
+        image = Image.open(os.path.join(base_path+rel_path+'/', pic_name))
+
+        if model is not None:
+            if model.id == 1:
+                if image.size != (440, 199):
+                    flash(u'图片需要固定大小的哦 440*199', 'error')
+                    os.remove(os.path.join(base_path+rel_path+'/', pic_name))
+                    return False
+            else:
+                if image.size != (211, 199):
+                    flash(u'图片需要固定大小的哦 211*170', 'error')
+                    os.remove(os.path.join(base_path+rel_path+'/', pic_name))
+                    return False
+        else:
+            if image.size != (211, 199):
+                flash(u'图片需要固定大小的哦 211*170', 'error')
+                os.remove(os.path.join(base_path+rel_path+'/', pic_name))
+                return False
+
+        model.base_path = base_path
+        model.rel_path = rel_path
+        model.pic_name = pic_name
+
+        return True
