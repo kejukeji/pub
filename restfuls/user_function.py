@@ -422,6 +422,38 @@ class PubCollect(restful.Resource):
         return resp_suc
 
 
+class CancelCollectPub(restful.Resource):
+    """
+    取消收藏酒吧
+    """
+    @staticmethod
+    def get():
+        """
+        参数
+        1.pub_id：酒吧id
+        2.user_id： 登录用户id
+        """
+        parser = reqparse.RequestParser()
+        parser.add_argument('pub_id', type=str, required=True, help=u'pub_id 必须')
+        parser.add_argument('user_id', type=str, required=True, help=u'user_id 必须')
+
+        args = parser.parse_args()
+
+        success = success_dic().dic
+        fail = fail_dic().dic
+
+        pub_id = args['pub_id']
+        user_id = args['user_id']
+
+        collect = Collect.query.filter(Collect.user_id == user_id, Collect.pub_id == pub_id).first()
+        try:
+            db.delete(collect)
+            db.commit()
+            return success
+        except:
+            return fail
+
+
 class UserMessage(restful.Resource):
     """
     用户私信接口

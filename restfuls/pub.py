@@ -287,10 +287,10 @@ class PubListDetail(restful.Resource):
         resp_suc = {}
         resp_suc['pub_list'] = []
         resp_suc['picture_list'] = []
-        type_id = args['type_id']
+        type_id = int(args['type_id'])
         page = args['page']
         city_id = args.get('city_id', None)
-        province_id = args['province_id']
+        province_id = args.get('province_id', 0)
         if city_id:
             result_count = db.query(PubPicture).\
                 join(Pub).\
@@ -333,15 +333,16 @@ class PubListDetail(restful.Resource):
                 pub_picture_only(result, resp_suc)
         resp_suc['status'] = 0
         resp_suc['county'] = []
-        resp_suc = by_type_id(type_id, resp_suc, page, city_id)
+        resp_suc = by_type_id(type_id, resp_suc, page, city_id, province_id)
         get_county(75, resp_suc)
         return resp_suc
 
 
-def by_type_id(type_id, resp_suc, page, city_id):
+def by_type_id(type_id, resp_suc, page, city_id, province_id):
     """
        根据type_id来获取酒吧
     """
+    city_id = int(city_id)
     if city_id:
         pub_type_count = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).count()
         if pub_type_count > 1:
@@ -361,7 +362,7 @@ def by_type_id(type_id, resp_suc, page, city_id):
                 pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.county_id == city_id).first()
                 pub_only(pub, resp_suc)
             return resp_suc
-    else:
+    elif city_id == 0:
         pub_type_count = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).count()
         if pub_type_count > 1:
             temp_page = page
@@ -371,13 +372,13 @@ def by_type_id(type_id, resp_suc, page, city_id):
                 return resp_suc
             pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).order_by(PubTypeMid.id)[per_page*(int(temp_page)-1):per_page*int(temp_page)]
             for pub_type in pub_types:
-                pub = Pub.query.filter(Pub.id == pub_type.pub_id).first()
+                pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.city_id == 75).first()
                 pub_only(pub, resp_suc)
             return resp_suc
         else:
             pub_type = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).first()
             if pub_type:
-                pub = Pub.query.filter(Pub.id == pub_type.pub_id).first()
+                pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.city_id == 75).first()
                 pub_only(pub, resp_suc)
             return resp_suc
 
@@ -409,7 +410,7 @@ class PubDetail(restful.Resource):
             collect = Collect.query.filter(Collect.user_id == user_id, Collect.pub_id == pub_id).first()
             resp_suc['is_collect'] = '收藏'
             if collect:
-                resp_suc['is_collect'] = '已收藏'
+                resp_suc['is_collect'] = '取消收藏'
             pub = Pub.query.filter(Pub.id == pub_id).first()
             pub_picture = PubPicture.query.filter(PubPicture.pub_id == pub_id).first()
             resp_suc['county'] = get_address(pub.province_id, pub.city_id, pub.county_id)
@@ -427,22 +428,22 @@ class PubDetail(restful.Resource):
                     db.add(view)
                     db.commit()
             view_count = View.query.filter(View.pub_id == pub_id).count()
-            #result_count = db.query(UserInfo).\
-            #    join(User).\
-            #    join(View).\
-            #    filter(View.pub_id == pub_id).order_by(View.time.desc()).count()
-            #if result_count > 1:
-            #    results = db.query(UserInfo). \
-            #        join(User). \
-            #        join(View). \
-            #        filter(View.pub_id == pub_id).order_by(View.time.desc()).all()
-            #    user_list_picture(results, resp_suc)
-            #else:
-            #    result = db.query(UserInfo). \
-            #        join(User). \
-            #        join(View). \
-            #        filter(View.pub_id == pub_id).order_by(View.time.desc()).first()
-            #    user_picture_only(result, resp_suc)
+            result_count = db.query(UserInfo).\
+                join(User).\
+                join(View).\
+                filter(View.pub_id == pub_id).order_by(View.time.desc()).count()
+            if result_count > 1:
+                results = db.query(UserInfo). \
+                    join(User). \
+                    join(View). \
+                    filter(View.pub_id == pub_id).order_by(View.time.desc()).all()
+                user_list_picture(results, resp_suc)
+            else:
+                result = db.query(UserInfo). \
+                    join(User). \
+                    join(View). \
+                    filter(View.pub_id == pub_id).order_by(View.time.desc()).first()
+                user_picture_only(result, resp_suc)
             resp_suc['show_count'] = view_count
             resp_suc['status'] = 0
             resp_suc['message'] = 'success'
