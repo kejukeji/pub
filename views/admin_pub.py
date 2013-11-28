@@ -8,11 +8,15 @@ import logging
 import os
 
 from flask.ext.admin.contrib.sqla import ModelView
-from flask import flash, request
+from flask import flash, request, url_for, redirect
 from flask.ext.admin.babel import gettext
+from flask.ext.admin.base import expose
 from wtforms.fields import TextField, TextAreaField
 from wtforms import validators
 from flask.ext import login
+from flask.ext.admin.model.helpers import get_mdict_item_or_list
+from flask.ext.admin.helpers import validate_form_on_submit
+from flask.ext.admin.form import get_form_opts
 
 from models import Pub, PubType, PubTypeMid, db, PubPicture
 from ex_var import PUB_PICTURE_BASE_PATH, PUB_PICTURE_UPLOAD_FOLDER, PUB_PICTURE_ALLOWED_EXTENSION
@@ -222,6 +226,47 @@ class PubView(ModelView):
             log.exception('Failed to delete model')
             self.session.rollback()
             return False
+
+    @expose('/edit/', methods=('GET', 'POST'))
+    def edit_view(self):
+        """
+            Edit model view
+        """
+        return_url = request.args.get('url') or url_for('.index_view')
+
+        if not self.can_edit:
+            return redirect(return_url)
+
+        id = get_mdict_item_or_list(request.args, 'id')
+        if id is None:
+            return redirect(return_url)
+
+        model = self.get_one(id)
+
+        if model is None:
+            return redirect(return_url)
+
+        form = self.edit_form(obj=model)
+
+
+        if validate_form_on_submit(form):
+            if self.update_model(form, model):
+                if '_continue_editing' in request.form:
+                    flash(gettext('Model was successfully saved.'))
+                    return redirect(request.full_path)
+                else:
+                    return redirect(return_url)
+
+        # 改变小数点后面数字的个数
+        form.latitude.places = 8
+        form.longitude.places = 8
+
+        return self.render(self.edit_template,
+                           model=model,
+                           form=form,
+                           form_opts=get_form_opts(self),
+                           form_rules=self._form_edit_rules,
+                           return_url=return_url)
 
     #def is_accessible(self):  # 登陆管理功能先关闭，后期添加
     #    return current_user.is_admin()
