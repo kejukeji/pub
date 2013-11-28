@@ -281,7 +281,7 @@ class PubListDetail(restful.Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('type_id', type=str, required=True, help=u'酒吧类型type_id必须。')
         parser.add_argument('page', type=str, required=True, help=u'分页page必须。')
-        parser.add_argument('city_id', type=str, required=False)
+        parser.add_argument('city_id', type=str, required=True, help=u'city_id 必须')
         parser.add_argument('province_id', type=str, required=False)
         args = parser.parse_args()
         resp_suc = {}
@@ -291,7 +291,7 @@ class PubListDetail(restful.Resource):
         page = args['page']
         city_id = args.get('city_id', None)
         province_id = args.get('province_id', 0)
-        if city_id:
+        if city_id and city_id != '0':
             result_count = db.query(PubPicture).\
                 join(Pub).\
                 join(PubTypeMid).\
@@ -342,8 +342,8 @@ def by_type_id(type_id, resp_suc, page, city_id, province_id):
     """
        根据type_id来获取酒吧
     """
-    city_id = int(city_id)
-    if city_id:
+    if city_id and city_id != '0':
+        city_id = int(city_id)
         pub_type_count = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).count()
         if pub_type_count > 1:
             temp_page = page
@@ -362,7 +362,7 @@ def by_type_id(type_id, resp_suc, page, city_id, province_id):
                 pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.county_id == city_id).first()
                 pub_only(pub, resp_suc)
             return resp_suc
-    elif city_id == 0:
+    elif city_id == '0':
         pub_type_count = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).count()
         if pub_type_count > 1:
             temp_page = page
