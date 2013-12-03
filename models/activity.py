@@ -95,29 +95,3 @@ class ActivityPicture(Base):
 
     def path(self):
         return self.base_path + self.rel_path + '/'
-
-
-class UserActivity(Base):
-    """用户活动表格
-    id
-    user_id 用户ID
-    activity_id 活动ID
-    time 用户保存时间
-    """
-
-    __tablename__ = "user_activity"
-
-#    __table_args__ = {
-#        'mysql_engine': 'InnoDB',
-#        'mysql_charset': 'utf8'
-#    }
-
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey(Activity.id, ondelete='cascade', onupdate='cascade'), nullable=False)
-    activity_id = Column(Integer, ForeignKey(Activity.id, ondelete='cascade', onupdate='cascade'), nullable=False)
-    time = Column(DATETIME, nullable=False)
-
-    def __init__(self, user_id, activity_id, time):
-        self.user_id = user_id
-        self.activity_id = activity_id
-        self.time = todayfstr()

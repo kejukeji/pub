@@ -55,7 +55,7 @@ class ActivityView(ModelView):
 
     def scaffold_form(self):
         form_class = super(ActivityView, self).scaffold_form()
-        form_class.picture = FileField(label=u'酒吧图片', description=u'原来这里可以上传酒吧图片')
+        form_class.picture = FileField(label=u'活动图片', description=u'活动图片上传，一张就够了哈')
         delattr(form_class, 'base_path')
         delattr(form_class, 'rel_path')
         delattr(form_class, 'pic_name')

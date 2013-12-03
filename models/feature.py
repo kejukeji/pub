@@ -22,6 +22,7 @@ VIEW_TABLE = 'view'
 MESSAGE_TABLE = 'message'
 FEED_BACK = 'feed_back'
 ACTIVITY_COMMENT_TABLE = 'activity_comment'
+USER_ACTIBITY_TABLE = 'user_activity'
 
 
 class Collect(Base):
@@ -218,6 +219,7 @@ class ActivityComment(Base):
         self.time = todayfstr()
         self.star = star
 
+
 class Gift(Base):
     """礼物
     id
@@ -350,3 +352,30 @@ class Greeting(Base):
     def __repr__(self):
         return '<Greeting(sender_id: %s)>' % self.sender_id
 
+
+class UserActivity(Base):
+    """user_activity对应的类
+    id
+    activity_id 外键
+    user_id 外键
+    time 关注活动的时间
+    """
+
+    __tablename__ = USER_ACTIBITY_TABLE
+
+    __table_args__ = {
+        'mysql_engine': 'InnoDB',
+        'mysql_charset': 'utf8'
+    }
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey(User.id, ondelete='cascade', onupdate='cascade'), nullable=False)
+    user = relationship(User)
+    activity_id = Column(Integer, ForeignKey(Activity.id, ondelete='cascade', onupdate='cascade'), nullable=False)
+    activity = relationship(Activity)
+    time = Column(DATETIME, nullable=False)
+
+    def __init__(self, **kwargs):
+        self.user_id = kwargs.pop('user_id')
+        self.activity_id = kwargs.pop('activity_id')
+        self.time = todayfstr()
