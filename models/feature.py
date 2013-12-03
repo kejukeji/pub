@@ -217,3 +217,136 @@ class ActivityComment(Base):
         self.content = content
         self.time = todayfstr()
         self.star = star
+
+class Gift(Base):
+    """礼物
+    id
+    cost  礼物需要的积分
+    name  礼物的名字
+    words  礼物附带的祝福话语
+    rel_path  相对路径
+    base_path  服务器的绝对路径
+    picture  图片名
+    status 1上线 0下线
+    """
+
+    __tablename__ = 'gift'
+    __table_args__ = {
+        'mysql_engine': 'InnoDB',
+        'mysql_charset': 'utf8'
+    }
+
+    id = Column(Integer, primary_key=True)
+    cost = Column(Integer, nullable=False)
+    name = Column(String(16), nullable=False)
+    words = Column(String(64), nullable=True)
+    rel_path = Column(String(128), nullable=False)
+    base_path = Column(String(128), nullable=False)
+    picture = Column(String(128), nullable=False)
+    status = Column(Boolean, nullable=False)
+
+    def __init__(self, **kwargs):
+        self.cost = kwargs.pop('cost')
+        self.name = kwargs.pop('name')
+        self.words = kwargs.pop('words', None)
+        self.rel_path = kwargs.pop('rel_path')
+        self.base_path = kwargs.pop('base_path')
+        self.picture = kwargs.pop('picture')
+        self.status = kwargs.pop('status')
+
+    def __repr__(self):
+        return '<Gift(name: %s)>' % self.name
+
+    def path(self):
+        return self.base_path + self.rel_path + '/'
+
+
+class UserGift(Base):
+    """用户送礼
+    id
+    receiver_id 接受用户的id
+    sender_id 发送的id
+    time 送礼的时间
+    words 祝福
+    gift_id 礼物的ID
+    """
+
+    __tablename__ = 'user_gift'
+    __table_args__ = {
+        'mysql_engine': 'InnoDB',
+        'mysql_charset': 'utf8'
+    }
+
+    id = Column(Integer, primary_key=True)
+    receiver_id = Column(Integer, ForeignKey(User.id, ondelete='cascade', onupdate='cascade'), nullable=False)
+    sender_id = Column(Integer, ForeignKey(User.id, ondelete='cascade', onupdate='cascade'), nullable=False)
+    time = Column(DATETIME, nullable=False)
+    words = Column(String(1024), nullable=True)
+    gift_id = Column(Integer, ForeignKey(Gift.id, ondelete='cascade', onupdate='cascade'), nullable=False)
+
+    def __init__(self, **kwargs):
+        self.receiver_id = kwargs.pop('receiver_id')
+        self.sender_id = kwargs.pop('sender_id')
+        self.time = todayfstr()
+        self.words = kwargs.pop('words', None)
+        self.gift_id = kwargs.pop('gift_id')
+
+    def __repr__(self):
+        return '<UserGift(gift_id: %d)>' % self.gift_id
+
+
+class Invitation(Base):
+    """邀约数据库
+    id
+    receiver_id
+    sender_id
+    time
+    """
+
+    __tablename__ = 'invitation'
+    __table_args__ = {
+        'mysql_engine': 'InnoDB',
+        'mysql_charset': 'utf8'
+    }
+
+    id = Column(Integer, primary_key=True)
+    receiver_id = Column(Integer, ForeignKey(User.id, ondelete='cascade', onupdate='cascade'), nullable=False)
+    sender_id = Column(Integer, ForeignKey(User.id, ondelete='cascade', onupdate='cascade'), nullable=False)
+    time = Column(DATETIME, nullable=False)
+
+    def __init__(self, sender_id, receiver_id, time=todayfstr()):
+        self.sender_id = sender_id
+        self.receiver_id = receiver_id
+        self.time = time
+
+    def __repr__(self):
+        return '<Invitation(sender_id: %s)>' % self.sender_id
+
+
+class Greeting(Base):
+    """问候，传说中的抛媚眼
+    id
+    sender_id 发送方
+    receiver_id 接受方
+    time 发送时间
+    """
+
+    __tablename__ = 'greeting'
+    __table_args__ = {
+        'mysql_engine': 'InnoDB',
+        'mysql_charset': 'utf8'
+    }
+
+    id = Column(Integer, primary_key=True)
+    receiver_id = Column(Integer, ForeignKey(User.id, ondelete='cascade', onupdate='cascade'), nullable=False)
+    sender_id = Column(Integer, ForeignKey(User.id, ondelete='cascade', onupdate='cascade'), nullable=False)
+    time = Column(DATETIME, nullable=False)
+
+    def __init__(self, sender_id, receiver_id, time=todayfstr()):
+        self.sender_id = sender_id
+        self.receiver_id = receiver_id
+        self.time = time
+
+    def __repr__(self):
+        return '<Greeting(sender_id: %s)>' % self.sender_id
+

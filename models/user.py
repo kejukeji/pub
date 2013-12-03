@@ -211,25 +211,50 @@ class UserInfo(Base):
     def update(self, **kwargs):
         self.user_id = kwargs.pop('user_id')
         self.email = kwargs.pop('email')
-        self.mobile = kwargs.pop('mobile', None)
-        self.tel = kwargs.pop('tel', None)
-        self.real_name = kwargs.pop('real_name', None)
-        self.sex = kwargs.pop('sex', None)
-        self.birthday_type = kwargs.pop('birthday_type', None)
-        self.birthday = kwargs.pop('birthday', None)
-        self.intro = kwargs.pop('intro', None)
-        self.signature = kwargs.pop('signature', None)
-        self.ethnicity_id = kwargs.pop('ethnicity_id', None)
-        self.company = kwargs.pop('company', None)
-        self.job = kwargs.pop('job', None)
-        self.province_id = kwargs.pop('province_id', None)
-        self.city_id = kwargs.pop('city_id', None)
-        self.county_id = kwargs.pop('county_id', None)
-        self.street = kwargs.pop('street', None)
-        self.base_path = kwargs.pop('base_path', None)
-        self.rel_path = kwargs.pop('rel_path', None)
-        self.pic_name = kwargs.pop('pic_name', None)
-        self.upload_name = kwargs.pop('upload_name', None)
+        mobile = kwargs.pop('mobile', None)
+        tel = kwargs.pop('tel', None)
+        real_name = kwargs.pop('real_name', None)
+        sex = kwargs.pop('sex', None)
+        birthday_type = kwargs.pop('birthday_type', None)
+        birthday = kwargs.pop('birthday', None)
+        intro = kwargs.pop('intro', None)
+        signature = kwargs.pop('signature', None)
+        ethnicity_id = kwargs.pop('ethnicity_id', None)
+        company = kwargs.pop('company', None)
+        job = kwargs.pop('job', None)
+        province_id = kwargs.pop('province_id', None)
+        city_id = kwargs.pop('city_id', None)
+        county_id = kwargs.pop('county_id', None)
+        street = kwargs.pop('street', None)
+        base_path = kwargs.pop('base_path', None)
+        rel_path = kwargs.pop('rel_path', None)
+        pic_name = kwargs.pop('pic_name', None)
+        upload_name = kwargs.pop('upload_name', None)
+
+        self.update_none(mobile=mobile,
+                         tel=tel,
+                         real_name=real_name,
+                         sex=sex,
+                         birthday_type=birthday_type,
+                         birthday=birthday,
+                         intro=intro,
+                         signature=signature,
+                         ethnicity_id= ethnicity_id,
+                         company=company,
+                         job=job,
+                         province_id=province_id,
+                         city_id=city_id,
+                         county_id=county_id,
+                         street=street,
+                         base_path=base_path,
+                         rel_path=rel_path,
+                         pic_name=pic_name,
+                         upload_name=upload_name)
+
+    def update_none(self, **kwargs):
+        for key in kwargs:
+            if key:
+                setattr(self, key, kwargs[key])
 
     def __repr__(self):
         return '<UserInfo(user_id: %s, email: %s)>' % (self.user_id, self.email)

@@ -3,6 +3,7 @@
 from sqlalchemy import Column, Integer, String, DATETIME, ForeignKey, Boolean
 from database import Base
 from pub import Pub
+from utils import todayfstr
 
 ACTIVITY = 'activity'
 
@@ -53,3 +54,70 @@ class Activity(Base):
         self.end_date = kwargs.pop('end_date')
         self.activity_info = kwargs.pop('activity_info')
         self.hot = kwargs.pop('hot', 0)
+
+
+class ActivityPicture(Base):
+    """activity_picture 对应的类
+    id
+    activity_id 外键 ON DELETE CASCADE ON UPDATE CASCADE
+    base_path 活动图片的根路径
+    rel_path 活动图片的相对路径
+    pic_name 活动图片存储在服务器的名字
+    upload_name 上传时候图片的名字
+    """
+
+    __tablename__ = "activity_picture"
+
+    __table_args__ = {
+        'mysql_engine': 'InnoDB',
+        'mysql_charset': 'utf8'
+    }
+
+    id = Column(Integer, primary_key=True)
+    activity_id = Column(Integer, ForeignKey(Activity.id, ondelete='cascade', onupdate='cascade'), nullable=False)
+    base_path = Column(String(128), nullable=False)
+    rel_path = Column(String(128), nullable=False)
+    pic_name = Column(String(128), nullable=False)
+    thumbnail = Column(String(128), nullable=True, server_default=None)
+    upload_name = Column(String(128), nullable=False)
+    cover = Column(Boolean, nullable=False, server_default='0')
+
+    def __init__(self, activity_id, base_path, rel_path, pic_name, upload_name, cover=0):
+        self.activity_id = activity_id
+        self.base_path = base_path
+        self.rel_path = rel_path
+        self.pic_name = pic_name
+        self.upload_name = upload_name
+        self.cover = cover
+
+    def __repr__(self):
+        return '<ActivityPicture(activity_id: %s, upload_name: %s)>' % (self.activity_id, self.upload_name)
+
+    def path(self):
+        return self.base_path + self.rel_path + '/'
+
+
+class UserActivity(Base):
+    """用户活动表格
+    id
+    user_id 用户ID
+    activity_id 活动ID
+    time 用户保存时间
+    """
+
+    __tablename__ = "user_activity"
+
+#    __table_args__ = {
+#        'mysql_engine': 'InnoDB',
+#        'mysql_charset': 'utf8'
+#    }
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey(Activity.id, ondelete='cascade', onupdate='cascade'), nullable=False)
+    activity_id = Column(Integer, ForeignKey(Activity.id, ondelete='cascade', onupdate='cascade'), nullable=False)
+    time = Column(DATETIME, nullable=False)
+
+    def __init__(self, user_id, activity_id, time):
+        self.user_id = user_id
+        self.activity_id = activity_id
+        self.time = todayfstr()

@@ -290,7 +290,7 @@ class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True
                 user_info.tel = tel
             if real_name:
                 user_info.real_name = real_name
-            if sex:
+            if sex is not None:
                 if sex == 1 or sex == 0:
                     user_info.sex = sex
             if birthday_type:
