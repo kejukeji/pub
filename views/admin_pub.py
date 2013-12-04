@@ -343,9 +343,9 @@ def delete_pub_picture(pub_id):
             message = "Error while os.remove on %s" % str(picture)
             flash(message, 'error')
 
+
 def check_save_pub_type_pictures(pub_type_pictures, model=None):
-    """图片的长宽比例的保证，其中有两个可能，如果是更新的话，id为1的像素是585-284,其他id的是281-170
-    如果是新建的话，默认就是281-170的格式吧, 为None的话就是新建了"""
+    """图片的长宽比例的保证，其中有两个可能"""
     for picture in pub_type_pictures:
         if picture.filename == '':  # 或许没有图片
             return True
