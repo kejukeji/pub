@@ -244,16 +244,19 @@ class Gift(Base):
     words = Column(String(64), nullable=True)
     rel_path = Column(String(128), nullable=False)
     base_path = Column(String(128), nullable=False)
-    picture = Column(String(128), nullable=False)
+    pic_name = Column(String(128), nullable=False)
     status = Column(Boolean, nullable=False)
 
     def __init__(self, **kwargs):
         self.cost = kwargs.pop('cost')
         self.name = kwargs.pop('name')
         self.words = kwargs.pop('words', None)
-        self.rel_path = kwargs.pop('rel_path')
-        self.base_path = kwargs.pop('base_path')
-        self.picture = kwargs.pop('picture')
+        self.status = kwargs.pop('status')
+
+    def update(self, **kwargs):
+        self.cost = kwargs.pop('cost')
+        self.name = kwargs.pop('name')
+        self.words = kwargs.pop('words', None)
         self.status = kwargs.pop('status')
 
     def __repr__(self):

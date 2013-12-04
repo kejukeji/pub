@@ -31,6 +31,10 @@ ACTIVITY_PICTURE_ALLOWED_EXTENSION = ('png', 'jpg', 'jpeg')  # 允许的拓展�
 PUB_TYPE_UPLOAD_FOLDER = '/static/pub_type_picture'
 PUB_TYPE_BASE_PATH = '/www/pub_py'
 PUB_TYPE_ALLOWED_EXTENSION = ('png', 'jpg', 'jpeg')
+# 礼物图片
+GIFT_UPLOAD_FOLDER = '/static/gift_picture'
+GIFT_BASE_PATH = '/www/pub_py'
+GIFT_ALLOWED_EXTENSION = ('png', 'jpg', 'jpeg')
 
 # 其他配置参数
 # ===============================================================

@@ -21,6 +21,10 @@ def time_file_name(filename, sign=''):
     :para filename: 原始的文件名
     :para sign: 一个标记，可以是任何的标记，更加保证了独一无二的概率
     """
+    for name in ['png', 'gif', 'jpg', 'jpeg']:
+        if filename.upper() == name.upper():
+            filename = filename + '.' + filename
+            break
 
     return str(datetime.datetime.now()).replace(' ', '_').replace('-', '_').replace(':', '_').replace('.', '_') \
         + str(sign) + filename

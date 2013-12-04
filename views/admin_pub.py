@@ -68,7 +68,7 @@ class PubTypeView(ModelView):
             pub_type_pictures = request.files.getlist("picture")  # 获取分类图片
             model = self.model(**form_to_dict(form))  # 更新pub_type的消息
             if not check_save_pub_type_pictures(pub_type_pictures, model):
-                return False  # 保存图片， 同时更新model的路径消息，不删除历史图片
+                return False  # 保存图片， 同时更新model的路径消息
             self.session.add(model)  # 保存酒吧基本资料
             self.session.commit()
         except Exception, ex:
@@ -86,8 +86,8 @@ class PubTypeView(ModelView):
         try:
             pub_type_pictures = request.files.getlist("picture")  # 获取分类图片
             model.update(**form_to_dict(form))
-            if not check_save_pub_type_pictures(pub_type_pictures, model):
-                return False  # 保存图片， 同时更新model的路径消息，不删除历史图片
+            if not check_save_pub_type_pictures(pub_type_pictures, model, update=1):
+                return False  # 保存图片， 同时更新model的路径消息
             self.session.commit()
         except Exception, ex:
             flash(gettext('Failed to update model. %(error)s', error=str(ex)), 'error')
@@ -343,9 +343,11 @@ def delete_pub_picture(pub_id):
             flash(message, 'error')
 
 
-def check_save_pub_type_pictures(pub_type_pictures, model=None):
+def check_save_pub_type_pictures(pub_type_pictures, model=None, update=None):
     """图片的长宽比例的保证，其中有两个可能"""
     for picture in pub_type_pictures:
+        if (update is not None) and (model is not None):
+            old_picture = str(model.base_path) + str(model.rel_path) + '/' + str(model.pic_name)
         if picture.filename == '':  # 或许没有图片
             return True
         if not allowed_file_extension(picture.filename, PUB_TYPE_ALLOWED_EXTENSION):
@@ -375,6 +377,11 @@ def check_save_pub_type_pictures(pub_type_pictures, model=None):
                 flash(u'图片需要固定大小的哦 211*170', 'error')
                 os.remove(os.path.join(base_path+rel_path+'/', pic_name))
                 return False
+        if (update is not None) and (model is not None):
+            try:
+                os.remove(old_picture)
+            except:
+                flash("remove %s failed!", old_picture)
 
         model.base_path = base_path
         model.rel_path = rel_path
