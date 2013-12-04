@@ -68,7 +68,7 @@ class PubTypeView(ModelView):
             pub_type_pictures = request.files.getlist("picture")  # 获取分类图片
             model = self.model(**form_to_dict(form))  # 更新pub_type的消息
             if not check_save_pub_type_pictures(pub_type_pictures, model):
-              return False  # 保存图片， 同时更新model的路径消息，不删除历史图片
+                return False  # 保存图片， 同时更新model的路径消息，不删除历史图片
             self.session.add(model)  # 保存酒吧基本资料
             self.session.commit()
         except Exception, ex:
@@ -87,7 +87,7 @@ class PubTypeView(ModelView):
             pub_type_pictures = request.files.getlist("picture")  # 获取分类图片
             model.update(**form_to_dict(form))
             if not check_save_pub_type_pictures(pub_type_pictures, model):
-              return False  # 保存图片， 同时更新model的路径消息，不删除历史图片
+                return False  # 保存图片， 同时更新model的路径消息，不删除历史图片
             self.session.commit()
         except Exception, ex:
             flash(gettext('Failed to update model. %(error)s', error=str(ex)), 'error')
@@ -264,7 +264,6 @@ class PubView(ModelView):
             return redirect(return_url)
 
         form = self.edit_form(obj=model)
-
 
         if validate_form_on_submit(form):
             if self.update_model(form, model):

@@ -9,10 +9,8 @@
 
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.dialects.mysql import DOUBLE
-from flask import request
 
 from .database import Base
-from .location import Province, City, County
 
 PUB_TABLE = 'pub'
 PUB_TYPE_TABLE = 'pub_type'

@@ -153,6 +153,8 @@ class UserInfo(Base):
     rel_path 头像的相对目录
     pic_name 头像存储的文件名
     upload_name 上传时候文件名
+    credit 积分
+    reputation 经验值
     """
 
     __tablename__ = USER_INFO_TABLE
@@ -184,8 +186,10 @@ class UserInfo(Base):
     rel_path = Column(String(128), nullable=True, server_default=None)
     pic_name = Column(String(128), nullable=True, server_default=None)
     upload_name = Column(String(128), nullable=True, server_default=None)
+    credit = Column(Integer, nullable=False, server_default="0")
+    reputation = Column(Integer, nullable=False, server_default="0")
 
-    def __init__(self, **kwargs):  # todo-lyw这个赋值太复杂了，一定有简单的写法
+    def __init__(self, **kwargs):
         self.user_id = kwargs.pop('user_id')
         self.email = kwargs.pop('email', None)
         self.mobile = kwargs.pop('mobile', None)
@@ -207,10 +211,14 @@ class UserInfo(Base):
         self.rel_path = kwargs.pop('rel_path', None)
         self.pic_name = kwargs.pop('pic_name', None)
         self.upload_name = kwargs.pop('upload_name', None)
+        self.credit = kwargs.pop('credit', '0')
+        self.reputation = kwargs.pop('reputation', '0')
 
     def update(self, **kwargs):
         self.user_id = kwargs.pop('user_id')
         self.email = kwargs.pop('email')
+        self.credit = kwargs.pop('credit')
+        self.reputation = kwargs.pop('reputation')
         mobile = kwargs.pop('mobile', None)
         tel = kwargs.pop('tel', None)
         real_name = kwargs.pop('real_name', None)
@@ -239,7 +247,7 @@ class UserInfo(Base):
                          birthday=birthday,
                          intro=intro,
                          signature=signature,
-                         ethnicity_id= ethnicity_id,
+                         ethnicity_id=ethnicity_id,
                          company=company,
                          job=job,
                          province_id=province_id,
