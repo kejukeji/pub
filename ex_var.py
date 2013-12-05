@@ -3,5 +3,5 @@
 # flask模块需要的配置参数
 # ===============================================================
 # 配置文件路径，测试服务器和生产服务器载入不同的配置文件
-CONFIG_FILE = 'setting/xj.py'
-from setting.xj import *
+CONFIG_FILE = 'setting/test_server.py'
+from setting.test_server import *
