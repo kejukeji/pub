@@ -614,98 +614,98 @@ class PubSearchView(restful.Resource):
         return resp_suc
 
 
-class ActivityInfo(restful.Resource):
-    """
-        活动详情
-    """
-    @staticmethod
-    def get():
-        """
-            参数
-            activity_id: 活动id
-        """
-        parser = reqparse.RequestParser()
-        parser.add_argument('activity_id', type=str, required=True, help=u'activity_id必须.')
-
-        args = parser.parse_args()
-
-        activity_id = args['activity_id']
-
-        resp_suc = success_dic().dic
-        resp_fail = fail_dic().dic
-        resp_suc['activity_list'] = []
-
-        activity = Activity.query.filter(Activity.id == activity_id).first()
-        if activity:
-            activity_pic = pub_activity(activity)
-            activity_comment_count = ActivityComment.query.filter(ActivityComment.activity_id == activity.id).count()
-            activity_pic['comment_count'] = activity_comment_count
-            resp_suc['activity_list'].append(activity_pic)
-            return resp_suc
-        else:
-            return resp_fail
-
-
-class CommentActivity(restful.Resource):
-    """
-        活动评论
-    """
-    @staticmethod
-    def get():
-        """
-            参数：
-                activity_id: 活动id
-        """
-        parser = reqparse.RequestParser()
-        parser.add_argument('activity_id', type=str, required=True, help=u'activity_id必须。')
-
-        args = parser.parse_args()
-
-        resp_suc = success_dic().dic
-        resp_fail = fail_dic().dic
-        resp_suc['comment_list'] = []
-
-        activity_id = args['activity_id']
-        activity = Activity.query.filter(Activity.id == activity_id).first()
-        if activity:
-            activity_comment_count = ActivityComment.query.filter(ActivityComment.activity_id == activity.id).count()
-            resp_suc['comment_count'] = activity_comment_count
-            comment_user(activity_comment_count, activity, resp_suc)
-            return resp_suc
-        else:
-            return resp_fail
-
-
-class ActivityList(restful.Resource):
-    """
-        活动列表
-    """
-    @staticmethod
-    def get():
-        """
-            参数:
-                pub_id: 酒吧id么
-        """
-        parser = reqparse.RequestParser()
-        parser.add_argument('pub_id', type=str, required=False)
-        parser.add_argument('page', type=str, required=True, help=u'page必须，当前页码。')
-
-        args = parser.parse_args()
-
-        pub_id = args['pub_id']
-        page = args['page']
-
-        resp_suc = success_dic().dic
-        resp_fail = fail_dic().dic
-        resp_suc['hot_list'] = []
-        resp_suc['activity_list'] = []
-        if pub_id:
-            resp_suc = get_activity_host_list_id(pub_id, resp_suc, page)
-            resp_suc = get_activity_list_id(pub_id, resp_suc, page)
-        else:
-            resp_suc = get_activity_host_list(resp_suc, page)
-            resp_suc = get_activity_list(resp_suc, page)
-        return resp_suc
+#class ActivityInfo(restful.Resource):
+#    """
+#        活动详情
+#    """
+#    @staticmethod
+#    def get():
+#        """
+#            参数
+#            activity_id: 活动id
+#        """
+#        parser = reqparse.RequestParser()
+#        parser.add_argument('activity_id', type=str, required=True, help=u'activity_id必须.')
+#
+#        args = parser.parse_args()
+#
+#        activity_id = args['activity_id']
+#
+#        resp_suc = success_dic().dic
+#        resp_fail = fail_dic().dic
+#        resp_suc['activity_list'] = []
+#
+#        activity = Activity.query.filter(Activity.id == activity_id).first()
+#        if activity:
+#            activity_pic = pub_activity(activity)
+#            activity_comment_count = ActivityComment.query.filter(ActivityComment.activity_id == activity.id).count()
+#            activity_pic['comment_count'] = activity_comment_count
+#            resp_suc['activity_list'].append(activity_pic)
+#            return resp_suc
+#        else:
+#            return resp_fail
+#
+#
+#class CommentActivity(restful.Resource):
+#    """
+#        活动评论
+#    """
+#    @staticmethod
+#    def get():
+#        """
+#            参数：
+#                activity_id: 活动id
+#        """
+#        parser = reqparse.RequestParser()
+#        parser.add_argument('activity_id', type=str, required=True, help=u'activity_id必须。')
+#
+#        args = parser.parse_args()
+#
+#        resp_suc = success_dic().dic
+#        resp_fail = fail_dic().dic
+#        resp_suc['comment_list'] = []
+#
+#        activity_id = args['activity_id']
+#        activity = Activity.query.filter(Activity.id == activity_id).first()
+#        if activity:
+#            activity_comment_count = ActivityComment.query.filter(ActivityComment.activity_id == activity.id).count()
+#            resp_suc['comment_count'] = activity_comment_count
+#            comment_user(activity_comment_count, activity, resp_suc)
+#            return resp_suc
+#        else:
+#            return resp_fail
+#
+#
+#class ActivityList(restful.Resource):
+#    """
+#        活动列表
+#    """
+#    @staticmethod
+#    def get():
+#        """
+#            参数:
+#                pub_id: 酒吧id么
+#        """
+#        parser = reqparse.RequestParser()
+#        parser.add_argument('pub_id', type=str, required=False)
+#        parser.add_argument('page', type=str, required=True, help=u'page必须，当前页码。')
+#
+#        args = parser.parse_args()
+#
+#        pub_id = args['pub_id']
+#        page = args['page']
+#
+#        resp_suc = success_dic().dic
+#        resp_fail = fail_dic().dic
+#        resp_suc['hot_list'] = []
+#        resp_suc['activity_list'] = []
+#        if pub_id:
+#            resp_suc = get_activity_host_list_id(pub_id, resp_suc, page)
+#            resp_suc = get_activity_list_id(pub_id, resp_suc, page)
+#        else:
+#            resp_suc = get_activity_host_list(resp_suc, page)
+#            resp_suc = get_activity_list(resp_suc, page)
+#        return resp_suc
 
 
 def get_activity_host_list_id(pub_id, resp_suc, page):
