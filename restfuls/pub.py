@@ -353,14 +353,16 @@ def by_type_id(type_id, resp_suc, page, city_id, province_id):
                 return resp_suc
             pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).order_by(PubTypeMid.id)[per_page*(int(temp_page)-1):per_page*int(temp_page)]
             for pub_type in pub_types:
-                pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.county_id == city_id).first()
+                pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.county_id == city_id, Pub.stopped == 0).first()
                 pub_only(pub, resp_suc)
+            resp_suc['pub_count'] = len(resp_suc['pub_list'])
             return resp_suc
         else:
             pub_type = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).first()
             if pub_type:
-                pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.county_id == city_id).first()
+                pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.county_id == city_id, Pub.stopped == 0).first()
                 pub_only(pub, resp_suc)
+            resp_suc['pub_count'] = len(resp_suc['pub_list'])
             return resp_suc
     elif city_id == '0':
         pub_type_count = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).count()
@@ -372,14 +374,16 @@ def by_type_id(type_id, resp_suc, page, city_id, province_id):
                 return resp_suc
             pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).order_by(PubTypeMid.id)[per_page*(int(temp_page)-1):per_page*int(temp_page)]
             for pub_type in pub_types:
-                pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.city_id == 75).first()
+                pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.city_id == 75, Pub.stopped == 0).first()
                 pub_only(pub, resp_suc)
+            resp_suc['pub_count'] = len(resp_suc['pub_list'])
             return resp_suc
         else:
             pub_type = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).first()
             if pub_type:
-                pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.city_id == 75).first()
+                pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.city_id == 75, Pub.stopped == 0).first()
                 pub_only(pub, resp_suc)
+            resp_suc['pub_count'] = len(resp_suc['pub_list'])
             return resp_suc
 
 
@@ -596,13 +600,13 @@ class PubSearchView(restful.Resource):
         else:
             resp_suc['status'] = 1
             resp_suc['message'] = 'error'
-        pub_count = Pub.query.filter(Pub.recommend == 1).count()
+        pub_count = Pub.query.filter(Pub.recommend == 1, Pub.stopped == 0).count()
         if pub_count > 1:
-            pubs = Pub.query.filter(Pub.recommend == 1)
+            pubs = Pub.query.filter(Pub.recommend == 1, Pub.stopped == 0)
             pub_list(pubs, resp_suc)
         
         else:
-            pub = Pub.query.filter(Pub.recommend == 1).first()
+            pub = Pub.query.filter(Pub.recommend == 1, Pub.stopped == 0).first()
             pub_only(pub, resp_suc)
 
         resp_suc['status'] = 0
@@ -832,7 +836,7 @@ class NearPub(restful.Resource):
 
         resp_suc = success_dic().dic
         resp_suc['pub_list'] = []
-        scope = 50000
+        scope = 5000
         pubs = Pub.query.filter().all()
         longitude_left = longitude + 0.00001 * scope
         longitude_right = longitude - 0.00001 * scope
@@ -862,12 +866,12 @@ class NearPub(restful.Resource):
             return resp_suc
         if pub_count > 1:
             pubs = Pub.query.filter(Pub.latitude > right_bottom[0], Pub.latitude < left_top[0],
-                                Pub.longitude > left_bottom[1], Pub.longitude < right_top[1])[per_page*(int(temp_page)-1):per_page*int(temp_page)]
+                                Pub.longitude > left_bottom[1], Pub.longitude < right_top[1], Pub.stopped == 0)[per_page*(int(temp_page)-1):per_page*int(temp_page)]
             for pub in pubs:
                 pub_only(pub, resp_suc)
         else:
             pub = Pub.query.filter(Pub.latitude > right_bottom[0], Pub.latitude < left_top[0],
-                                Pub.longitude > left_bottom[1], Pub.longitude < right_top[1]).first()
+                                Pub.longitude > left_bottom[1], Pub.longitude < right_top[1], Pub.stopped == 0).first()
             pub_only(pub, resp_suc)
 
         return resp_suc
@@ -893,39 +897,39 @@ def get_distance_hav(lat0, lng0, lat1, lng1):
     return distance
 
 
-
-
-class ScreeningPub(restful.Resource):
-    """
-       根据地区来筛选酒吧
-    """
-    @staticmethod
-    def get():
-        """
-            参数
-               county_ic: 区域id
-               page: 分页
-               type_id: 所在酒吧类型
-        """
-        parser = reqparse.RequestParser()
-        parser.add_argument('county_id', type=str, required=True, help=u'county_id必须')
-        parser.add_argument('page', type=str, required=True, help=u'page必须')
-        parser.add_argument('type_id', type=str, required=True, help=u'type_id必须')
-
-        args = parser.parse_args()
-
-        county_id = args['county_id']
-        page = args['page']
-        resp_suc = success_dic().dic
-        resp_fail = fail_dic().dic
-        resp_suc['pub_list'] = []
-        type_id = args['type_id']
-        if county_id == '0':
-            resp_suc = by_type_id(type_id, resp_suc, page, '75')
-            return resp_suc
-        else:
-            resp_suc = get_pub(type_id, resp_suc, page, county_id)
-            return resp_suc
+#
+#
+#class ScreeningPub(restful.Resource):
+#    """
+#       根据地区来筛选酒吧
+#    """
+#    @staticmethod
+#    def get():
+#        """
+#            参数
+#               county_ic: 区域id
+#               page: 分页
+#               type_id: 所在酒吧类型
+#        """
+#        parser = reqparse.RequestParser()
+#        parser.add_argument('county_id', type=str, required=True, help=u'county_id必须')
+#        parser.add_argument('page', type=str, required=True, help=u'page必须')
+#        parser.add_argument('type_id', type=str, required=True, help=u'type_id必须')
+#
+#        args = parser.parse_args()
+#
+#        county_id = args['county_id']
+#        page = args['page']
+#        resp_suc = success_dic().dic
+#        resp_fail = fail_dic().dic
+#        resp_suc['pub_list'] = []
+#        type_id = args['type_id']
+#        if county_id == '0':
+#            resp_suc = by_type_id(type_id, resp_suc, page, '75')
+#            return resp_suc
+#        else:
+#            resp_suc = get_pub(type_id, resp_suc, page, county_id)
+#            return resp_suc
 
 
 def get_pub(type_id, resp_suc, page, county_id):
@@ -941,12 +945,12 @@ def get_pub(type_id, resp_suc, page, county_id):
             return resp_suc
         pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id)[per_page*(int(temp_page)-1):per_page*int(temp_page)]
         for pub_type in pub_types:
-            pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.county_id == county_id).first()
+            pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.county_id == county_id, Pub.stopped == 0).first()
             pub_only(pub, resp_suc)
         return resp_suc
     else:
-        pub_type = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id, Pub.county_id == county_id).first()
+        pub_type = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).first()
         if pub_type:
-            pub = Pub.query.filter(Pub.id == pub_type.pub_id).first()
+            pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.county_id == county_id, Pub.stopped == 0).first()
             pub_only(pub, resp_suc)
         return resp_suc

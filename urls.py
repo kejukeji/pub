@@ -17,7 +17,7 @@ from views.admin_activity import ActivityView
 from restfuls import (UserInfo, UserLogin, UserRegister, PubGetType, PubListDetail, PubDetail, UserCollect,
                       PubCollect, PubPictureDetail, PubSearch, GetPubType, GetProvince, GetCity, GetCounty,
                       UserMessage, PubSearchView, GetPubTypeList, UserOpenIdCheck, UserMessageInfo, UserSenderMessage,
-                      MessageFuck, ClearMessage, FeedBackAdd, ActivityInfo, CommentActivity, ActivityList, ScreeningPub,
+                      MessageFuck, ClearMessage, FeedBackAdd, ActivityInfo, CommentActivity, ActivityList,
                       NearPub, MessageByTypeInfo, Area, CancelCollectPub)
 from views.admin_login import login_view, logout_view, register_view
 from views.admin_view import HomeView
@@ -82,7 +82,7 @@ api.add_resource(FeedBackAdd, '/restful/feed/back')
 api.add_resource(ActivityInfo, '/restful/activity/info')
 api.add_resource(CommentActivity, '/restful/activity/comment')
 api.add_resource(ActivityList, '/restful/activity/list')
-api.add_resource(ScreeningPub, '/restful/screening/county')
+# api.add_resource(ScreeningPub, '/restful/screening/county')
 api.add_resource(NearPub, '/restful/near/pub')
 api.add_resource(MessageByTypeInfo, '/restful/message/by/type/info')
 api.add_resource(Area, '/restful/area')

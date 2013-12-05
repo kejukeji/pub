@@ -37,6 +37,7 @@ class Pub(Base):
     street 更下一级的地址描述
     longitude 经度
     latitude 纬度
+    stopped 0上架，1下架
     """
 
     __tablename__ = PUB_TABLE
