@@ -124,7 +124,7 @@ class PubView(ModelView):
         province_id=u'省份',
         city_id=u'市',
         county_id=u'区县',
-        street=u'详细地址',
+        street=u'详细地址，需要包含省市',
         longitude=u'经度',
         latitude=u'纬度',
         stopped=u'运营'

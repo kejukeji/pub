@@ -29,6 +29,10 @@ ACTIVITY_PICTURE_ALLOWED_EXTENSION = ('png', 'jpg', 'jpeg', 'gif')  # 允许的�
 PUB_TYPE_UPLOAD_FOLDER = '/static/pub_type_picture'
 PUB_TYPE_BASE_PATH = '/var/www/pub'
 PUB_TYPE_ALLOWED_EXTENSION = ('png', 'jpg', 'jpeg')
+# 礼物图片
+GIFT_UPLOAD_FOLDER = '/static/gift_picture'
+GIFT_BASE_PATH = '/var/www/pub'
+GIFT_ALLOWED_EXTENSION = ('png', 'jpg', 'jpeg')
 
 # 其他配置参数
 # ===============================================================
