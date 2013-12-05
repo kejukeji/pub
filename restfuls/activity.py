@@ -36,14 +36,16 @@ def get_activity_picture(activity):
     """
     result = is_list(activity)
     if result != -1:
-        format_picture_path(result)
+
         if type(result) is list:
             temp_list = []
             for r in result:
+                format_picture_path(r)
                 r_pic = flatten(r)
                 temp_list.append(r_pic)
             return temp_list
         else:
+            format_picture_path(result)
             result_pic = flatten(result)
             return result_pic
     else:
@@ -89,11 +91,16 @@ class ActivityInfo(restful.Resource):
         success = success_dic().dic
         fail = fail_dic().dic
 
+        success['activity_picture'] = []
+
         activity = get_activity_by_id(activity_id)
 
         if activity:
             result = get_activity_picture(activity_id)
-            success['activity_picture'] = result
+            if type(result) is list:
+                success['activity_picture'] = result
+            else:
+                success['activity_picture'].append(result)
             success['activity'] = activity
             return success
         else:
