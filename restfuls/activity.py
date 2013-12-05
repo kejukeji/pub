@@ -13,13 +13,13 @@ def get_activity_by_id(id):
     """
     activity = Activity.query.filter(Activity.id == id).first()
     if activity:
-        by_activity_id_get_address(activity)
+        get_activity_address_by_id(activity)
         activity = flatten(activity)
         return activity
     return None
 
 
-def by_activity_id_get_address(activity):
+def get_activity_address_by_id(activity):
     """
     通过活动中酒吧id得到地址
     """
@@ -30,11 +30,11 @@ def by_activity_id_get_address(activity):
         activity.address = '未填写'
 
 
-def get_activity_picture(activity):
+def get_activity_picture(id):
     """
     获取活动图片
     """
-    result = is_list(activity)
+    result = is_list(id)
     if result != -1:
 
         if type(result) is list:
@@ -57,19 +57,32 @@ def format_picture_path(obj):
         obj.pic_path = obj.rel_path + "/" + obj.pic_name
 
 
-def is_list(activity):
+def is_list(id):
     """
     获取图片是否有多张
     """
-    activity_picture_count = ActivityPicture.query.filter(ActivityPicture.activity_id == activity).count()
+    activity_picture_count = ActivityPicture.query.filter(ActivityPicture.activity_id == id).count()
     if activity_picture_count > 1:
-        activity_picture = ActivityPicture.query.filter(ActivityPicture.activity_id == activity).all()
+        activity_picture = ActivityPicture.query.filter(ActivityPicture.activity_id == id).all()
         return activity_picture
     elif activity_picture_count == 1:
-        activity_picture = ActivityPicture.query.filter(ActivityPicture.activity_id == activity).first()
+        activity_picture = ActivityPicture.query.filter(ActivityPicture.activity_id == id).first()
         return activity_picture
     else:
         return -1
+
+
+def get_activity_by_pub_id(pub_id):
+    """
+    通过酒吧id得到所属最新活动
+    """
+    activity = Activity.query.filter(Activity.pub_id == pub_id).order_by(Activity.start_date.desc()).first()
+    activity_picture = ActivityPicture.query.filter(ActivityPicture.activity_id == activity.id).first()
+    if activity_picture:
+        if activity_picture.rel_path and activity_picture.pic_name:
+            activity.pic_path = activity_picture.rel_path + "/" + activity_picture.pic_name
+    activity = flatten(activity)
+    return activity
 
 
 class ActivityInfo(restful.Resource):

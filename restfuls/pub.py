@@ -7,6 +7,7 @@ from models import Pub, PubType, PubTypeMid, PubPicture, engine, View, UserInfo,
 from utils import pickler, page_utils
 from flask.ext.restful import reqparse
 from utils.others import success_dic, fail_dic, get_address, get_county, flatten, max_page
+from restfuls.activity import get_activity_by_pub_id
 
 
 def to_flatten(obj, obj2):
@@ -448,6 +449,7 @@ class PubDetail(restful.Resource):
                     join(View). \
                     filter(View.pub_id == pub_id).order_by(View.time.desc()).first()
                 user_picture_only(result, resp_suc)
+            resp_suc['activity'] = get_activity_by_pub_id(pub_id)
             resp_suc['show_count'] = view_count
             resp_suc['status'] = 0
             resp_suc['message'] = 'success'
