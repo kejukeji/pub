@@ -77,11 +77,12 @@ def get_activity_by_pub_id(pub_id):
     通过酒吧id得到所属最新活动
     """
     activity = Activity.query.filter(Activity.pub_id == pub_id).order_by(Activity.start_date.desc()).first()
-    activity_picture = ActivityPicture.query.filter(ActivityPicture.activity_id == activity.id).first()
-    if activity_picture:
-        if activity_picture.rel_path and activity_picture.pic_name:
-            activity.pic_path = activity_picture.rel_path + "/" + activity_picture.pic_name
-    activity = flatten(activity)
+    if activity:
+        activity_picture = ActivityPicture.query.filter(ActivityPicture.activity_id == activity.id).first()
+        if activity_picture:
+            if activity_picture.rel_path and activity_picture.pic_name:
+                activity.pic_path = activity_picture.rel_path + "/" + activity_picture.pic_name
+        activity = flatten(activity)
     return activity
 
 
