@@ -54,6 +54,7 @@ $(document).ready(function(){
                     $("#province_id").append($("<option>").text(value[1]).attr('value', value[0]));
                 });
                 $("#province_id").val(init_province);
+                g_province_id = init_province;
             },
             error: function() {
                 alert("获取省份资料失败，请刷新网页！");
@@ -73,6 +74,7 @@ $(document).ready(function(){
                     $("#city_id").append($("<option>").text(value[1]).attr('value', value[0]));
                 });
                 $("#city_id").val(init_city);
+                g_city_id = init_city;
                 // 这里设置市改变之后，区县的option也跟着改变
             },
             error: function() {
@@ -93,6 +95,7 @@ $(document).ready(function(){
                     $("#county_id").append($("<option>").text(value[1]).attr('value', value[0]));
                 });
                 $("#county_id").val(init_county);
+                g_county_id = init_county;
             },
             error: function() {
                 alert("获取区县资料失败，请刷新页面！")
@@ -104,7 +107,7 @@ $(document).ready(function(){
     if (g_province_id != "") {
         init_loacation(g_province_id, g_city_id, g_county_id);
     } else {
-        init_loacation(9, 75, 794);
+        init_loacation("9", "75", "794");
     }
 
     // 如果不是新建的话，添加一个图片管理和活动管理的东西，到哪里去
@@ -115,17 +118,6 @@ $(document).ready(function(){
         $("#picture").after(activity_link)
         $("#picture").remove()  // 去掉图片上传
     }
-
-	$("select").change(function() {
-		if (g_province_id != $("#province_id").val()) {
-			province_change();
-			return true;
-		}
-		if (g_city_id != $("#city_id").val()) {
-			city_change();
-			return true;
-		}
-	});
 
 	function province_change() {
 		g_province_id = $("#province_id").val();
@@ -194,6 +186,17 @@ $(document).ready(function(){
 
 	    g_county_id = $("#county_id").val();
 	};
+
+	$("select").change(function() {
+		if (g_province_id != $("#province_id").val()) {
+			province_change();
+			return true;
+		}
+		if (g_city_id != $("#city_id").val()) {
+			city_change();
+			return true;
+		}
+	});
 
 	function p6(a1, a2, a3, a4, a5, a6) {
 		alert("p+"+a1+"  c+"+a2+"  co+"+a3+"  p+"+a4+"  c+"+a4+"  co+"+a6);
