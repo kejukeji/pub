@@ -25,8 +25,6 @@ from utils import time_file_name, allowed_file_extension, form_to_dict
 from werkzeug import secure_filename
 import Image
 
-from .tools import save_thumbnail
-
 log = logging.getLogger("flask-admin.sqla")
 
 
@@ -338,6 +336,7 @@ def delete_pub_picture(pub_id):
         try:
             os.remove(os.path.join(picture.base_path+picture.rel_path+'/', picture.pic_name))
             os.remove(os.path.join(picture.base_path+picture.rel_path+'/', picture.thumbnail))
+            os.remove(os.path.join(picture.base_path+picture.rel_path+'/', picture.thumbnail_250))
         except OSError:
             message = "Error while os.remove on %s" % str(picture)
             flash(message, 'error')
@@ -388,3 +387,24 @@ def check_save_pub_type_pictures(pub_type_pictures, model=None, update=None):
         model.pic_name = pic_name
 
         return True
+
+
+def save_thumbnail(picture_id):
+    """通过图片ID，查找图片，生产略缩图，存储本地，然后存储数据库"""
+
+    pub_picture = PubPicture.query.filter(PubPicture.id == picture_id).first()
+    save_path = pub_picture.base_path + pub_picture.rel_path + '/'
+    picture = save_path + pub_picture.pic_name
+    im = Image.open(picture)
+    im.thumbnail((256, 256))
+    thumbnail_name = time_file_name(pub_picture.upload_name, sign='nail') + '.jpeg'
+    im.save(save_path+thumbnail_name, 'jpeg')
+    pub_picture.thumbnail = thumbnail_name
+
+    im_250 = Image.open(picture)
+    im_250.thumbnail((2000, 250))
+    thumbnail_250 = time_file_name(pub_picture.upload_name, sign='nail') + '.jpeg'
+    im_250.save(save_path+thumbnail_250, 'jpeg')
+    pub_picture.thumbnail_250 = thumbnail_250
+
+    db.commit()

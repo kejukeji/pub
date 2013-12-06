@@ -161,6 +161,7 @@ class PubPicture(Base):
     rel_path = Column(String(128), nullable=False)
     pic_name = Column(String(128), nullable=False)
     thumbnail = Column(String(128), nullable=True, server_default=None)
+    thumbnail_250 = Column(String(128), nullable=True, server_default=None)
     upload_name = Column(String(128), nullable=False)
     cover = Column(Boolean, nullable=False, server_default='0')
 
