@@ -199,40 +199,43 @@ def activity_collect_list(user_id, page, success):
         temp_page = page
         page, per_page, max = page_utils(user_activity_count, page)
         user_activity = UserActivity.query.filter(UserActivity.user_id == user_id)[page * (temp_page - 1): per_page * temp_page]
+        activity_pic = ''
         for u in user_activity:
             activity = Activity.query.filter(Activity.id == u.activity_id).first()
-            activity.collect_time = u.time
-            list_result = is_list(activity.id)
-            if type(list_result) is list:
-                format_picture_path(list_result[0])
-                if list_result[0].pic_path:
-                    activity.pic_path = list_result[0].pic_path
-            else:
-                format_picture_path(list_result)
-                if list_result.pic_path:
-                    activity.pic_path = list_result.pic_path
-            belong_pub_name(activity)
-            activity_is_collect(activity, user_id)
-            activity_pic = flatten(activity)
-            success['activity_collect'].append(activity_pic)
+            if activity:
+                activity.collect_time = u.time
+                list_result = is_list(activity.id)
+                if type(list_result) is list:
+                    format_picture_path(list_result[0])
+                    if list_result[0].pic_path:
+                        activity.pic_path = list_result[0].pic_path
+                else:
+                    format_picture_path(list_result)
+                    if list_result.pic_path:
+                        activity.pic_path = list_result.pic_path
+                belong_pub_name(activity)
+                activity_is_collect(activity, user_id)
+                activity_pic = flatten(activity)
+                success['activity_collect'].append(activity_pic)
     else:
         user_activity = UserActivity.query.filter(UserActivity.user_id == user_id).first()
         if user_activity:
             activity = Activity.query.filter(Activity.id == user_activity.activity_id).first()
-            activity.collect_time = user_activity.time
-            list_result = is_list(activity.id)
-            if type(list_result) is list:
-                format_picture_path(list_result[0])
-                if list_result[0].pic_path:
-                    activity.pic_path = list_result[0].pic_path
-            else:
-                format_picture_path(list_result)
-                if list_result.pic_path:
-                    activity.pic_path = list_result.pic_path
-            belong_pub_name(activity)
-            activity_is_collect(activity, user_id)
-            activity_pic = flatten(activity)
-            success['activity_collect'].append(activity_pic)
+            if activity:
+                activity.collect_time = user_activity.time
+                list_result = is_list(activity.id)
+                if type(list_result) is list:
+                    format_picture_path(list_result[0])
+                    if list_result[0].pic_path:
+                        activity.pic_path = list_result[0].pic_path
+                else:
+                    format_picture_path(list_result)
+                    if list_result.pic_path:
+                        activity.pic_path = list_result.pic_path
+                belong_pub_name(activity)
+                activity_is_collect(activity, user_id)
+                activity_pic = flatten(activity)
+                success['activity_collect'].append(activity_pic)
     return user_activity_count
 
 
