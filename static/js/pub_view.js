@@ -23,6 +23,16 @@ $(document).ready(function(){
 
 	add_select();
 
+    // 如果不是新建的话，添加一个图片管理和活动管理的东西，到哪里去
+    if (g_province_id != "") {
+        var manager_link = $.parseHTML("<p><a class='btn btn-danger' href='/admin/pubpicturefile?pub_id="+gup('id')+"'>图片管理</a></p>");
+        var activity_link = $.parseHTML("<p><a class='btn btn-danger' href='/admin/activityview?pub_id="+gup('id')+"'>活动管理</a></p>");
+        $("#picture").after(manager_link)
+        $("#picture").after(activity_link)
+        $("#picture").remove()  // 去掉图片上传
+    }
+
+
     function change_textarea() {
         $("#intro").css('width', '552px').css('height', '400px');
     };
@@ -108,15 +118,6 @@ $(document).ready(function(){
         init_loacation(g_province_id, g_city_id, g_county_id);
     } else {
         init_loacation("9", "75", "794");
-    }
-
-    // 如果不是新建的话，添加一个图片管理和活动管理的东西，到哪里去
-    if (g_province_id != "") {
-        var manager_link = $.parseHTML("<p><a class='btn btn-danger' href='/admin/pubpicturefile?pub_id="+gup('id')+"'>图片管理</a></p>");
-        var activity_link = $.parseHTML("<p><a class='btn btn-danger' href='/admin/activityview?pub_id="+gup('id')+"'>活动管理</a></p>");
-        $("#picture").after(manager_link)
-        $("#picture").after(activity_link)
-        $("#picture").remove()  // 去掉图片上传
     }
 
 	function province_change() {
