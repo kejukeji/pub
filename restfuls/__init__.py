@@ -7,4 +7,4 @@ from restfuls.ajax import GetPubType, GetProvince, GetCity, GetCounty, GetPubTyp
 from restfuls.user_function import UserCollect, PubCollect, UserMessage, UserMessageInfo,\
     UserSenderMessage, MessageFuck, ClearMessage, FeedBackAdd, MessageByTypeInfo, CancelCollectPub
 from area import Area
-from activity import ActivityInfo
+from activity import ActivityInfo, CollectActivity

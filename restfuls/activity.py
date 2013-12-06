@@ -5,6 +5,8 @@ from flask.ext.restful import reqparse
 from utils.others import success_dic, fail_dic, flatten
 from models.activity import Activity, ActivityPicture
 from models.pub import Pub
+from models.feature import UserActivity
+from models.database import db
 
 
 def get_activity_by_id(id):
@@ -116,6 +118,58 @@ class ActivityInfo(restful.Resource):
             else:
                 success['activity_picture'].append(result)
             success['activity'] = activity
+            return success
+        else:
+            return fail
+
+
+def collect_or_cancel_activity(user_id, activity_id):
+    """
+    收藏或者，取消收藏
+    """
+    user_activity = UserActivity.query.filter(UserActivity.user_id == user_id, UserActivity.activity_id == activity_id).first()
+    if user_activity:
+        try:
+            db.delete(user_activity)
+            db.commit()
+            return True
+        except:
+            return False
+    else:
+        user_activity = UserActivity(user_id=user_id, activity_id=activity_id)
+        try:
+            db.add(user_activity)
+            db.commit()
+            return True
+        except:
+            return False
+
+
+
+class CollectActivity(restful.Resource):
+    """
+    收藏活动
+    """
+    @staticmethod
+    def get():
+        """
+        activity_id: 活动id
+        user_id: 用户id
+        """
+        parser = reqparse.RequestParser()
+        parser.add_argument('activity_id', type=str, required=True, help=u'activity_id 必须')
+        parser.add_argument('user_id', type=str, required=True, help=u'user_id 必须')
+
+        args = parser.parse_args()
+
+        success = success_dic().dic
+        fail = fail_dic().dic
+
+        activity_id = args['activity_id']
+        user_id = args['user_id']
+
+        result = collect_or_cancel_activity(user_id, activity_id)
+        if result:
             return success
         else:
             return fail
