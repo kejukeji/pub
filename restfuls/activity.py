@@ -2,7 +2,7 @@
 
 from flask.ext import restful
 from flask.ext.restful import reqparse
-from utils.others import success_dic, fail_dic, flatten
+from utils.others import success_dic, fail_dic, flatten, page_utils
 from models.activity import Activity, ActivityPicture
 from models.pub import Pub
 from models.feature import UserActivity
@@ -86,12 +86,13 @@ def is_list(id):
         return -1
 
 
-def get_activity_by_pub_id(pub_id):
+def get_activity_by_pub_id(pub_id, user_id):
     """
     通过酒吧id得到所属最新活动
     """
     activity = Activity.query.filter(Activity.pub_id == pub_id).order_by(Activity.start_date.desc()).first()
     if activity:
+        activity_is_collect(activity, user_id)
         activity_picture = ActivityPicture.query.filter(ActivityPicture.activity_id == activity.id).first()
         if activity_picture:
             if activity_picture.rel_path and activity_picture.pic_name:
@@ -187,6 +188,41 @@ class CollectActivity(restful.Resource):
             return success
         else:
             return fail
+
+
+def activity_collect_list(user_id, page):
+    """
+    得到用户活动收藏列表
+    """
+    user_activity_count = UserActivity.query.filter(UserActivity.user_id == user_id).count()
+    if user_activity_count > 1:
+        temp_page = page
+        page, per_page = page_utils(user_activity_count, page)
+        user_activity = UserActivity.query.filter(UserActivity.user_id == user_id)[page * (temp_page - 1): per_page * temp_page]
+        for u in user_activity:
+            activity = Activity.query.filter(Activity.id == u.activity_id).first()
+
+
+class ActivityCollectList(restful.Resource):
+    """
+    活动收藏列表
+    """
+    @staticmethod
+    def get():
+        """
+        user_id: 登陆id
+        """
+        parser = reqparse.RequestParser()
+        parser.add_argument('user_id', type=str, required=True, help=u'user_id 必须')
+        parser.add_argument('page', type=str, required=True, help=u'page 必须')
+
+        args = parser.parse_args()
+
+        success = success_dic().dic
+        fail = fail_dic().dic
+
+        user_id = args['user_id']
+        page = int(args['page'])
 
 
 #class ActivityInfo(restful.Resource):

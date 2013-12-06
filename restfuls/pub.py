@@ -402,7 +402,7 @@ class PubDetail(restful.Resource):
         """
         parser = reqparse.RequestParser()
         parser.add_argument('pub_id', type=str, required=True, help=u'酒吧pub_id必须。')
-        parser.add_argument('user_id', type=str, required=False, help=u'登录用户id必须。')
+        parser.add_argument('user_id', type=str, required=True, help=u'登录用户id必须。')
         args = parser.parse_args()
         resp_suc = {}
         resp_suc['picture_list'] = []
@@ -449,7 +449,7 @@ class PubDetail(restful.Resource):
                     join(View). \
                     filter(View.pub_id == pub_id).order_by(View.time.desc()).first()
                 user_picture_only(result, resp_suc)
-            resp_suc['activity'] = get_activity_by_pub_id(pub_id)
+            resp_suc['activity'] = get_activity_by_pub_id(pub_id, user_id)
             resp_suc['show_count'] = view_count
             resp_suc['status'] = 0
             resp_suc['message'] = 'success'
