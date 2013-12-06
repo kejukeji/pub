@@ -9,13 +9,14 @@ from models.feature import UserActivity
 from models.database import db
 
 
-def get_activity_by_id(id):
+def get_activity_by_id(id, user_id):
     """
     通过id得到activity
     """
     activity = Activity.query.filter(Activity.id == id).first()
     if activity:
         get_activity_address_by_id(activity)
+        activity_is_collect(activity, user_id)
         activity = flatten(activity)
         return activity
     return None
@@ -30,6 +31,17 @@ def get_activity_address_by_id(activity):
         activity.address = pub.street
     else:
         activity.address = '未填写'
+
+
+def activity_is_collect(activity, user_id):
+    """
+    查看是否收藏
+    """
+    user_activity = UserActivity.query.filter(UserActivity.user_id == user_id, UserActivity.activity_id == activity.id).first()
+    if user_activity:
+        activity.is_collect = True
+    else:
+        activity.is_collect = False
 
 
 def get_activity_picture(id):
@@ -99,17 +111,19 @@ class ActivityInfo(restful.Resource):
         """
         parser = reqparse.RequestParser()
         parser.add_argument('activity_id', type=str, required=True, help=u'activity_id 必须')
+        parser.add_argument('user_id', type=str, required=True, help=u'user_id 必须')
 
         args = parser.parse_args()
 
         activity_id = args['activity_id']
+        user_id = args['user_id']
 
         success = success_dic().dic
         fail = fail_dic().dic
 
         success['activity_picture'] = []
 
-        activity = get_activity_by_id(activity_id)
+        activity = get_activity_by_id(activity_id, user_id)
 
         if activity:
             result = get_activity_picture(activity_id)
