@@ -46,7 +46,7 @@ class Activity(Base):
         self.activity_info = kwargs.pop('activity_info')
         self.hot = kwargs.pop('hot', 0)
         self.pub_id = kwargs.pop('pub_id')
-        self.join_people_number = kwargs.pop('join_people_number')
+        self.join_people_number = kwargs.pop('join_people_number', 0)
 
     def update(self, **kwargs):
         self.title = kwargs.pop('title')
@@ -54,6 +54,7 @@ class Activity(Base):
         self.end_date = kwargs.pop('end_date')
         self.activity_info = kwargs.pop('activity_info')
         self.hot = kwargs.pop('hot', 0)
+        self.join_people_number = kwargs.pop('join_people_number', 0)
 
 
 class ActivityPicture(Base):
