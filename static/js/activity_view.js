@@ -2,6 +2,13 @@
 // 相关的model的create.html和update.html也改变了，需要ln导入
 
 $(document).ready(function(){
+    function init() {
+        // 添加一个图片上传的按钮，如果是update的话，这个按钮会在后面改变
+		var picture_select = $.parseHTML("<input class='btn btn-success' type='file' name='picture' id='picture' multiple>");
+		$("#picture").replaceWith(picture_select);
+    }
+    init();
+
     function change_textarea() {
         $("#activity_info").css('width', '552px').css('height', '400px');
     };
@@ -32,18 +39,25 @@ $(document).ready(function(){
     // 列表页面，如果没有pub_id参数，屏蔽create，如果有更改create的链接，改变cancel的链接
     var pub_id = gup('pub_id')
     if (pub_id) { // 有参数
-        var create = $(".nav-tabs li:nth-child(2) a")
-        var href = create.attr('href')
-        create.attr('href', href+'&pub_id='+pub_id)
-        var cancel = $(".control-group .controls a")
-        var cancel_href = cancel.attr('href') + '?pub_id=' + pub_id
-        cancel.attr('href', cancel_href)
-        var edit = $("table tbody a")  // more than on
+        var create = $(".nav-tabs li:nth-child(2) a");
+        var href = create.attr('href');
+        create.attr('href', href+'&pub_id='+pub_id);
+        var cancel = $(".control-group .controls a");
+        var cancel_href = cancel.attr('href') + '?pub_id=' + pub_id;
+        cancel.attr('href', cancel_href);
+        var edit = $("table tbody a");  // more than on
         for (var i= 0; i < edit.length; i++) {
-            var edithref = $(edit[i]).attr('href') + '&pub_id=' + pub_id
-            $(edit[i]).attr('href', edithref)
+            var edithref = $(edit[i]).attr('href') + '&pub_id=' + pub_id;
+            $(edit[i]).attr('href', edithref);
         }
     } else {  // 没有参数
-        $(".nav-tabs li:nth-child(2)").remove()
+        $(".nav-tabs li:nth-child(2)").remove();
+    }
+
+    // 如果有参数，屏蔽图片上传，添加一个图片管理的入口
+    if (pub_id) {
+        var manager_link = $.parseHTML("<p><a class='btn btn-danger' href='/admin/pubpicturefile?activity_id="+gup('id')+"'>图片管理</a></p>");
+        $("#picture").after(manager_link);
+        $("#picture").remove();  // 去掉图片上传
     }
 });

@@ -2,6 +2,7 @@
 
 import logging
 import os
+import Image
 
 from flask.ext.admin.contrib.sqla import ModelView
 from flask import flash, request
@@ -17,6 +18,7 @@ from flask.ext.admin.base import expose
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
 from flask.ext.admin.contrib.sqla import tools
+from models import ActivityPicture
 
 log = logging.getLogger("flask-admin.sqla")
 
@@ -55,7 +57,7 @@ class ActivityView(ModelView):
 
     def scaffold_form(self):
         form_class = super(ActivityView, self).scaffold_form()
-        form_class.picture = FileField(label=u'活动图片', description=u'活动图片上传，一张就够了哈')
+        form_class.picture = TextField(label=u'活动图片', description=u'活动图片上传，一张就够了哈')
         delattr(form_class, 'base_path')
         delattr(form_class, 'rel_path')
         delattr(form_class, 'pic_name')
@@ -76,7 +78,7 @@ class ActivityView(ModelView):
             self.session.commit()
             activity_id = model.id
             activity_pictures = request.files.getlist("picture")  # 获取酒吧图片
-            save_activity_pictures(activity_id,activity_pictures)
+            save_activity_pictures(activity_id, activity_pictures)
 
         except Exception, ex:
             flash(gettext('Failed to create model. %(error)s', error=str(ex)), 'error')
@@ -342,28 +344,34 @@ def save_activity_pictures(activity_id, pictures):
             base_path = ACTIVITY_PICTURE_BASE_PATH
             rel_path = ACTIVITY_PICTURE_UPLOAD_FOLDER
             pic_name = time_file_name(secure_filename(upload_name), sign=activity_id)
-            activity = Activity.query.filter(Activity.id == activity_id).first()
-            if activity:
-                old_picture = str(activity.base_path) + str(activity.rel_path) + '/' + str(activity.pic_name)
-                picture.save(os.path.join(base_path+rel_path+'/', pic_name))
-                activity.pic_name = pic_name
-                activity.base_path = base_path
-                activity.rel_path = rel_path
-                db.commit()
-                try:
-                    os.remove(old_picture)
-                except OSError:
-                    message = "Error while os.remove on %s" % str(picture)
-                    flash(message, 'error')
+            activity_picture = ActivityPicture(activity_id, base_path, rel_path, pic_name, upload_name, cover=0)
+            db.add(activity_picture)
+            picture.save(os.path.join(base_path+rel_path+'/', pic_name))
+            db.commit()
+            save_thumbnail(activity_picture.id)
 
 
 def delete_activity_picture(activity_id):
-    activity = Activity.query.filter(Activity.id == activity_id).first()
-    if activity:
-        picture = str(activity.base_path) + str(activity.rel_path) + '/' + str(activity.pic_name)
-
+    pictures = ActivityPicture.query.filter(ActivityPicture.activity_id == activity_id).all()
+    for picture in pictures:
         try:
-            os.remove(picture)
+            os.remove(os.path.join(picture.base_path+picture.rel_path+'/', picture.pic_name))
+            os.remove(os.path.join(picture.base_path+picture.rel_path+'/', picture.thumbnail))
         except OSError:
             message = "Error while os.remove on %s" % str(picture)
             flash(message, 'error')
+
+
+def save_thumbnail(picture_id):
+    """通过图片ID，查找图片，生产略缩图，存储本地，然后存储数据库"""
+
+    activity_picture = ActivityPicture.query.filter(ActivityPicture.id == picture_id).first()
+    save_path = activity_picture.base_path + activity_picture.rel_path + '/'
+    picture = save_path + activity_picture.pic_name
+    im = Image.open(picture)
+    im.thumbnail((256, 256))
+    thumbnail_name = time_file_name(activity_picture.upload_name, sign='nail') + '.jpeg'
+    im.save(save_path+thumbnail_name, 'jpeg')
+    activity_picture.thumbnail = thumbnail_name
+
+    db.commit()
