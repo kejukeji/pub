@@ -2,7 +2,7 @@
 
 from flask.ext import restful
 from sqlalchemy.orm import Session, sessionmaker
-from models import Collect, Pub, User, engine, db, Message, UserInfo, PubPicture, County, SystemMessage, FeedBack, UserSystemMessage
+from models import Collect, Pub, User, engine, db, Message, UserInfo, PubPicture, County, SystemMessage, FeedBack, UserSystemMessage, PubType, PubTypeMid
 from flask.ext.restful import reqparse
 from utils import pickler, time_diff, page_utils, todayfstr
 from datetime import datetime
@@ -233,6 +233,21 @@ def traverse_message_receiver(sender_message, resp_suc):
         resp_suc['list'].append(user_pic)
 
 
+def pub_type(pub):
+    if pub:
+        pub.type_name = ''
+        ptm_count = PubTypeMid.query.filter(PubTypeMid.pub_id == pub.id).count()
+        if ptm_count > 1:
+            pub_type_mids = PubTypeMid.query.filter(PubTypeMid.pub_id == pub.id).all()
+            for pub_type in pub_type_mids:
+                p_type = PubType.query.filter(PubType.id == pub_type.pub_type_id).first()
+                pub.type_name = pub.type_name + '/' + p_type.name
+        else:
+            pub_type = PubTypeMid.query.filter(PubTypeMid.pub_id == pub.id).first()
+            p_type = PubType.query.filter(PubType.id == pub_type.pub_type_id).first()
+            pub.type_name = p_type.name
+
+
 def traverse_collects(results, user_id, resp_suc):
     """
         遍历多条收藏
@@ -240,6 +255,7 @@ def traverse_collects(results, user_id, resp_suc):
             resp_suc: 列表
     """
     for result in results:
+        pub_type(result)
         collect = Collect.query.filter(Collect.user_id == user_id, Collect.pub_id == result.id).first()
         difference = time_diff(collect.time)
         result_pic = differences(result, difference)
@@ -262,6 +278,7 @@ def traverse_collect(result, user_id, resp_suc):
             resp_suc: 列表
     """
     if result:
+        pub_type(result)
         collect = Collect.query.filter(Collect.user_id == user_id, Collect.pub_id == result.id).first()
         difference = time_diff(collect.time)
         result_pic = differences(result, difference)
