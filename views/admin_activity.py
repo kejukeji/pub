@@ -32,7 +32,7 @@ class ActivityView(ModelView):
     can_create = True
     column_display_pk = True
     column_searchable_list = ('title', 'activity_info')
-    column_default_sort = ('start_date', True)
+    column_default_sort = ('id', True)
     column_labels = dict(
         id=u'ID',
         title=u'活动标题',
@@ -57,7 +57,7 @@ class ActivityView(ModelView):
 
     def scaffold_form(self):
         form_class = super(ActivityView, self).scaffold_form()
-        form_class.picture = TextField(label=u'活动图片', description=u'活动图片上传，一张就够了哈')
+        form_class.picture = TextField(label=u'活动图片', description=u'活动图片上传，按住ctrl上传多张')
         delattr(form_class, 'base_path')
         delattr(form_class, 'rel_path')
         delattr(form_class, 'pic_name')
@@ -76,9 +76,11 @@ class ActivityView(ModelView):
             model = self.model(**form_to_dict(form))
             self.session.add(model)  # 保存酒吧基本资料
             self.session.commit()
+            flash(u'活动添加完成，开始上传图片', 'info')
             activity_id = model.id
             activity_pictures = request.files.getlist("picture")  # 获取酒吧图片
             save_activity_pictures(activity_id, activity_pictures)
+            flash(u'图片添加完成', 'info')
 
         except Exception, ex:
             flash(gettext('Failed to create model. %(error)s', error=str(ex)), 'error')

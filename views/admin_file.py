@@ -6,6 +6,7 @@ import os.path as op
 import platform
 import shutil
 from operator import itemgetter
+import Image
 
 from werkzeug import secure_filename
 from flask.ext.admin.actions import action
@@ -18,9 +19,10 @@ from flask.ext.admin.contrib.fileadmin import FileAdmin
 from flask.ext.admin.contrib.fileadmin import UploadForm
 from flask.ext import login
 
-from models import PubPicture, db
+from models import PubPicture, db, ActivityPicture
 from utils import allowed_file_extension, time_file_name
-from ex_var import PUB_PICTURE_BASE_PATH, PUB_PICTURE_UPLOAD_FOLDER, PUB_PICTURE_ALLOWED_EXTENSION
+from ex_var import (PUB_PICTURE_BASE_PATH, PUB_PICTURE_UPLOAD_FOLDER, PUB_PICTURE_ALLOWED_EXTENSION,
+                    ACTIVITY_PICTURE_BASE_PATH, ACTIVITY_PICTURE_UPLOAD_FOLDER, ACTIVITY_PICTURE_ALLOWED_EXTENSION)
 from .tools import save_thumbnail
 
 
@@ -37,7 +39,7 @@ class PubFile(FileAdmin):
         return login.current_user.is_admin()
 
 
-class PubPictureFile(FileAdmin):  # todo-lyw代码进一步完善中
+class PubPictureFile(FileAdmin):
     """酒吧图片的后台管理"""
     can_upload = True
     can_delete = True
@@ -238,9 +240,224 @@ class PubPictureFile(FileAdmin):  # todo-lyw代码进一步完善中
         return redirect(return_url)
 
 
+class ActivityPictureFile(FileAdmin):
+    """酒吧图片的后台管理"""
+    can_upload = True
+    can_delete = True
+    can_delete_dirs = False
+    can_mkdir = False
+    can_rename = False
+
+    allowed_extensions = ('jpg', 'gif', 'png', 'jpeg')
+
+    list_template = 'admin_pub/pub_picture_list.html'  # 这里和pub的图片列表使用同一个
+
+    def __init__(self, base_path, base_url,
+                 name=None, category=None, endpoint=None, url=None,
+                 verify_path=True):
+        self.base_path = as_unicode(base_path)
+        self.base_url = base_url
+
+        self.init_actions()
+
+        self._on_windows = platform.system() == 'Windows'
+
+        # Convert allowed_extensions to set for quick validation
+        if (self.allowed_extensions and
+            not isinstance(self.allowed_extensions, set)):
+            self.allowed_extensions = set(self.allowed_extensions)
+
+        # Convert editable_extensions to set for quick validation
+        if (self.editable_extensions and
+            not isinstance(self.editable_extensions, set)):
+            self.editable_extensions = set(self.editable_extensions)
+
+        # Check if path exists
+        if not op.exists(base_path):
+            raise IOError('FileAdmin path "%s" does not exist or is not accessible' % base_path)
+
+        super(FileAdmin, self).__init__(name, category, endpoint, url)
+
+    def is_accessible(self):
+        return login.current_user.is_admin()
+
+    def save_file(self, path, file_data):
+        """保存图片"""
+        file_data.save(path)
+
+    def on_file_upload(self, directory, path, filename):
+        """定义图片上传之后的行为"""
+        pass
+
+    def on_file_delete(self, full_path, filename):
+        """定义图片删除之后的行为"""
+        pass
+
+    @expose('/')
+    @expose('/b/<path:path>')
+    def index(self, path=None):
+        """
+            Index view method
+
+            :param path:
+                Optional directory path. If not provided, will use the base directory
+        """
+        # Get path and verify if it is valid
+        base_path, directory, path = self._normalize_path(path)
+
+        if not self.is_accessible_path(path):
+            flash(gettext(gettext('Permission denied.')))
+            return redirect(self._get_dir_url('.index'))
+
+        # Get directory listing
+        items = []
+
+        activity_id = request.args.get("activity_id", None)
+        if activity_id:
+            for picture in ActivityPicture.query.filter(ActivityPicture.activity_id == activity_id).all():
+                items.append(get_picture(path, directory, picture))
+
+        # Sort by name
+        items.sort(key=itemgetter(0))
+
+        # Sort by type
+        items.sort(key=itemgetter(2), reverse=True)
+
+        # Generate breadcrumbs
+        accumulator = []
+        breadcrumbs = []
+        for n in path.split(os.sep):
+            accumulator.append(n)
+            breadcrumbs.append((n, op.join(*accumulator)))
+
+        # Actions
+        actions, actions_confirmation = self.get_actions_list()
+
+        return self.render(self.list_template,
+                           dir_path=path,
+                           breadcrumbs=breadcrumbs,
+                           get_dir_url=self._get_dir_url,
+                           get_file_url=self._get_file_url,
+                           items=items,
+                           actions=actions,
+                           actions_confirmation=actions_confirmation)
+
+    @expose('/upload/', methods=('GET', 'POST'))
+    @expose('/upload/<path:path>', methods=('GET', 'POST'))
+    def upload(self, path=None):
+        """
+            Upload view method
+
+            :param path:
+                Optional directory path. If not provided, will use the base directory
+        """
+        # Get path and verify if it is valid
+        base_path, directory, path = self._normalize_path(path)
+
+        if not self.can_upload:
+            flash(gettext('File uploading is disabled.'), 'error')
+            return redirect(self._get_dir_url('.index', path))
+
+        if not self.is_accessible_path(path):
+            flash(gettext(gettext('Permission denied.')))
+            return redirect(self._get_dir_url('.index'))
+
+        form = UploadForm(self)
+        if helpers.validate_form_on_submit(form):
+            activity_id = request.args.get('activity_id')
+            if not activity_id:
+                flash(gettext('这里无法上传图片，修改酒吧即可看到图片管理按钮。'), 'error')
+                return redirect("/admin/activitypicturefile")  # todo-lyw ugly
+            upload_name = secure_filename(form.upload.data.filename)
+            pic_name = time_file_name(upload_name, sign=activity_id)
+            save_path_name = op.join(directory, pic_name)
+
+            if not allowed_file_extension(upload_name, ACTIVITY_PICTURE_ALLOWED_EXTENSION):
+                flash(gettext('File "%(name)s" must be a picture!', name=pic_name),
+                      'error')
+            else:
+                try:
+                    self.save_file(save_path_name, form.upload.data)
+                    picture = ActivityPicture(activity_id, ACTIVITY_PICTURE_BASE_PATH, ACTIVITY_PICTURE_UPLOAD_FOLDER,
+                                              pic_name, upload_name, cover=0)
+                    db.add(picture)
+                    db.commit()
+                    save_activity_thumbnail(picture.id)  # 生产略缩图文件，保存到本地，然后数据库添加数据
+                    self.on_file_upload(directory, path, pic_name)
+                    return redirect('/admin/activitypicturefile/?activity_id=' + str(request.args.get('activity_id')))
+                except Exception as ex:
+                    flash(gettext('Failed to save file: %(error)s', error=ex))
+
+        return self.render(self.upload_template, form=form)
+
+    @expose('/delete/', methods=('POST',))
+    def delete(self):
+        """
+            Delete view method
+        """
+        path = request.form.get('path')
+
+        if not path:
+            return redirect(url_for('.index'))
+
+        # Get path and verify if it is valid
+        base_path, full_path, path = self._normalize_path(path)
+        activity_id = ActivityPicture.query.filter(ActivityPicture.pic_name == path).first().activity_id
+
+        return_url = self._get_dir_url('.index', op.dirname(path)) + "?activity_id=" + str(activity_id)
+
+        if not self.can_delete:
+            flash(gettext('Deletion is disabled.'))
+            return redirect(return_url)
+
+        if not self.is_accessible_path(path):
+            flash(gettext(gettext('Permission denied.')))
+            return redirect(self._get_dir_url('.index'))
+
+        if op.isdir(full_path):
+            if not self.can_delete_dirs:
+                flash(gettext('Directory deletion is disabled.'))
+                return redirect(return_url)
+
+            try:
+                shutil.rmtree(full_path)
+                self.on_directory_delete(full_path, path)
+                flash(gettext('Directory "%s" was successfully deleted.' % path))
+            except Exception as ex:
+                flash(gettext('Failed to delete directory: %(error)s', error=ex), 'error')
+        else:
+            try:
+                activity_picture = ActivityPicture.query.filter(ActivityPicture.pic_name == path).first()
+                ActivityPicture.query.filter(ActivityPicture.pic_name == path).delete()
+                db.commit()
+                os.remove(full_path)
+                if activity_picture.thumbnail:
+                    os.remove(activity_picture.base_path+activity_picture.rel_path+'/'+activity_picture.thumbnail)
+                self.on_file_delete(full_path, path)
+                flash(gettext('File "%(name)s" was successfully deleted.', name=path))
+            except Exception as ex:
+                flash(gettext('Failed to delete file: %(name)s', name=ex), 'error')
+
+        return redirect(return_url)
+
+
 def get_picture(path, directory, picture):
     """获取一个图片相关的tuple用于添加需要显示的图片"""
     fp = op.join(directory, picture.pic_name)
     rel_path = op.join(path, picture.pic_name)
 
     return picture.pic_name, rel_path, op.isdir(fp), op.getsize(fp)
+
+
+def save_activity_thumbnail(picture_id):
+    """通过图片ID，查找图片，生产略缩图，存储本地，然后存储数据库"""
+
+    activity_picture = ActivityPicture.query.filter(ActivityPicture.id == picture_id).first()
+    save_path = activity_picture.base_path + activity_picture.rel_path + '/'
+    picture = save_path + activity_picture.pic_name
+    im = Image.open(picture)
+    im.thumbnail((256, 256))
+    thumbnail_name = time_file_name(activity_picture.upload_name, sign='nail') + '.jpeg'
+    im.save(save_path+thumbnail_name, 'jpeg')
+    activity_picture.thumbnail = thumbnail_name
+    db.commit()

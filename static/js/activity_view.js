@@ -57,7 +57,7 @@ $(document).ready(function(){
     // 如果有id参数，屏蔽图片上传，添加一个图片管理的入口
     var id = gup('id');
     if (id) {
-        var manager_link = $.parseHTML("<p><a class='btn btn-danger' href='/admin/pubpicturefile?activity_id="+gup('id')+"'>图片管理</a></p>");
+        var manager_link = $.parseHTML("<p><a class='btn btn-danger' href='/admin/activitypicturefile?activity_id="+gup('id')+"'>图片管理</a></p>");
         $("#picture").after(manager_link);
         $("#picture").remove();  // 去掉图片上传
     }

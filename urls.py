@@ -12,6 +12,7 @@ from flask.ext import restful
 from pub_app import app
 from models import db
 from views import UserView, PubTypeView, PubView, PubFile, UserMessageView, UserCollectView, PubPictureFile
+from views.admin_file import ActivityPictureFile
 from views.admin_feature import UserFeedbackView
 from views.admin_activity import ActivityView
 from restfuls import (UserInfo, UserLogin, UserRegister, PubGetType, PubListDetail, PubDetail, UserCollect,
@@ -47,8 +48,11 @@ admin.add_view(GiftView(db, name=u'礼物管理'))
 ### 文件管理
 file_path = os.path.join(os.path.dirname(__file__), 'static')
 #admin.add_view(PubFile(file_path, '/static/', name='文件'))
-picture_path = os.path.join(os.path.dirname(__file__), 'static/system/pub_picture')
-admin.add_view(PubPictureFile(picture_path, '/static/system/pub_picture/', name='酒吧图片', category=u'酒吧'))  # todo-lyw 后期开启
+pub_picture_path = os.path.join(os.path.dirname(__file__), 'static/system/pub_picture')
+activity_picture_path = os.path.join(os.path.dirname(__file__), 'static/system/activity_picture')
+admin.add_view(PubPictureFile(pub_picture_path, '/static/system/pub_picture/', name='酒吧图片', category=u'酒吧'))
+admin.add_view(ActivityPictureFile(activity_picture_path,
+                                   '/static/system/activity_picture/', name='活动图片', category=u'酒吧'))
 
 # API接口
 api = restful.Api(app)
