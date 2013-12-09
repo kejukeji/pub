@@ -23,7 +23,8 @@ PUB_PICTURE_BASE_PATH = '/var/www/pub'  # pub运行文件的目录，图片的�
 PUB_PICTURE_ALLOWED_EXTENSION = ('png', 'jpg', 'jpeg', 'gif')  # 允许的拓展名
 # 活动图片
 ACTIVITY_PICTURE_UPLOAD_FOLDER = '/static/system/activity_picture'  # 运行目录的相对目录，URL获取图片的路径
-ACTIVITY_PICTURE_BASE_PATH = '/var/www/pub'  # pub运行文件的目录，图片的绝对路径使用
+ACTIVITY_PICTURE_BASE_PATH = '/Users/X/Dropbox/Code/pub'  # pub运行文件的目录，图片的绝对路径使用
+#ACTIVITY_PICTURE_BASE_PATH = '/var/www/pub'  # pub运行文件的目录，图片的绝对路径使用
 ACTIVITY_PICTURE_ALLOWED_EXTENSION = ('png', 'jpg', 'jpeg', 'gif')  # 允许的拓展名
 # 酒吧类型图片
 PUB_TYPE_UPLOAD_FOLDER = '/static/pub_type_picture'
