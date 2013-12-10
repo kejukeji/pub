@@ -7,9 +7,10 @@
     UserInfo: UserInfo类，主要是用户个人信息。
 """
 
-from sqlalchemy import Column, Integer, String, Boolean, DATETIME, ForeignKey, text
+from sqlalchemy import Column, Integer, String, Boolean, DATETIME, ForeignKey, desc
 
 from .database import Base
+from models.level import get_level
 from utils import todayfstr
 from utils.ex_password import check_password, generate_password
 
@@ -269,3 +270,72 @@ class UserInfo(Base):
 
     def path(self):
         return self.base_path + self.rel_path + '/'
+
+    def add_reputation(self, type_string, days=None):
+        """添加经验值的函数，number是经验值的多少"""
+        number = self.get_add_reputation(type_string, days)
+        self.reputation += number
+
+    def add_credit(self, type_string, days=None):
+        """添加积分的函数"""
+        number = self.get_add_credit(type_string, days)
+        self.credit += number
+
+    def get_add_reputation(self, type_string, days=None):
+        """通过类型获取经验值
+        register 注册 50 = 只有一次
+        info 完善资料 20 = 只有一次
+        login 登陆 10 = 每天登陆加一次，累计 10 * days
+        pub_sign 酒吧签到 10 = 收藏一次添加一次
+        pub 收藏酒吧 20 收藏一次加一次
+        activity 收藏活动 20 = 收藏一次加一次
+        message 发送私信 20 = 发给一个人无论多少次算一次，每个人都加一次
+        gift 发送礼物 20  = 发一次加一次
+        greet 发送传情 20 = 发一次加一次
+        invite 发送邀请 20 = 邀请一次加一次
+        online 在线时间 20 = 只有一次
+        """
+
+        if type_string == "register":
+            return 50
+        if type_string in ["online", "activity", "pub", "info", "invite", "greet", "gift", "message"]:
+            return 20
+        if type_string == "pub_sign":
+            return 10
+        if type_string == "login":
+            if (days is None) or (days <= 0):
+                raise ValueError
+            return 10 * days
+
+        raise ValueError
+
+
+    def get_add_credit(self, type_string, days=None):
+        """通过类型获取积分
+        register 注册 20 = 只有一次
+        info 完善资料 20 = 只有一次
+        login 登陆 10 = 每天登陆加一次，累计 10*days
+        pub_sign 酒吧签到 10  = 签到一次添加一次
+        pub 收藏酒吧 20 收藏一次加一次
+        activity 收藏活动 20 = 收藏一次加一次
+        message 收到私信 10 = 同一个人的算一次，多个人多次
+        gift 接收礼物 10  = 收一次加一次
+        greet 收到传情 10 = 发一次加一次
+        invite 收到邀请 10 = 邀请一次加一次
+        online 在线时间（满一个小时） 20
+        """
+
+        level = get_level(self.reputation)[0]
+
+        if type_string in ["register", "info", "pub", "activity", "online"]:
+            return 20
+        if type_string == "pub_sign":
+            return 10
+        if type_string in ["message", "gift", "greet", "invite"]:
+            return 10+level
+        if type_string == "login":
+            if (days is None) or (days <= 0):
+                raise ValueError
+            return 10 * days
+
+        raise ValueError

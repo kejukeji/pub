@@ -20,11 +20,13 @@ from ex_var import CONFIG_FILE
 app = Flask(__name__)
 app.config.from_pyfile(CONFIG_FILE)
 
+
 # 自动关闭数据库连接
 @app.teardown_appcontext
 def close_db(exception=None):
     if db is not None:
         db.remove()
+
 
 @app.teardown_request
 def teardown_request(exception=None):
