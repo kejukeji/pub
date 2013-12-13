@@ -334,7 +334,6 @@ class PubListDetail(restful.Resource):
                     group_by(PubPicture.pub_id).first()
                 pub_picture_only(result, resp_suc)
         resp_suc['status'] = 0
-        resp_suc['county'] = []
         resp_suc = by_type_id(type_id, resp_suc, page, city_id, province_id)
         resp_suc = get_province_city_by_id(province_id, resp_suc)
         return resp_suc

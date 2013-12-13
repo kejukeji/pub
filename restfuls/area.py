@@ -49,22 +49,22 @@ def get_province_city_by_id(province_id, resp_suc):
         provinces = Province.query.filter(Province.id == province_id).first()
         citys = City.query.filter().all()
         countys = County.query.filter().all()
-
         province_pic = flatten(provinces)
-        province_pic['city_list'] = []
+        resp_suc['county'] = []
+        city_list = []
         for city in citys:
             if city.province_id == 1 and provinces.id == 1:
-                get_county(countys, city.id, province_pic)
+                get_county_city(countys, city.id, city_list)
             elif city.province_id == 2 and provinces.id == 2:
-                get_county(countys, city.id, province_pic)
+                get_county_city(countys, city.id, city_list)
             elif city.province_id == 9 and provinces.id == 9:
-                get_county(countys, city.id, province_pic)
+                get_county_city(countys, city.id, city_list)
             elif city.province_id == 22 and provinces.id == 22:
-                get_county(countys, city.id, province_pic)
+                get_county_city(countys, city.id, city_list)
             elif city.province_id == provinces.id:
                 city_pic = flatten(city)
-                province_pic['city_list'].append(city_pic)
-        resp_suc['county'].append(province_pic)
+                city_list.append(city_pic)
+        resp_suc['county'].append(city_list)
     return resp_suc
 
 def get_county(countys,city_id, province_pic):
@@ -73,6 +73,15 @@ def get_county(countys,city_id, province_pic):
         if county.city_id == city_id:
             county_pic = flatten(county)
             province_pic['city_list'].append(county_pic)
+
+
+def get_county_city(countys,city_id, province_pic):
+    '''得到直辖市的区'''
+    for county in countys:
+        if county.city_id == city_id:
+            county_pic = flatten(county)
+            province_pic.append(county_pic)
+
 
 
 def get_city():
