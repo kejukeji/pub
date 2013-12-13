@@ -50,7 +50,6 @@ def get_province_city_by_id(province_id, resp_suc):
         citys = City.query.filter().all()
         countys = County.query.filter().all()
         province_pic = flatten(provinces)
-        resp_suc['county'] = []
         city_list = []
         for city in citys:
             if city.province_id == 1 and provinces.id == 1:
@@ -64,7 +63,7 @@ def get_province_city_by_id(province_id, resp_suc):
             elif city.province_id == provinces.id:
                 city_pic = flatten(city)
                 city_list.append(city_pic)
-        resp_suc['county'].append(city_list)
+        resp_suc['county'] = city_list
     return resp_suc
 
 def get_county(countys,city_id, province_pic):
