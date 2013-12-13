@@ -19,7 +19,7 @@ from restfuls import (UserInfo, UserLogin, UserRegister, PubGetType, PubListDeta
                       PubCollect, PubPictureDetail, PubSearch, GetPubType, GetProvince, GetCity, GetCounty,
                       UserMessage, PubSearchView, GetPubTypeList, UserOpenIdCheck, UserMessageInfo, UserSenderMessage,
                       MessageFuck, ClearMessage, FeedBackAdd, ActivityInfo, NearPub, MessageByTypeInfo, Area, CancelCollectPub,
-                      CollectActivity, ActivityCollectList, PersonCenter)
+                      CollectActivity, ActivityCollectList, PersonCenter, CityData, ByNameCity)
 from views.admin_login import login_view, logout_view, register_view
 from views.admin_view import HomeView
 from views.admin_system_message import SystemMessageView
@@ -94,6 +94,8 @@ api.add_resource(CancelCollectPub, '/restful/cancel/collect/pub')
 api.add_resource(CollectActivity, '/restful/cancel/collect/activity')
 api.add_resource(ActivityCollectList, '/restful/collect/activity/list')
 api.add_resource(PersonCenter, '/restful/person/center')
+api.add_resource(CityData, '/restful/city/data')
+api.add_resource(ByNameCity, '/restful/name/city')
 
 ## todo-lyw 代码末尾，形成的基本约定如下
 # 文件相关的使用 static

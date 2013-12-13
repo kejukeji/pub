@@ -54,6 +54,7 @@ def get_user(user_id):
     user_info.private_letter_count = user_private_letter_count
     user_invitation = get_invitation(user_id)
     user_info.invitation = user_invitation
+    user_info.gift = get_gift(user_id)
     return user_info
 
 
