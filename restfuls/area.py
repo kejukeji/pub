@@ -45,25 +45,26 @@ def get_province_city(resp_suc):
 
 def get_province_city_by_id(province_id, resp_suc):
     '''获取省市'''
-    provinces = Province.query.filter(Province.id == province_id).first()
-    citys = City.query.filter().all()
-    countys = County.query.filter().all()
+    if province_id:
+        provinces = Province.query.filter(Province.id == province_id).first()
+        citys = City.query.filter().all()
+        countys = County.query.filter().all()
 
-    province_pic = flatten(provinces)
-    province_pic['city_list'] = []
-    for city in citys:
-        if city.province_id == 1 and provinces.id == 1:
-            get_county(countys, city.id, province_pic)
-        elif city.province_id == 2 and provinces.id == 2:
-            get_county(countys, city.id, province_pic)
-        elif city.province_id == 9 and provinces.id == 9:
-            get_county(countys, city.id, province_pic)
-        elif city.province_id == 22 and provinces.id == 22:
-            get_county(countys, city.id, province_pic)
-        elif city.province_id == provinces.id:
-            city_pic = flatten(city)
-            province_pic['city_list'].append(city_pic)
-    resp_suc['list'].append(province_pic)
+        province_pic = flatten(provinces)
+        province_pic['city_list'] = []
+        for city in citys:
+            if city.province_id == 1 and provinces.id == 1:
+                get_county(countys, city.id, province_pic)
+            elif city.province_id == 2 and provinces.id == 2:
+                get_county(countys, city.id, province_pic)
+            elif city.province_id == 9 and provinces.id == 9:
+                get_county(countys, city.id, province_pic)
+            elif city.province_id == 22 and provinces.id == 22:
+                get_county(countys, city.id, province_pic)
+            elif city.province_id == provinces.id:
+                city_pic = flatten(city)
+                province_pic['city_list'].append(city_pic)
+        resp_suc['county'].append(province_pic)
     return resp_suc
 
 def get_county(countys,city_id, province_pic):

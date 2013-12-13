@@ -376,14 +376,14 @@ def by_type_id(type_id, resp_suc, page, city_id, province_id):
                 return resp_suc
             pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).order_by(PubTypeMid.id)[per_page*(int(temp_page)-1):per_page*int(temp_page)]
             for pub_type in pub_types:
-                pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.city_id == 75, Pub.stopped == 0).first()
+                pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.province_id == province_id, Pub.stopped == 0).first()
                 pub_only(pub, resp_suc)
             resp_suc['pub_count'] = len(resp_suc['pub_list'])
             return resp_suc
         else:
             pub_type = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).first()
             if pub_type:
-                pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.city_id == 75, Pub.stopped == 0).first()
+                pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.province_id == province_id, Pub.stopped == 0).first()
                 pub_only(pub, resp_suc)
             resp_suc['pub_count'] = len(resp_suc['pub_list'])
             return resp_suc
