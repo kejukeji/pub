@@ -8,6 +8,7 @@ from utils import pickler, page_utils
 from flask.ext.restful import reqparse
 from utils.others import success_dic, fail_dic, get_address, get_county, flatten, max_page
 from restfuls.activity import get_activity_by_pub_id
+from restfuls.area import get_province_city_by_id
 
 
 def to_flatten(obj, obj2):
@@ -335,7 +336,7 @@ class PubListDetail(restful.Resource):
         resp_suc['status'] = 0
         resp_suc['county'] = []
         resp_suc = by_type_id(type_id, resp_suc, page, city_id, province_id)
-        get_county(75, resp_suc)
+        resp_suc = get_province_city_by_id(province_id, resp_suc)
         return resp_suc
 
 
