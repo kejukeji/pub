@@ -116,13 +116,13 @@ def get_user_nickname_picture(user_id):
     return user, user_info
 
 
-def format_common(invitation):
-    if invitation:
-        user, user_info = get_user_nickname_picture(invitation.sender_id)
+def format_common(obj):
+    if obj:
+        user, user_info = get_user_nickname_picture(obj.sender_id)
         if user:
-            invitation.nick_name = user.nick_name
+            obj.nick_name = user.nick_name
         if user_info and user_info.rel_path and user_info.pic_name:
-            invitation.pic_path = user_info.rel_path + "/" + user_info.pic_name
+            obj.pic_path = user_info.rel_path + "/" + user_info.pic_name
         return True
     else:
         return False
@@ -234,6 +234,74 @@ class GreetingView(restful.Resource):
         success['greeting'] = []
 
         is_true = get_greeting_by_id(user_id, page, success)
+        if is_true:
+            return success
+        else:
+            success['message'] = '没有数据'
+            return success
+
+
+def get_gift_image(user_gift):
+    """
+    获取礼物图片
+    """
+    if user_gift:
+        gift = Gift.query.filter(Gift.id == user_gift.gift_id).first()
+        if gift and gift.rel_path and gift.pic_name:
+            user_gift.gift_pic_path = gift.rel_path + "/" + gift.pic_name
+
+
+def get_gift_by_id(user_id, page, success):
+    """
+    获取礼物通过user_id
+    """
+    success['gift'] = []
+    user_gift_count = UserGift.query.filter(UserGift.receiver_id == user_id).count()
+    temp_page = int(page)
+    page, per_page, max = page_utils(user_gift_count, page)
+    if user_gift_count > 1:
+        user_gift = UserGift.query.filter(UserGift.receiver_id == user_id)[per_page * (temp_page - 1):per_page * temp_page]
+        is_true = True
+        if user_gift:
+            for user in user_gift:
+                is_true = format_common(user)
+                get_gift_image(user)
+                user_pic = flatten(user)
+                success['gift'].append(user_pic)
+        return is_true
+    else:
+        user_gift = UserGift.query.filter(UserGift.receiver_id == user_id).first()
+        is_true = format_common(user_gift)
+        get_gift_image(user_gift)
+        if is_true:
+            invitation_pic = flatten(user_gift)
+            success['gift'].append(invitation_pic)
+            return True
+        else:
+            return False
+
+
+class GiftViewX(restful.Resource):
+    """
+    礼物列表
+    """
+    @staticmethod
+    def get():
+        """
+        user_id: 用户id
+        """
+        parser = reqparse.RequestParser()
+        parser.add_argument('user_id', type=str, required=True, help=u'user_id 必须')
+        parser.add_argument('page', type=str, required=True, help=u'page 必须')
+
+        args = parser.parse_args()
+
+        success = success_dic().dic
+
+        user_id = args['user_id']
+        page = args['page']
+
+        is_true = get_gift_by_id(user_id, page, success)
         if is_true:
             return success
         else:

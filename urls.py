@@ -94,6 +94,7 @@ api.add_resource(CityData, '/restful/city/data')
 api.add_resource(ByNameCity, '/restful/name/city')
 api.add_resource(InvitationView, '/restful/invitation/view')
 api.add_resource(GreetingView, '/restful/greeting/view')
+api.add_resource(GiftViewX, '/restful/gift/view')
 
 ## todo-lyw 代码末尾，形成的基本约定如下
 # 文件相关的使用 static
