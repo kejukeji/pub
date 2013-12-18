@@ -6,6 +6,7 @@ from utils.others import *
 from models.feature import *
 from models.user import UserInfo as ModelUserInfo, User
 from models.level import *
+from models import db
 
 
 def get_user_collect_activity(user_id):
@@ -306,4 +307,47 @@ class GiftViewX(restful.Resource):
             return success
         else:
             success['message'] = '没有数据'
+            return success
+
+
+def sender_invitation(sender_id, receiver_id):
+    """
+    发送一个邀约
+    """
+    invitation = Invitation(sender_id=sender_id, receiver_id=receiver_id)
+    try:
+        db.add(invitation)
+        db.commit()
+    except:
+        return False
+    return True
+
+
+
+class SenderInvite(restful.Resource):
+    """
+    发送邀约
+    """
+    @staticmethod
+    def get():
+        """
+        sender_id: 发送者id
+        receiver_id: 接收者id
+        """
+        parser = reqparse.RequestParser()
+        parser.add_argument('sender_id', type=str, required=True, help=u'sender_id 必须')
+        parser.add_argument('receiver_id', type=str, required=True, help=u'receiver_id 必须')
+
+        args = parser.parse_args()
+
+        success = success_dic().dic
+
+        sender_id = args['sender_id']
+        receiver_id = args['receiver_id']
+
+        is_true = sender_invitation(sender_id, receiver_id)
+        if is_true:
+            return success
+        else:
+            success['message'] = '发送失败'
             return success
