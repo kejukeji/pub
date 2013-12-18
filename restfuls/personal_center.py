@@ -61,10 +61,45 @@ def get_user(user_id):
 
 def get_gift(user_id):
     """
-    获得礼物
+    获得礼物根据user_id
     """
     gift_count = UserGift.query.filter(UserGift.receiver_id == user_id).count()
     return gift_count
+
+
+def add_picture(obj):
+    """
+    有图片的对象，格式化图片路劲
+    """
+    if obj.rel_path and obj.pic_name:
+        obj.pic_path = obj.rel_path + "/" + obj.pic_name
+
+
+def get_gift_all(success, page):
+    """
+    获得全部礼物
+    """
+    success['gift'] = []
+    gift_count = Gift.query.filter().count()
+    if gift_count > 1:
+        gift_all = Gift.query.filter().all()
+        if gift_all:
+            for gift in gift_all:
+                add_picture(gift)
+                gift_pic = flatten(gift)
+                success['gift'].append(gift_pic)
+            return True
+        else:
+            return False
+    else:
+        gift_first = Gift.query.filter().first()
+        if gift_first:
+            add_picture(gift_first)
+            gift_pic = flatten(gift_first)
+            success['gift'].append(gift_pic)
+            return True
+        else:
+            return False
 
 
 def get_greeting(user_id):
@@ -350,4 +385,64 @@ class SenderInvite(restful.Resource):
             return success
         else:
             success['message'] = '发送失败'
+            return success
+
+
+def sender_gift(sender_id, receiver_id, gift_id):
+    """
+    发送礼物
+    """
+    gift = UserGift(sender_id=sender_id, receiver_id=receiver_id, gift_id=gift_id)
+    try:
+        db.add(gift)
+        db.commit()
+    except:
+        return False
+    return True
+
+
+class SenderGift(restful.Resource):
+    """
+    发送礼物
+    """
+    @staticmethod
+    def get():
+        """
+        sender_id: 发送者id
+        receiver_id: 接受者id
+        """
+        parser = reqparse.RequestParser()
+        parser.add_argument('sender_id', type=str, required=True, help=u'sender_id 必须')
+        parser.add_argument('receiver_id', type=str, required=True, help=u'receiver_id 必须')
+        parser.add_argument('gift_id', type=str, required=True, help=u'gift_id 必须')
+
+        args = parser.parse_args()
+
+        success = success_dic().dic
+
+        sender_id = args['sender_id']
+        receiver_id = args['receiver_id']
+        gift_id = args['gift_id']
+
+        is_true = sender_gift(sender_id, receiver_id, gift_id)
+        if is_true:
+            return success
+        else:
+            success['message'] = '发送失败'
+            return success
+
+
+class SenderGiftView(restful.Resource):
+    """
+    发送礼物的界面
+    """
+    @staticmethod
+    def get():
+        success = success_dic().dic
+
+        is_true = get_gift_all(success, 1)
+        if is_true:
+            return success
+        else:
+            success['message'] = '没有数据'
             return success
