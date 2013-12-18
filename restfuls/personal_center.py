@@ -80,9 +80,9 @@ def get_gift_all(success, page):
     获得全部礼物
     """
     success['gift'] = []
-    gift_count = Gift.query.filter().count()
+    gift_count = Gift.query.filter(Gift.status == 1).count()
     if gift_count > 1:
-        gift_all = Gift.query.filter().all()
+        gift_all = Gift.query.filter(Gift.status == 1).all()
         if gift_all:
             for gift in gift_all:
                 add_picture(gift)
@@ -92,7 +92,7 @@ def get_gift_all(success, page):
         else:
             return False
     else:
-        gift_first = Gift.query.filter().first()
+        gift_first = Gift.query.filter(Gift.status == 1).first()
         if gift_first:
             add_picture(gift_first)
             gift_pic = flatten(gift_first)
