@@ -190,9 +190,9 @@ def get_invitation_by_id(user_id, page, success):
             return False
 
 
-class InvitationView(restful.Resource):
+class InvitationReceiver(restful.Resource):
     """
-    邀约界面
+    邀约
     """
     @staticmethod
     def get():
@@ -247,7 +247,7 @@ def get_greeting_by_id(user_id, page, success):
             return False
 
 
-class GreetingView(restful.Resource):
+class GreetingReceiver(restful.Resource):
     """
     传情
     """
@@ -287,16 +287,25 @@ def get_gift_image(user_gift):
             user_gift.gift_pic_path = gift.rel_path + "/" + gift.pic_name
 
 
-def get_gift_by_id(user_id, page, success):
+def get_gift_by_id(user_id, page, success, gift_type):
     """
     获取礼物通过user_id
     """
     success['gift'] = []
     user_gift_count = UserGift.query.filter(UserGift.receiver_id == user_id).count()
     temp_page = int(page)
-    page, per_page, max = page_utils(user_gift_count, page)
+    is_all = True
+    if gift_type == 'personal':
+        page, per_page, max = page_utils(user_gift_count, page)
+        is_all = False
+    else:
+        page, per_page, max = page_utils(user_gift_count, page, per_page=20)
+        is_all = True
     if user_gift_count > 1:
-        user_gift = UserGift.query.filter(UserGift.receiver_id == user_id)[per_page * (temp_page - 1):per_page * temp_page]
+        if is_all:
+            user_gift = UserGift.query.filter(UserGift.receiver_id == user_id).all()
+        else:
+            user_gift = UserGift.query.filter(UserGift.receiver_id == user_id)[per_page * (temp_page - 1):per_page * temp_page]
         is_true = True
         if user_gift:
             for user in user_gift:
@@ -317,7 +326,7 @@ def get_gift_by_id(user_id, page, success):
             return False
 
 
-class GiftViewX(restful.Resource):
+class GiftReceiver(restful.Resource):
     """
     礼物列表
     """
@@ -329,6 +338,7 @@ class GiftViewX(restful.Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('user_id', type=str, required=True, help=u'user_id 必须')
         parser.add_argument('page', type=str, required=True, help=u'page 必须')
+        parser.add_argument('gift_type', type=str, required=True, help=u'gift_type 必须,如果是个人中心，值为personal，好友中心礼物为friend')
 
         args = parser.parse_args()
 
@@ -336,8 +346,9 @@ class GiftViewX(restful.Resource):
 
         user_id = args['user_id']
         page = args['page']
+        gift_type = args.get('gift_type', 'personal')
 
-        is_true = get_gift_by_id(user_id, page, success)
+        is_true = get_gift_by_id(user_id, page, success, gift_type)
         if is_true:
             return success
         else:
@@ -382,6 +393,7 @@ class SenderInvite(restful.Resource):
 
         is_true = sender_invitation(sender_id, receiver_id)
         if is_true:
+            success['message'] = '发送成功'
             return success
         else:
             success['message'] = '发送失败'
@@ -426,6 +438,7 @@ class SenderGift(restful.Resource):
 
         is_true = sender_gift(sender_id, receiver_id, gift_id)
         if is_true:
+            success['message'] = '发送成功'
             return success
         else:
             success['message'] = '发送失败'
@@ -445,4 +458,47 @@ class SenderGiftView(restful.Resource):
             return success
         else:
             success['message'] = '没有数据'
+            return success
+
+
+def sender_greeting(sender_id, receiver_id):
+    """
+    发送传情
+    """
+    greeting = Greeting(sender_id=sender_id, receiver_id=receiver_id)
+    try:
+        db.add(greeting)
+        db.commit()
+    except:
+        return False
+    return True
+
+
+class SenderGreeting(restful.Resource):
+    """
+    发送传情
+    """
+    @staticmethod
+    def get():
+        """
+        sender_id: 发送者id
+        receiver_id: 接收者id
+        """
+        parser = reqparse.RequestParser()
+        parser.add_argument('sender_id', type=str, required=True, help=u'sender_id 必须')
+        parser.add_argument('receiver_id', type=str, required=True, help=u'receiver_id 必须')
+
+        args = parser.parse_args()
+
+        success = success_dic().dic
+
+        sender_id = args['sender_id']
+        receiver_id = args['receiver_id']
+
+        is_true = sender_greeting(sender_id, receiver_id)
+        if is_true:
+            success['message'] = '发送成功'
+            return success
+        else:
+            success['message'] = '发送失败'
             return success
