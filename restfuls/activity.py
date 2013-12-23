@@ -67,8 +67,11 @@ def get_activity_picture(id):
 
 
 def format_picture_path(obj):
-    if obj.rel_path and obj.pic_name:
-        obj.pic_path = obj.rel_path + "/" + obj.pic_name
+    if obj == -1:
+        pass
+    else:
+        if obj.rel_path and obj.pic_name:
+            obj.pic_path = obj.rel_path + "/" + obj.pic_name
 
 
 def is_list(id):
@@ -190,6 +193,25 @@ class CollectActivity(restful.Resource):
             return fail
 
 
+def check_picture(picture, activity, user_id, success):
+    if picture == -1:
+        activity.pic_path = ''
+    else:
+        if type(picture) is list:
+            format_picture_path(picture[0])
+            if picture[0].pic_path:
+                activity.pic_path = picture[0].pic_path
+        else:
+            format_picture_path(picture)
+            if picture.pic_path:
+                activity.pic_path = picture.pic_path
+    # 属于哪个酒吧
+    belong_pub_name(activity)
+    activity_is_collect(activity, user_id)
+    activity_pic = flatten(activity)
+    success['activity_collect'].append(activity_pic)
+
+
 def activity_collect_list(user_id, page, success):
     """
     得到用户活动收藏列表
@@ -205,18 +227,8 @@ def activity_collect_list(user_id, page, success):
             if activity:
                 activity.collect_time = u.time
                 list_result = is_list(activity.id)
-                if type(list_result) is list:
-                    format_picture_path(list_result[0])
-                    if list_result[0].pic_path:
-                        activity.pic_path = list_result[0].pic_path
-                else:
-                    format_picture_path(list_result)
-                    if list_result.pic_path:
-                        activity.pic_path = list_result.pic_path
-                belong_pub_name(activity)
-                activity_is_collect(activity, user_id)
-                activity_pic = flatten(activity)
-                success['activity_collect'].append(activity_pic)
+                # 检查图片是否为空
+                check_picture(list_result, activity, user_id, success)
     else:
         user_activity = UserActivity.query.filter(UserActivity.user_id == user_id).first()
         if user_activity:
@@ -224,18 +236,8 @@ def activity_collect_list(user_id, page, success):
             if activity:
                 activity.collect_time = user_activity.time
                 list_result = is_list(activity.id)
-                if type(list_result) is list:
-                    format_picture_path(list_result[0])
-                    if list_result[0].pic_path:
-                        activity.pic_path = list_result[0].pic_path
-                else:
-                    format_picture_path(list_result)
-                    if list_result.pic_path:
-                        activity.pic_path = list_result.pic_path
-                belong_pub_name(activity)
-                activity_is_collect(activity, user_id)
-                activity_pic = flatten(activity)
-                success['activity_collect'].append(activity_pic)
+                # 检查图片是否为空
+                check_picture(list_result, activity, user_id, success)
     return user_activity_count
 
 
