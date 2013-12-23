@@ -6,6 +6,7 @@ from utils.others import *
 from models.feature import *
 from models.user import UserInfo as ModelUserInfo, User
 from models.level import *
+from restfuls.user_function import traverse_messages_sender, traverse_message_sender
 from models import db
 
 
@@ -29,7 +30,9 @@ def get_user_private_letter(user_id):
     """
     根据user_id获取用户私信
     """
-    user_private_letter = Message.query.filter(Message.receiver_id == user_id, Message.view == 0).count()
+    user_private_letter = db.query(Message).\
+        filter(Message.receiver_id == user_id).\
+        group_by(Message.sender_id).count()
     return user_private_letter
 
 
@@ -56,6 +59,7 @@ def get_user(user_id):
     user_invitation = get_invitation(user_id)
     user_info.invitation = user_invitation
     user_info.gift = get_gift(user_id)
+    user_info.private_letter = get_user_private_letter(user_id)
     return user_info
 
 
@@ -501,4 +505,59 @@ class SenderGreeting(restful.Resource):
             return success
         else:
             success['message'] = '发送失败'
+            return success
+
+
+def get_private_letter_list(user_id, page, success):
+    """
+    获取个人中心的私心列表。看清楚了哦。 是个人中心的。 而不是消息的。。 这坑爹的设计我他妈的无力吐槽。
+    """
+    success['sender_list'] = []
+    message_count = db.query(Message).\
+        filter(Message.receiver_id == user_id).order_by(Message.time.desc()).\
+        group_by(Message.sender_id).count()
+    temp_page = int(page)
+    page,per_page, max = page_utils(message_count, page)
+    if message_count > 1:
+        direct_messages = db.query(Message).\
+            filter(Message.receiver_id == user_id).order_by(Message.time.desc()).\
+            group_by(Message.sender_id)[per_page * (temp_page -1):per_page * temp_page]
+        traverse_messages_sender(direct_messages, success)
+        return True
+    elif message_count == 1:
+        direct_message = db.query(Message). \
+            filter(Message.receiver_id == user_id).order_by(Message.time.desc()). \
+            group_by(Message.sender_id).first()
+        traverse_message_sender(direct_message, success)
+        return True
+    else:
+        return False
+
+
+class PersonalPrivateLetter(restful.Resource):
+    """
+    个人中心私信列表
+    """
+    @staticmethod
+    def get():
+        """
+        user_id: 用户id
+        page: 分页
+        """
+        parser = reqparse.RequestParser()
+        parser.add_argument('user_id', type=str, required=True, help=u'user_id 必须')
+        parser.add_argument('page', type=str, required=True, help=u'page 必须')
+
+        args = parser.parse_args()
+
+        success = success_dic().dic
+
+        user_id = args['user_id']
+        page = args['page']
+
+        is_true = get_private_letter_list(user_id, page, success)
+        if is_true:
+            return success
+        else:
+            success['message'] = '没有数据'
             return success

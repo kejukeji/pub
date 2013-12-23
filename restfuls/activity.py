@@ -190,7 +190,8 @@ class CollectActivity(restful.Resource):
         if result:
             return success
         else:
-            return fail
+            success['message'] = '没有数据'
+            return success
 
 
 def check_picture(picture, activity, user_id, success):
@@ -275,7 +276,8 @@ class ActivityCollectList(restful.Resource):
         if result != 0:
             return success
         else:
-            return fail
+            success['message'] = '没有数据'
+            return success
 
 
 #class ActivityInfo(restful.Resource):
