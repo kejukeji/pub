@@ -86,10 +86,10 @@ class UserCollectView(ModelView):
     can_delete = True
     can_edit = False
     column_labels = {
-        'id':u'ID',
-        'user.nick_name':u'用户昵称',
-        'pub.name':u'酒吧',
-        'time':u'收藏时间'
+        'id': u'ID',
+        'user.nick_name': u'用户昵称',
+        'pub.name': u'酒吧',
+        'time': u'收藏时间'
     }
 
     column_list = ('id', 'user.nick_name', 'pub.name', 'time')
