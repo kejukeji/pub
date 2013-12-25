@@ -117,6 +117,11 @@ def to_messages_sender(content, sender_id, receiver_id):
                     json_pic['receiver_path'] = user_info.rel_path + '/' + user_info.pic_name
                 else:
                     json_pic['sender_pic_path'] = user_info.rel_path + '/' + user_info.pic_name
+            else:
+                if sender_id == receiver_id:
+                    json_pic['receiver_path'] = ""
+                else:
+                    json_pic['sender_pic_path'] = ""
             if sex == 1:
                 json_pic['sex'] = '男'
             else:
