@@ -195,7 +195,7 @@ def traverse_user_sender_messages(messages, resp_suc, receiver_id):
     if messages:
         for message in messages:
             if message.sender_id == receiver_id:
-                message.view = 0
+                pass
             else:
                 message.view = 1
             db.commit()
@@ -213,7 +213,7 @@ def traverse_user_sender_one(message, resp_suc, receiver_id):
    一条用户发送给好友信息
    """
    if message.sender_id == receiver_id:
-       message.view = 0
+       pass
    else:
        message.view = 1
    db.commit()
