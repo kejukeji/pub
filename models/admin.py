@@ -53,6 +53,11 @@ class UserSystemMessage(Base):
        system_message_id ： 系统消息id
     """
     __tablename__ = USER_SYSTEM_MESSAGE
+    __table_args__ = {
+        'mysql_engine': 'InnoDB',
+        'mysql_charset': 'utf8'
+    }
+
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey(User.id, ondelete='cascade', onupdate='cascade'), nullable=False)
     system_message_id = Column(Integer, ForeignKey(SystemMessage.id, ondelete='cascade', onupdate='cascade'), nullable=False)

@@ -309,7 +309,6 @@ class UserInfo(Base):
 
         raise ValueError
 
-
     def get_add_credit(self, type_string, days=None):
         """通过类型获取积分
         register 注册 20 = 只有一次
