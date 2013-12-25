@@ -2,6 +2,7 @@
 
 from flask.ext import restful
 from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy import or_, and_
 from models import Collect, Pub, User, engine, db, Message, UserInfo, PubPicture, County, SystemMessage, FeedBack, UserSystemMessage, PubType, PubTypeMid
 from flask.ext.restful import reqparse
 from utils import pickler, time_diff, page_utils, todayfstr
@@ -55,7 +56,7 @@ def to_messages(times, content, message_id):
         age = get_year(birthday)
         json_pic = flatten(user)
         if user_info.rel_path and user_info.pic_name:
-            json_pic['pic_path'] = user_info.rel_path + '/' + user_info.pic_name
+            json_pic['sender_pic_path'] = user_info.rel_path + '/' + user_info.pic_name
         if sex == 1:
             json_pic['sex'] = '男'
         else:
@@ -95,12 +96,12 @@ def to_messages_no_time(content, message_id):
         return {}
 
 
-def to_messages_sender(content, message_id):
+def to_messages_sender(content, sender_id, receiver_id):
     """
     用户发送时间times
     用户发送内容content
     """
-    user = User.query.filter(User.id == message_id).first()
+    user = User.query.filter(User.id == sender_id).first()
     if user:
         user_info = UserInfo.query.filter(UserInfo.user_id == user.id).first()
         json_pic = flatten(user)
@@ -112,7 +113,10 @@ def to_messages_sender(content, message_id):
             age = get_year(birthday)
             json_pic = flatten(user)
             if user_info.rel_path and user_info.pic_name:
-                json_pic['receiver_path'] = user_info.rel_path + '/' + user_info.pic_name
+                if sender_id == receiver_id:
+                    json_pic['receiver_path'] = user_info.rel_path + '/' + user_info.pic_name
+                else:
+                    json_pic['sender_pic_path'] = user_info.rel_path + '/' + user_info.pic_name
             if sex == 1:
                 json_pic['sex'] = '男'
             else:
@@ -177,6 +181,38 @@ def traverse_messages_receiver(messages, resp_suc):
             time = time_to_str(message.time)
             user_pic['time'] = time
             resp_suc['list'].append(user_pic)
+
+
+def traverse_user_sender_messages(messages, resp_suc, receiver_id):
+    """
+        遍历接收多条消息
+    """
+    if messages:
+        for message in messages:
+            message.view = 1
+            db.commit()
+            times = time_diff(message.time)
+            user_pic = to_messages_sender(message.content, message.sender_id, receiver_id)
+            user_pic['sender_id'] = message.sender_id
+            user_pic['receiver_id'] = message.receiver_id
+            time = time_to_str(message.time)
+            user_pic['time'] = time
+            resp_suc['list'].append(user_pic)
+
+
+def traverse_user_sender_one(message, resp_suc, receiver_id):
+   """
+   一条用户发送给好友信息
+   """
+   message.view = 1
+   db.commit()
+   times = time_diff(message.time)
+   user_pic = to_messages_sender(message.content, message.sender_id, receiver_id)
+   user_pic['sender_id'] = message.sender_id
+   user_pic['receiver_id'] = message.receiver_id
+   time = time_to_str(message.time)
+   user_pic['time'] = time
+   resp_suc['list'].append(user_pic)
 
 
 def traverse_message(message, resp_suc):
@@ -565,37 +601,21 @@ class UserMessageInfo(restful.Resource):
         resp_suc['list'] = []
 
         sender_id = args['sender_id']
-        receiver_id = args['receiver_id']
+        receiver_id = int(args['receiver_id'])
 
-        # message_count = Message.query.filter(Message.sender_id == sender_id).count()
-        message_receiver_count = Message.query.filter(Message.sender_id == sender_id, Message.receiver_id == receiver_id).count()
-        message_sender_count = Message.query.filter(Message.sender_id == receiver_id, Message.receiver_id == sender_id).count()
-        if message_receiver_count > 1:
-            # messages = Message.query.filter(Message.sender_id == sender_id).order_by(Message.time.asc())
-            if message_sender_count > 1:
-                message_senders = Message.query.filter(Message.sender_id == receiver_id, Message.receiver_id == sender_id).\
-                    order_by(Message.time)
-                traverse_messages_receiver(message_senders, resp_suc)
-            else:
-                message_senders = Message.query.filter(Message.sender_id == receiver_id, Message.receiver_id == sender_id).first()
-                traverse_message_receiver(message_senders, resp_suc)
-
-            message_receivers = Message.query.filter(Message.sender_id == sender_id, Message.receiver_id == receiver_id).\
-                order_by(Message.time)
-            if message_receivers:
-                traverse_messages_receiver(message_receivers, resp_suc)
-                return resp_suc
-            else:
-                return resp_fail
+        #message_count = db.query(Message).\
+         #   filter((Message.sender_id == sender_id, Message.receiver_id == receiver_id) | (Message.sender_id == receiver_id, Message.receiver_id == sender_id)).count()
+        message_count = Message.query.filter(or_(and_(Message.sender_id == sender_id, Message.receiver_id == receiver_id), and_(Message.sender_id == receiver_id, Message.receiver_id == sender_id))).count()
+        if message_count > 1:
+            message = Message.query.filter(or_(and_(Message.sender_id == sender_id, Message.receiver_id == receiver_id), and_(Message.sender_id == receiver_id, Message.receiver_id == sender_id))).order_by(Message.time).all()
+            traverse_user_sender_messages(message, resp_suc, receiver_id)
         else:
-            # message = Message.query.filter(Message.sender_id == sender_id).first()
-            message_receiver = Message.query.filter\
-                    (Message.sender_id == sender_id, Message.receiver_id == receiver_id).first()
-            if message_receiver:
-                traverse_message_receiver(message_receiver, resp_suc)
-                return resp_suc
+            message = Message.query.filter(or_(and_(Message.sender_id == sender_id, Message.receiver_id == receiver_id), and_(Message.sender_id == receiver_id, Message.receiver_id == sender_id))).order_by(Message.time).first()
+            if message:
+                traverse_user_sender_one(message, resp_suc, receiver_id)
             else:
-                return resp_fail
+                resp_suc['message'] = '没有数据'
+        return resp_suc
 
 
 class UserSenderMessage(restful.Resource):
