@@ -628,7 +628,7 @@ class UserSenderMessage(restful.Resource):
             resp_fail['message'] = '您不能发给自己！'
             return resp_fail
 
-        message = Message(sender_id, receiver_id, content, view=0)
+        message = Message(sender_id=sender_id, receiver_id=receiver_id, content=content)
         db.add(message)
         try:
             db.commit()
