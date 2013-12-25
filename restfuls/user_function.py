@@ -653,7 +653,7 @@ class UserSenderMessage(restful.Resource):
             resp_fail['message'] = '您不能发给自己！'
             return resp_fail
 
-        message = Message(sender_id=sender_id, receiver_id=receiver_id, content=content)
+        message = Message(sender_id=sender_id, receiver_id=receiver_id, content=content, view=0)
         db.add(message)
         try:
             db.commit()
@@ -699,7 +699,8 @@ class MessageFuck(restful.Resource):
             #    traverse_message_sender(direct_message, resp_suc)
             return resp_suc
         else:
-            return resp_fail
+            resp_suc['message'] = '没有数据'
+            return resp_suc
 
 
 class MessageByTypeInfo(restful.Resource):

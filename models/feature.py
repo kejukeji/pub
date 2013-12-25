@@ -149,13 +149,13 @@ class Message(Base):
     introduction_time = Column(DATETIME, nullable=True, server_default=None)
     view = Column(Boolean, nullable=False, server_default='0')
 
-    def __init__(self, sender_id, receiver_id, content, view=0):
-        self.sender_id = sender_id
-        self.receiver_id = receiver_id
-        self.content = content
+    def __init__(self, **kwargs):
+        self.sender_id = kwargs.pop('sender_id')
+        self.receiver_id = kwargs.pop('receiver_id')
+        self.content = kwargs.pop('content')
         self.time = todayfstr()
         self.introduction_time = todayfstr()
-        self.view = view
+        self.view = kwargs.pop('view', 0)
 
     def __repr__(self):
         return '<Message(sender_id: %s, receiver_id: %s, content: %s)>' % \
