@@ -267,6 +267,92 @@ class PubGetType(restful.Resource):
         return resp_suc
 
 
+def type_picture(province_id, city_id, resp_suc, type_id):
+    if city_id and city_id != "0":
+        if province_id != 0:
+            province_id = int(province_id)
+            if province_id == 1 or province_id == 2 or province_id == 9 or province_id == 22:
+                result_count = db.query(PubPicture).\
+                    join(Pub).\
+                    join(PubTypeMid).\
+                    filter(PubTypeMid.pub_type_id == type_id, Pub.recommend == 1, Pub.county_id == city_id).\
+                    group_by(PubPicture.pub_id).count()
+                if result_count > 1:
+                    results = db.query(PubPicture). \
+                        join(Pub). \
+                        join(PubTypeMid).\
+                        filter(PubTypeMid.pub_type_id == type_id, Pub.recommend == 1, Pub.county_id == city_id).\
+                        group_by(PubPicture.pub_id)
+                    pub_list_picture(results, resp_suc)
+                else:
+                    result = db.query(PubPicture). \
+                        join(Pub). \
+                        join(PubTypeMid).\
+                        filter(PubTypeMid.pub_type_id == type_id, Pub.recommend == 1, Pub.county_id == city_id).\
+                        group_by(PubPicture.pub_id).first()
+                    pub_picture_only(result, resp_suc)
+            else:
+                result_count = db.query(PubPicture).\
+                    join(Pub).\
+                    join(PubTypeMid).\
+                    filter(PubTypeMid.pub_type_id == type_id, Pub.recommend == 1, Pub.city_id == city_id).\
+                    group_by(PubPicture.pub_id).count()
+                if result_count > 1:
+                    results = db.query(PubPicture). \
+                        join(Pub). \
+                        join(PubTypeMid).\
+                        filter(PubTypeMid.pub_type_id == type_id, Pub.recommend == 1, Pub.city_id == city_id).\
+                        group_by(PubPicture.pub_id)
+                    pub_list_picture(results, resp_suc)
+                else:
+                    result = db.query(PubPicture). \
+                        join(Pub). \
+                        join(PubTypeMid).\
+                        filter(PubTypeMid.pub_type_id == type_id, Pub.recommend == 1, Pub.city_id == city_id).\
+                        group_by(PubPicture.pub_id).first()
+                    pub_picture_only(result, resp_suc)
+        else:
+            result_count = db.query(PubPicture).\
+                    join(Pub).\
+                    join(PubTypeMid).\
+                    filter(PubTypeMid.pub_type_id == type_id, Pub.recommend == 1, Pub.city_id == city_id).\
+                    group_by(PubPicture.pub_id).count()
+            if result_count > 1:
+                results = db.query(PubPicture). \
+                    join(Pub). \
+                    join(PubTypeMid).\
+                    filter(PubTypeMid.pub_type_id == type_id, Pub.recommend == 1, Pub.city_id == city_id).\
+                    group_by(PubPicture.pub_id)
+                pub_list_picture(results, resp_suc)
+            else:
+                result = db.query(PubPicture). \
+                    join(Pub). \
+                    join(PubTypeMid).\
+                    filter(PubTypeMid.pub_type_id == type_id, Pub.recommend == 1, Pub.city_id == city_id).\
+                    group_by(PubPicture.pub_id).first()
+                pub_picture_only(result, resp_suc)
+    else:
+        result_count = db.query(PubPicture).\
+                join(Pub).\
+                join(PubTypeMid).\
+                filter(PubTypeMid.pub_type_id == type_id, Pub.recommend == 1).\
+                group_by(PubPicture.pub_id).count()
+        if result_count > 1:
+            results = db.query(PubPicture). \
+                join(Pub). \
+                join(PubTypeMid).\
+                filter(PubTypeMid.pub_type_id == type_id, Pub.recommend == 1).\
+                group_by(PubPicture.pub_id)
+            pub_list_picture(results, resp_suc)
+        else:
+            result = db.query(PubPicture). \
+                join(Pub). \
+                join(PubTypeMid).\
+                filter(PubTypeMid.pub_type_id == type_id, Pub.recommend == 1).\
+                group_by(PubPicture.pub_id).first()
+            pub_picture_only(result, resp_suc)
+
+
 class PubListDetail(restful.Resource):
     """
     酒吧分类详细列表
@@ -293,46 +379,7 @@ class PubListDetail(restful.Resource):
         page = args['page']
         city_id = args.get('city_id', None)
         province_id = args.get('province_id', 0)
-        if city_id and city_id != '0':
-            result_count = db.query(PubPicture).\
-                join(Pub).\
-                join(PubTypeMid).\
-                filter(PubTypeMid.pub_type_id == int(args['type_id']), Pub.recommend == 1, Pub.county_id == city_id).\
-                group_by(PubPicture.pub_id).count()
-            if result_count > 1:
-                results = db.query(PubPicture). \
-                    join(Pub). \
-                    join(PubTypeMid).\
-                    filter(PubTypeMid.pub_type_id == int(args['type_id']), Pub.recommend == 1, Pub.county_id == city_id).\
-                    group_by(PubPicture.pub_id)
-                pub_list_picture(results, resp_suc)
-            else:
-                result = db.query(PubPicture). \
-                    join(Pub). \
-                    join(PubTypeMid).\
-                    filter(PubTypeMid.pub_type_id == int(args['type_id']), Pub.recommend == 1, Pub.county_id == city_id).\
-                    group_by(PubPicture.pub_id).first()
-                pub_picture_only(result, resp_suc)
-        else:
-            result_count = db.query(PubPicture).\
-                join(Pub).\
-                join(PubTypeMid).\
-                filter(PubTypeMid.pub_type_id == int(args['type_id']), Pub.recommend == 1).\
-                group_by(PubPicture.pub_id).count()
-            if result_count > 1:
-                results = db.query(PubPicture). \
-                    join(Pub). \
-                    join(PubTypeMid).\
-                    filter(PubTypeMid.pub_type_id == int(args['type_id']), Pub.recommend == 1).\
-                    group_by(PubPicture.pub_id)
-                pub_list_picture(results, resp_suc)
-            else:
-                result = db.query(PubPicture). \
-                    join(Pub). \
-                    join(PubTypeMid).\
-                    filter(PubTypeMid.pub_type_id == int(args['type_id']), Pub.recommend == 1).\
-                    group_by(PubPicture.pub_id).first()
-                pub_picture_only(result, resp_suc)
+        type_picture(province_id, city_id, resp_suc, type_id)
         resp_suc['status'] = 0
         resp_suc = by_type_id(type_id, resp_suc, page, city_id, province_id)
         resp_suc = get_province_city_by_id(province_id, resp_suc)
@@ -345,26 +392,49 @@ def by_type_id(type_id, resp_suc, page, city_id, province_id):
     """
     if city_id and city_id != '0':
         city_id = int(city_id)
+        province_id = int(province_id)
         pub_type_count = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).count()
-        if pub_type_count > 1:
-            temp_page = page
-            page, per_page, max = page_utils(pub_type_count, page)
-            is_max = max_page(temp_page, max, resp_suc)
-            if is_max:
-                return resp_suc
-            pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).order_by(PubTypeMid.id)[per_page*(int(temp_page)-1):per_page*int(temp_page)]
-            for pub_type in pub_types:
-                pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.county_id == city_id, Pub.stopped == 0).first()
-                pub_only(pub, resp_suc)
-            resp_suc['pub_count'] = len(resp_suc['pub_list'])
-            return resp_suc
-        else:
-            pub_type = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).first()
-            if pub_type:
-                pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.county_id == city_id, Pub.stopped == 0).first()
-                pub_only(pub, resp_suc)
-            resp_suc['pub_count'] = len(resp_suc['pub_list'])
-            return resp_suc
+        if province_id != 0:
+            if province_id == 1 or province_id == 2 or province_id == 9 or province_id == 22:
+                if pub_type_count > 1:
+                    temp_page = page
+                    page, per_page, max = page_utils(pub_type_count, page)
+                    is_max = max_page(temp_page, max, resp_suc)
+                    if is_max:
+                        return resp_suc
+                    pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).order_by(PubTypeMid.id)[per_page*(int(temp_page)-1):per_page*int(temp_page)]
+                    for pub_type in pub_types:
+                        pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.county_id == city_id, Pub.stopped == 0).first()
+                        pub_only(pub, resp_suc)
+                    resp_suc['pub_count'] = len(resp_suc['pub_list'])
+                    return resp_suc
+                else:
+                    pub_type = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).first()
+                    if pub_type:
+                        pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.county_id == city_id, Pub.stopped == 0).first()
+                        pub_only(pub, resp_suc)
+                    resp_suc['pub_count'] = len(resp_suc['pub_list'])
+                    return resp_suc
+            else:
+                if pub_type_count > 1:
+                    temp_page = page
+                    page, per_page, max = page_utils(pub_type_count, page)
+                    is_max = max_page(temp_page, max, resp_suc)
+                    if is_max:
+                        return resp_suc
+                    pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).order_by(PubTypeMid.id)[per_page*(int(temp_page)-1):per_page*int(temp_page)]
+                    for pub_type in pub_types:
+                        pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.city_id == city_id, Pub.stopped == 0).first()
+                        pub_only(pub, resp_suc)
+                    resp_suc['pub_count'] = len(resp_suc['pub_list'])
+                    return resp_suc
+                else:
+                    pub_type = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).first()
+                    if pub_type:
+                        pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.city_id == city_id, Pub.stopped == 0).first()
+                        pub_only(pub, resp_suc)
+                    resp_suc['pub_count'] = len(resp_suc['pub_list'])
+                    return resp_suc
     elif city_id == '0':
         pub_type_count = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).count()
         if pub_type_count > 1:
@@ -375,7 +445,7 @@ def by_type_id(type_id, resp_suc, page, city_id, province_id):
                 return resp_suc
             pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).order_by(PubTypeMid.id)[per_page*(int(temp_page)-1):per_page*int(temp_page)]
             for pub_type in pub_types:
-                pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.province_id == province_id, Pub.stopped == 0).first()
+                pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.province_id == int(province_id), Pub.stopped == 0).first()
                 pub_only(pub, resp_suc)
             resp_suc['pub_count'] = len(resp_suc['pub_list'])
             return resp_suc
