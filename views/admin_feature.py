@@ -36,6 +36,7 @@ class UserMessageView(ModelView):
         time=u'发送时间',
         content=u'发送的内容'
     )
+
     def __init__(self, db, **kwargs):
         super(UserMessageView, self).__init__(Message, db, **kwargs)
 
@@ -109,10 +110,10 @@ class UserFeedbackView(ModelView):
     can_delete = True
     can_edit = False
     column_labels = {
-        'id':u'ID',
-        'user.nick_name':u'用户昵称',
-        'content':u'内容',
-        'time':u'时间'
+        'id': u'ID',
+        'user.nick_name': u'用户昵称',
+        'content': u'内容',
+        'time': u'时间'
     }
 
     column_list = ('id', 'user.nick_name', 'content', 'time')

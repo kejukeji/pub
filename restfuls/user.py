@@ -368,7 +368,7 @@ class UserInfo(restful.Resource):  # todo-lwy 获取消息，二值性使用True
                 user_info.tel = tel
             if real_name:
                 user_info.real_name = real_name
-            if sex:
+            if sex is not None:
                 if sex == 0 or sex == 1:
                     user_info.sex = sex
             if birthday_type:
@@ -463,6 +463,7 @@ def create_user_info(user_id):
     db.add(user_info)
     db.commit()
 
+
 def bool_to_int(json):
     """把字典的bool类型换成int的01"""
     if json['sex'] == True:
@@ -471,6 +472,7 @@ def bool_to_int(json):
         json['sex'] = 0
     else:
         pass
+
 
 def get_login_type(user_id):
     """通过用户id获取用户类型"""
