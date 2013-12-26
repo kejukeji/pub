@@ -397,12 +397,12 @@ def by_type_id(type_id, resp_suc, page, city_id, province_id):
         if province_id != 0:
             if province_id == 1 or province_id == 2 or province_id == 9 or province_id == 22:
                 if pub_type_count > 1:
-                    temp_page = page
-                    page, per_page, max = page_utils(pub_type_count, page)
+                    temp_page = int(page)
+                    page, per_page, max = page_utils(pub_type_count, page, per_page=10)
                     is_max = max_page(temp_page, max, resp_suc)
                     if is_max:
                         return resp_suc
-                    pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).order_by(PubTypeMid.id)[per_page*(int(temp_page)-1):per_page*int(temp_page)]
+                    pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).order_by(PubTypeMid.id)[per_page*(temp_page-1):per_page*temp_page]
                     for pub_type in pub_types:
                         pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.county_id == city_id, Pub.stopped == 0).first()
                         pub_only(pub, resp_suc)
@@ -417,8 +417,8 @@ def by_type_id(type_id, resp_suc, page, city_id, province_id):
                     return resp_suc
             else:
                 if pub_type_count > 1:
-                    temp_page = page
-                    page, per_page, max = page_utils(pub_type_count, page)
+                    temp_page = int(page)
+                    page, per_page, max = page_utils(pub_type_count, page, per_page=10)
                     is_max = max_page(temp_page, max, resp_suc)
                     if is_max:
                         return resp_suc
@@ -439,7 +439,7 @@ def by_type_id(type_id, resp_suc, page, city_id, province_id):
         pub_type_count = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).count()
         if pub_type_count > 1:
             temp_page = page
-            page, per_page, max = page_utils(pub_type_count, page)
+            page, per_page, max = page_utils(pub_type_count, page, per_page=10)
             is_max = max_page(temp_page, max, resp_suc)
             if is_max:
                 return resp_suc
