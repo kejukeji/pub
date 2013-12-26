@@ -386,6 +386,101 @@ class PubListDetail(restful.Resource):
         return resp_suc
 
 
+def check_province(province_id, pub_type_count, type_id, page, resp_suc, city_id):
+    if province_id == 1 or province_id == 2 or province_id == 9 or province_id == 22:
+        if pub_type_count > 1:
+            temp_page = int(page)
+            page, per_page, max = page_utils(pub_type_count, page)
+            is_max = max_page(temp_page, max, resp_suc)
+            if is_max:
+                return resp_suc
+            #pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).order_by(PubTypeMid.id).all()[per_page*(temp_page-1):per_page*temp_page]
+            #for pub_type in pub_types:
+            #    pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.county_id == city_id, Pub.stopped == 0).first()
+            #    pub_only(pub, resp_suc)
+            pub = db.query(Pub).\
+                join(PubTypeMid).\
+                filter(PubTypeMid.pub_type_id == type_id, Pub.stopped == 0, Pub.county_id == city_id)[per_page*(temp_page-1):per_page*temp_page]
+            for p in pub:
+                pub_only(p, resp_suc)
+            resp_suc['pub_count'] = len(pub)
+            return resp_suc
+        else:
+            temp_page = int(page)
+            page, per_page, max = page_utils(pub_type_count, page)
+            is_max = max_page(temp_page, max, resp_suc)
+            if is_max:
+                return resp_suc
+            pub = db.query(Pub).\
+                join(PubTypeMid).\
+                filter(PubTypeMid.pub_type_id == type_id, Pub.stopped == 0, Pub.county_id == city_id).first()
+            pub_only(pub, resp_suc)
+            resp_suc['pub_count'] = 1
+            return resp_suc
+    else:
+        if pub_type_count > 1:
+            temp_page = int(page)
+            page, per_page, max = page_utils(pub_type_count, page)
+            is_max = max_page(temp_page, max, resp_suc)
+            if is_max:
+                return resp_suc
+            #pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).order_by(PubTypeMid.id).all()[per_page*(temp_page-1):per_page*temp_page]
+            #for pub_type in pub_types:
+            #    pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.county_id == city_id, Pub.stopped == 0).first()
+            #    pub_only(pub, resp_suc)
+            pub = db.query(Pub).\
+                join(PubTypeMid).\
+                filter(PubTypeMid.pub_type_id == type_id, Pub.stopped == 0, Pub.city_id == city_id)[per_page*(temp_page-1):per_page*temp_page]
+            for p in pub:
+                pub_only(p, resp_suc)
+            resp_suc['pub_count'] = len(pub)
+            return resp_suc
+        else:
+            temp_page = int(page)
+            page, per_page, max = page_utils(pub_type_count, page)
+            is_max = max_page(temp_page, max, resp_suc)
+            if is_max:
+                return resp_suc
+            pub = db.query(Pub).\
+                join(PubTypeMid).\
+                filter(PubTypeMid.pub_type_id == type_id, Pub.stopped == 0, Pub.city_id == city_id).first()
+            pub_only(pub, resp_suc)
+            resp_suc['pub_count'] = 1
+            return resp_suc
+
+
+def check_city(type_id, city_id, pub_type_count, page, resp_suc, province_id):
+    if pub_type_count > 1:
+        temp_page = int(page)
+        page, per_page, max = page_utils(pub_type_count, page)
+        is_max = max_page(temp_page, max, resp_suc)
+        if is_max:
+            return resp_suc
+        #pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).order_by(PubTypeMid.id).all()[per_page*(temp_page-1):per_page*temp_page]
+        #for pub_type in pub_types:
+        #    pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.county_id == city_id, Pub.stopped == 0).first()
+        #    pub_only(pub, resp_suc)
+        pub = db.query(Pub).\
+            join(PubTypeMid).\
+            filter(PubTypeMid.pub_type_id == type_id, Pub.stopped == 0, Pub.province_id == province_id)[per_page*(temp_page-1):per_page*temp_page]
+        for p in pub:
+            pub_only(p, resp_suc)
+        resp_suc['pub_count'] = len(pub)
+        return resp_suc
+    else:
+        temp_page = int(page)
+        page, per_page, max = page_utils(pub_type_count, page)
+        is_max = max_page(temp_page, max, resp_suc)
+        if is_max:
+            return resp_suc
+        pub = db.query(Pub).\
+            join(PubTypeMid).\
+            filter(PubTypeMid.pub_type_id == type_id, Pub.stopped == 0, Pub.province_id == province_id).first()
+        pub_only(pub, resp_suc)
+        resp_suc['pub_count'] = 1
+        return resp_suc
+
+
 def by_type_id(type_id, resp_suc, page, city_id, province_id):
     """
        根据type_id来获取酒吧
@@ -395,67 +490,12 @@ def by_type_id(type_id, resp_suc, page, city_id, province_id):
         province_id = int(province_id)
         pub_type_count = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).count()
         if province_id != 0:
-            if province_id == 1 or province_id == 2 or province_id == 9 or province_id == 22:
-                if pub_type_count > 1:
-                    temp_page = int(page)
-                    page, per_page, max = page_utils(pub_type_count, page, per_page=10)
-                    is_max = max_page(temp_page, max, resp_suc)
-                    if is_max:
-                        return resp_suc
-                    pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).order_by(PubTypeMid.id)[per_page*(temp_page-1):per_page*temp_page]
-                    for pub_type in pub_types:
-                        pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.county_id == city_id, Pub.stopped == 0).first()
-                        pub_only(pub, resp_suc)
-                    resp_suc['pub_count'] = len(resp_suc['pub_list'])
-                    return resp_suc
-                else:
-                    pub_type = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).first()
-                    if pub_type:
-                        pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.county_id == city_id, Pub.stopped == 0).first()
-                        pub_only(pub, resp_suc)
-                    resp_suc['pub_count'] = len(resp_suc['pub_list'])
-                    return resp_suc
-            else:
-                if pub_type_count > 1:
-                    temp_page = int(page)
-                    page, per_page, max = page_utils(pub_type_count, page, per_page=10)
-                    is_max = max_page(temp_page, max, resp_suc)
-                    if is_max:
-                        return resp_suc
-                    pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).order_by(PubTypeMid.id)[per_page*(int(temp_page)-1):per_page*int(temp_page)]
-                    for pub_type in pub_types:
-                        pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.city_id == city_id, Pub.stopped == 0).first()
-                        pub_only(pub, resp_suc)
-                    resp_suc['pub_count'] = len(resp_suc['pub_list'])
-                    return resp_suc
-                else:
-                    pub_type = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).first()
-                    if pub_type:
-                        pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.city_id == city_id, Pub.stopped == 0).first()
-                        pub_only(pub, resp_suc)
-                    resp_suc['pub_count'] = len(resp_suc['pub_list'])
-                    return resp_suc
+            resp_suc = check_province(province_id, pub_type_count, type_id, page, resp_suc, city_id)
+            return resp_suc
     elif city_id == '0':
         pub_type_count = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).count()
-        if pub_type_count > 1:
-            temp_page = page
-            page, per_page, max = page_utils(pub_type_count, page, per_page=10)
-            is_max = max_page(temp_page, max, resp_suc)
-            if is_max:
-                return resp_suc
-            pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).order_by(PubTypeMid.id)[per_page*(int(temp_page)-1):per_page*int(temp_page)]
-            for pub_type in pub_types:
-                pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.province_id == int(province_id), Pub.stopped == 0).first()
-                pub_only(pub, resp_suc)
-            resp_suc['pub_count'] = len(resp_suc['pub_list'])
-            return resp_suc
-        else:
-            pub_type = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).first()
-            if pub_type:
-                pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.province_id == province_id, Pub.stopped == 0).first()
-                pub_only(pub, resp_suc)
-            resp_suc['pub_count'] = len(resp_suc['pub_list'])
-            return resp_suc
+        resp_suc = check_city(type_id, city_id, pub_type_count, page, resp_suc, province_id)
+        return resp_suc
 
 
 
