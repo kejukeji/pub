@@ -719,7 +719,7 @@ class MessageByTypeInfo(restful.Resource):
            user_id: 用户登录id
         """
         parser = reqparse.RequestParser()
-        parser.add_argument('types', type=str, required=True, help=u'type选择信息类型,0:系统，1私信')
+        parser.add_argument('types', type=str, required=True, help=u'types选择信息类型,0:系统，1私信')
         parser.add_argument('user_id', type=str, required=True, help=u'user_id。用户登陆id')
 
         args = parser.parse_args()
@@ -737,8 +737,8 @@ class MessageByTypeInfo(restful.Resource):
             if type(system_message) is list:
                 for system in system_message:
                     system_message_pickler(system, resp_suc)
-                    user.system_message_time = todayfstr()
-                    db.commit()
+                user.system_message_time = todayfstr()
+                db.commit()
             else:
                 if system_message:
                     system_message_pickler(system_message, resp_suc)
