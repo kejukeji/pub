@@ -77,6 +77,8 @@ def add_picture(obj):
     """
     if obj.rel_path and obj.pic_name:
         obj.pic_path = obj.rel_path + "/" + obj.pic_name
+    else:
+        obj.pic_path = ''
 
 
 def get_gift_all(success, page):
@@ -161,8 +163,9 @@ def format_common(obj):
         user, user_info = get_user_nickname_picture(obj.sender_id)
         if user:
             obj.nick_name = user.nick_name
-        if user_info and user_info.rel_path and user_info.pic_name:
-            obj.pic_path = user_info.rel_path + "/" + user_info.pic_name
+        else:
+            obj.nick_name = ''
+        add_picture(user_info)
         return True
     else:
         return False
@@ -287,8 +290,15 @@ def get_gift_image(user_gift):
     """
     if user_gift:
         gift = Gift.query.filter(Gift.id == user_gift.gift_id).first()
-        if gift and gift.rel_path and gift.pic_name:
-            user_gift.gift_pic_path = gift.rel_path + "/" + gift.pic_name
+        if gift:
+            if gift and gift.rel_path and gift.pic_name:
+                user_gift.gift_pic_path = gift.rel_path + "/" + gift.pic_name
+            else:
+                user_gift.gift_pic_path = ''
+            if gift.name:
+                user_gift.gift_name = gift.name
+            else:
+                user_gift.gift_name = ''
 
 
 def get_gift_by_id(user_id, page, success, gift_type):
