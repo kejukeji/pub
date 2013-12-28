@@ -792,6 +792,59 @@ class ClearMessage(restful.Resource):
             return resp_suc
 
 
+def delete_message_info(sender_id, receiver_id):
+    """
+    删除
+    """
+    message_count = Message.query.filter(Message.sender_id == sender_id, Message.receiver_id == receiver_id).count()
+    if message_count > 1:
+        message = Message.query.filter(Message.sender_id == sender_id, Message.receiver_id == receiver_id).all()
+        for m in message:
+            db.delete(m)
+            try:
+                db.commit()
+            except:
+                return False
+        return True
+    else:
+        message = Message.query.filter(Message.sender_id == sender_id, Message.receiver_id == receiver_id).first()
+        if message:
+            db.delete(message)
+            try:
+                db.commit()
+            except:
+                return False
+            return True
+        return False
+
+
+class ClearMessageInfo(restful.Resource):
+    """
+    清楚某一个私信详情
+    """
+    @staticmethod
+    def get():
+        parser = reqparse.RequestParser()
+        parser.add_argument('sender_id', type=str, required=True, help=u'sender_id 必须')
+        parser.add_argument('receiver_id', type=str, required=True, help=u'receiver_id')
+
+        args = parser.parse_args()
+
+        success = success_dic().dic
+
+        sender_id = args['sender_id']
+        receiver_id = args['receiver_id']
+
+        is_true = delete_message_info(sender_id, receiver_id)
+        if is_true:
+            success['message'] = '清除成功'
+            return success
+        else:
+            success['message'] = '清除失败'
+            return success
+
+
+
 class FeedBackAdd(restful.Resource):
     """
         意见反馈
