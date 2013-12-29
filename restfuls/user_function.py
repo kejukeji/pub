@@ -796,9 +796,9 @@ def delete_message_info(sender_id, receiver_id):
     """
     删除
     """
-    message_count = Message.query.filter(Message.sender_id == sender_id, Message.receiver_id == receiver_id).count()
+    message_count = Message.query.filter(or_(and_(Message.sender_id == sender_id, Message.receiver_id == receiver_id),and_(Message.sender_id == receiver_id, Message.receiver_id == sender_id))).count()
     if message_count > 1:
-        message = Message.query.filter(Message.sender_id == sender_id, Message.receiver_id == receiver_id).all()
+        message = Message.query.filter(or_(and_(Message.sender_id == sender_id, Message.receiver_id == receiver_id), and_(Message.sender_id == receiver_id, Message.receiver_id == sender_id))).all()
         for m in message:
             db.delete(m)
             try:
@@ -807,7 +807,7 @@ def delete_message_info(sender_id, receiver_id):
                 return False
         return True
     else:
-        message = Message.query.filter(Message.sender_id == sender_id, Message.receiver_id == receiver_id).first()
+        message = Message.query.filter(or_(and_(Message.sender_id == sender_id, Message.receiver_id == receiver_id), and_(Message.sender_id == receiver_id, Message.receiver_id == sender_id))).first()
         if message:
             db.delete(message)
             try:
