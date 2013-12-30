@@ -71,14 +71,25 @@ def get_gift(user_id):
     return gift_count
 
 
+def add_picture_user(picture, obj):
+    """
+    有图片的对象，格式化图片路劲
+    """
+    if picture.rel_path and picture.pic_name:
+        obj.pic_path = picture.rel_path + "/" + picture.pic_name
+    else:
+        obj.pic_path = ''
+
+
 def add_picture(obj):
     """
     有图片的对象，格式化图片路劲
     """
-    if obj.rel_path and obj.pic_name:
-        obj.pic_path = obj.rel_path + "/" + obj.pic_name
-    else:
-        obj.pic_path = ''
+    if obj:
+        if obj.rel_path and obj.pic_name:
+            obj.pic_path = obj.rel_path + "/" + obj.pic_name
+        else:
+            obj.pic_path = ''
 
 
 def get_gift_all(success, page):
@@ -165,7 +176,7 @@ def format_common(obj):
             obj.nick_name = user.nick_name
         else:
             obj.nick_name = ''
-        add_picture(user_info)
+        add_picture_user(user_info, obj)
         return True
     else:
         return False
