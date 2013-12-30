@@ -616,12 +616,12 @@ class UserMessageInfo(restful.Resource):
 
         #message_count = db.query(Message).\
          #   filter((Message.sender_id == sender_id, Message.receiver_id == receiver_id) | (Message.sender_id == receiver_id, Message.receiver_id == sender_id)).count()
-        message_count = Message.query.filter(or_(and_(Message.sender_id == sender_id, Message.receiver_id == receiver_id), and_(Message.sender_id == receiver_id, Message.receiver_id == sender_id))).count()
+        message_count = Message.query.filter(or_(and_(Message.sender_id == sender_id, Message.receiver_id == receiver_id, Message.delete_id != receiver_id), and_(Message.sender_id == receiver_id, Message.receiver_id == sender_id, Message.delete_id != receiver_id))).count()
         if message_count > 1:
-            message = Message.query.filter(or_(and_(Message.sender_id == sender_id, Message.receiver_id == receiver_id), and_(Message.sender_id == receiver_id, Message.receiver_id == sender_id))).order_by(Message.time).all()
+            message = Message.query.filter(or_(and_(Message.sender_id == sender_id, Message.receiver_id == receiver_id, Message.delete_id != receiver_id), and_(Message.sender_id == receiver_id, Message.receiver_id == sender_id, Message.delete_id != receiver_id))).order_by(Message.time).all()
             traverse_user_sender_messages(message, resp_suc, receiver_id)
         else:
-            message = Message.query.filter(or_(and_(Message.sender_id == sender_id, Message.receiver_id == receiver_id), and_(Message.sender_id == receiver_id, Message.receiver_id == sender_id))).order_by(Message.time).first()
+            message = Message.query.filter(or_(and_(Message.sender_id == sender_id, Message.receiver_id == receiver_id, Message.delete_id != receiver_id), and_(Message.sender_id == receiver_id, Message.receiver_id == sender_id, Message.delete_id != receiver_id))).order_by(Message.time).first()
             if message:
                 traverse_user_sender_one(message, resp_suc, receiver_id)
             else:
@@ -796,26 +796,43 @@ def delete_message_info(sender_id, receiver_id):
     """
     删除
     """
-    message_count = Message.query.filter(or_(and_(Message.sender_id == sender_id, Message.receiver_id == receiver_id),and_(Message.sender_id == receiver_id, Message.receiver_id == sender_id))).count()
+    message_count = Message.query.filter(or_(and_(Message.sender_id == sender_id, Message.receiver_id == receiver_id, Message.delete_id == 0),and_(Message.sender_id == receiver_id, Message.receiver_id == sender_id, Message.delete_id == 0))).count()
     if message_count > 1:
-        message = Message.query.filter(or_(and_(Message.sender_id == sender_id, Message.receiver_id == receiver_id), and_(Message.sender_id == receiver_id, Message.receiver_id == sender_id))).all()
+        message = Message.query.filter(or_(and_(Message.sender_id == sender_id, Message.receiver_id == receiver_id),and_(Message.sender_id == receiver_id, Message.receiver_id == sender_id))).all()
         for m in message:
-            db.delete(m)
+            m.delete_id = receiver_id
             try:
                 db.commit()
             except:
                 return False
         return True
+    elif message_count == 1:
+        message = Message.query.filter(or_(and_(Message.sender_id == sender_id, Message.receiver_id == receiver_id),and_(Message.sender_id == receiver_id, Message.receiver_id == sender_id))).first()
+        message.delete_id = receiver_id
+        try:
+            db.commit()
+        except:
+            return False
+        return True
     else:
-        message = Message.query.filter(or_(and_(Message.sender_id == sender_id, Message.receiver_id == receiver_id), and_(Message.sender_id == receiver_id, Message.receiver_id == sender_id))).first()
-        if message:
+        message_count = Message.query.filter(or_(and_(Message.sender_id == sender_id, Message.receiver_id == receiver_id),and_(Message.sender_id == receiver_id, Message.receiver_id == sender_id))).count()
+        if message_count > 1:
+            message = Message.query.filter(or_(and_(Message.sender_id == sender_id, Message.receiver_id == receiver_id),and_(Message.sender_id == receiver_id, Message.receiver_id == sender_id))).all()
+            for m in message:
+                db.delete(m)
+                try:
+                    db.commit()
+                except:
+                    return False
+            return True
+        else:
+            message = Message.query.filter(or_(and_(Message.sender_id == sender_id, Message.receiver_id == receiver_id),and_(Message.sender_id == receiver_id, Message.receiver_id == sender_id))).first()
             db.delete(message)
             try:
                 db.commit()
             except:
                 return False
             return True
-        return False
 
 
 class ClearMessageInfo(restful.Resource):

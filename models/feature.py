@@ -132,6 +132,7 @@ class Message(Base):
     time 发送消息的时间
     content 消息的内容
     view 接收用户是否查看
+    delete_id 删除id，属于那个用户删除
     """
 
     __tablename__ = MESSAGE_TABLE
@@ -148,6 +149,7 @@ class Message(Base):
     time = Column(DATETIME, nullable=True, server_default=None)
     introduction_time = Column(DATETIME, nullable=True, server_default=None)
     view = Column(Boolean, nullable=False, server_default='0')
+    delete_id = Column(Integer, nullable=False, server_default='0')
 
     def __init__(self, **kwargs):
         self.sender_id = kwargs.pop('sender_id')
@@ -156,6 +158,7 @@ class Message(Base):
         self.time = todayfstr()
         self.introduction_time = todayfstr()
         self.view = kwargs.pop('view', 0)
+        self.delete_id = kwargs.pop('delete_id', 0)
 
     def __repr__(self):
         return '<Message(sender_id: %s, receiver_id: %s, content: %s)>' % \
