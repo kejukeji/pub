@@ -475,11 +475,19 @@ class PubCollect(restful.Resource):
         # 先判断用户是否已经收藏此酒吧
         check_collect = Collect.query.filter(Collect.user_id == user_id, Collect.pub_id == pub_id).count()
         if check_collect >= 1:
-            resp_suc['message'] = 'again'
-            resp_suc['status'] = 1
+            c = Collect.query.filter(Collect.user_id == user_id, Collect.pub_id == pub_id).first()
+            db.delete(c)
+            db.commit()
         else:
             collect = Collect(user_id=user_id, pub_id=pub_id)
             db.add(collect)
+            try:
+                db.commit()
+            except:
+                pass
+            user_info = UserInfo.query.filter(UserInfo.user_id == user_id).first()
+            user_info.add_credit('pub')
+            user_info.add_reputation('pub')
             db.commit()
             resp_suc['message'] = 'success'
             resp_suc['status'] = 0
@@ -663,6 +671,16 @@ class UserSenderMessage(restful.Resource):
         db.add(message)
         try:
             db.commit()
+            result = db.query(Message).\
+                filter(Message.sender_id == sender_id).\
+                group_by(Message.sender_id).count()
+            if result == 0:
+                user_info = UserInfo.query.filter(UserInfo.user_id == receiver_id).first()
+                user_info.add_credit('message')
+                db.commit()
+                sender_info = UserInfo.query.filter(UserInfo.user_id == sender_id).first()
+                sender_info.add_reputation('message')
+                db.commit()
         except:
             return resp_fail
         message = Message.query.filter(Message.id == message.id).first()
@@ -693,20 +711,33 @@ class MessageFuck(restful.Resource):
         system_message = traverse_system_message(user_id, resp_suc)
         direct_message = traverse_direct_message(user_id, resp_suc)
         if system_message or direct_message:
-            #if type(system_message) is list:
-            #    for system in system_message:
-            #        system_message_pickler(system, resp_suc)
-            #else:
-            #    system_message_pickler(system_message, resp_suc)
-            #if type(direct_message) is list:
-            #    for direct in direct_message:
-            #        traverse_messages_sender(direct, resp_suc)
-            #else:
-            #    traverse_message_sender(direct_message, resp_suc)
+            message_type(user_id, system_message)
+            direct_message_count(direct_message)
             return resp_suc
         else:
             resp_suc['message'] = '没有数据'
             return resp_suc
+
+
+def message_type(user_id, system_message):
+    user = User.query.filter(User.id == user_id).first()
+    if type(system_message) is list:
+        user.system_message_time = todayfstr()
+        db.commit()
+    else:
+        if system_message:
+            user.system_message_time = todayfstr()
+            db.commit()
+
+
+def direct_message_count(direct_message):
+    if type(direct_message) is list:
+        for message in direct_message:
+            message.view = 1
+            db.commit()
+    else:
+        direct_message.view = 1
+        db.commit()
 
 
 class MessageByTypeInfo(restful.Resource):

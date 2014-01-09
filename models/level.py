@@ -1,5 +1,5 @@
 # coding: utf-8
-from sqlalchemy import Column, Integer, String, desc
+from sqlalchemy import Column, Integer, String, desc, or_
 from models.database import Base
 
 
@@ -36,5 +36,5 @@ class Level(Base):
 
 def get_level(number):
     """通过经验值获取当前的级别 (1, "LV.1", "LOL王者")"""
-    level_desc = Level.query.filter(Level.min < number).order_by(desc(Level.level)).first()
+    level_desc = Level.query.filter(Level.min <= number,Level.max >= number).order_by(desc(Level.level)).first()
     return int(level_desc.level), str(level_desc.short_name), str(level_desc.long_name)

@@ -7,6 +7,7 @@ from models.activity import Activity, ActivityPicture
 from models.pub import Pub
 from models.feature import UserActivity
 from models.database import db
+from models.user import *
 
 
 def get_activity_by_id(id, user_id):
@@ -158,6 +159,10 @@ def collect_or_cancel_activity(user_id, activity_id):
         try:
             db.add(user_activity)
             db.commit()
+            user_info = UserInfo.query.filter(UserInfo.user_id == user_id).first()
+            user_info.add_credit('activity')
+            sender_user = UserInfo.query.filter(UserInfo.user_id == user_id).first()
+            sender_user.add_reputation('activity')
             return True
         except:
             return False

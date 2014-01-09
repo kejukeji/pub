@@ -389,6 +389,12 @@ def sender_invitation(sender_id, receiver_id):
     try:
         db.add(invitation)
         db.commit()
+        user_info = ModelUserInfo.query.filter(ModelUserInfo.user_id == receiver_id).first()
+        user_info.add_credit('invite') # 增加接受者积分
+        db.commit()
+        sender_user = ModelUserInfo.query.filter(ModelUserInfo.user_id == sender_id).first()
+        sender_user.add_reputation('invite') # 增加发送者经验值
+        db.commit()
     except:
         return False
     return True
@@ -432,6 +438,12 @@ def sender_gift(sender_id, receiver_id, gift_id):
     gift = UserGift(sender_id=sender_id, receiver_id=receiver_id, gift_id=gift_id)
     try:
         db.add(gift)
+        db.commit()
+        user_info = ModelUserInfo.query.filter(ModelUserInfo.user_id == receiver_id).first()
+        user_info.add_credit('gift') # 增加接受者积分
+        db.commit()
+        sender_user = ModelUserInfo.query.filter(ModelUserInfo.user_id == sender_id).first()
+        sender_user.add_reputation('gift') # 增加发送者经验值
         db.commit()
     except:
         return False
@@ -494,6 +506,16 @@ def sender_greeting(sender_id, receiver_id):
     try:
         db.add(greeting)
         db.commit()
+        result = db.query(Greeting).\
+            filter(Greeting.sender_id == sender_id).\
+            group_by(Greeting.sender_id).count()
+        if result == 0:
+            user_info = ModelUserInfo.query.filter(ModelUserInfo.user_id == receiver_id).first()
+            user_info.add_credit('greet') # 增加接受者积分
+            db.commit()
+            sender_user = ModelUserInfo.query.filter(ModelUserInfo.user_id == sender_id).first()
+            sender_user.add_reputation('greet') # 增加发送者经验值
+            db.commit()
     except:
         return False
     return True

@@ -68,6 +68,8 @@ class UserRegister(restful.Resource):
                 user_info.email = login_name
             db.add(user_info)
             db.commit()
+            user_info.add_credit('register')
+            db.commit()
 
         if login_type == 1 or login_type == 2:
             if not open_id:
@@ -91,6 +93,7 @@ class UserRegister(restful.Resource):
             user_info = UserInfoDb(user_id=user.id)
             db.add(user_info)
             db.commit()
+            user_info.add_credit('register')
 
         return_user = User.query.filter(User.nick_name == nick_name).first()
         return wrap_user_json(return_user)
