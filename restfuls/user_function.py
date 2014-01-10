@@ -478,6 +478,8 @@ class PubCollect(restful.Resource):
             c = Collect.query.filter(Collect.user_id == user_id, Collect.pub_id == pub_id).first()
             db.delete(c)
             db.commit()
+            resp_suc['message'] = 'success'
+            resp_suc['status'] = 0
         else:
             collect = Collect(user_id=user_id, pub_id=pub_id)
             db.add(collect)
