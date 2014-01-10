@@ -371,6 +371,7 @@ class PubListDetail(restful.Resource):
         parser.add_argument('page', type=str, required=True, help=u'分页page必须。')
         parser.add_argument('city_id', type=str, required=True, help=u'city_id 必须')
         parser.add_argument('province_id', type=str, required=False)
+        parser.add_argument('user_id', type=str, required=False)
         args = parser.parse_args()
         resp_suc = {}
         resp_suc['pub_list'] = []
@@ -431,8 +432,24 @@ def check_province(province_id, pub_type_count, type_id, page, resp_suc, city_id
             pub = db.query(Pub).\
                 join(PubTypeMid).\
                 filter(PubTypeMid.pub_type_id == type_id, Pub.stopped == 0, Pub.city_id == city_id)[per_page*(temp_page-1):per_page*temp_page]
-            for p in pub:
-                pub_only(p, resp_suc)
+            user_collect_count = Collect.query.filter(Collect.user_id == 1).count()
+            if user_collect_count > 1:
+                user_collect = Collect.query.filter(Collect.user_id == 1).all()
+                for collect in user_collect:
+                    for p in pub:
+                        if p.id == collect.pub_id:
+                            p.is_collect = True
+                        else:
+                            p.is_collect = False
+                        pub_only(p, resp_suc)
+            else:
+                user_collect = Collect.query.filter(Collect.user_id == 1).first()
+                for p in pub:
+                    if p.id == user_collect.pub_id:
+                        p.is_collect = True
+                    else:
+                        p.is_collect = False
+                    pub_only(p, resp_suc)
             resp_suc['pub_count'] = len(pub)
             return resp_suc
         else:
@@ -444,6 +461,22 @@ def check_province(province_id, pub_type_count, type_id, page, resp_suc, city_id
             pub = db.query(Pub).\
                 join(PubTypeMid).\
                 filter(PubTypeMid.pub_type_id == type_id, Pub.stopped == 0, Pub.city_id == city_id).first()
+            user_collect_count = Collect.query.filter(Collect.user_id == 1).count()
+            if user_collect_count > 1:
+                user_collect = Collect.query.filter(Collect.user_id == 1).all()
+                for collect in user_collect:
+                    if pub.id == collect.pub_id:
+                        pub.is_collect = True
+                    else:
+                        pub.is_collect = False
+                pub_only(pub, resp_suc)
+            else:
+                user_collect = Collect.query.filter(Collect.user_id == 1).first()
+                if pub.id == user_collect.pub_id:
+                    pub.is_collect = True
+                else:
+                    pub.is_collect = False
+                pub_only(pub, resp_suc)
             pub_only(pub, resp_suc)
             resp_suc['pub_count'] = 1
             return resp_suc
@@ -463,8 +496,24 @@ def check_city(type_id, city_id, pub_type_count, page, resp_suc, province_id):
         pub = db.query(Pub).\
             join(PubTypeMid).\
             filter(PubTypeMid.pub_type_id == type_id, Pub.stopped == 0, Pub.province_id == province_id)[per_page*(temp_page-1):per_page*temp_page]
-        for p in pub:
-            pub_only(p, resp_suc)
+        user_collect_count = Collect.query.filter(Collect.user_id == 1).count()
+        if user_collect_count > 1:
+            user_collect = Collect.query.filter(Collect.user_id == 1).all()
+            for collect in user_collect:
+                for p in pub:
+                    if p.id == collect.pub_id:
+                        p.is_collect = True
+                    else:
+                        p.is_collect = False
+                    pub_only(p, resp_suc)
+        else:
+            user_collect = Collect.query.filter(Collect.user_id == 1).first()
+            for p in pub:
+                if p.id == user_collect.pub_id:
+                    p.is_collect = True
+                else:
+                    p.is_collect = False
+                pub_only(p, resp_suc)
         resp_suc['pub_count'] = len(pub)
         return resp_suc
     else:
@@ -476,7 +525,22 @@ def check_city(type_id, city_id, pub_type_count, page, resp_suc, province_id):
         pub = db.query(Pub).\
             join(PubTypeMid).\
             filter(PubTypeMid.pub_type_id == type_id, Pub.stopped == 0, Pub.province_id == province_id).first()
-        pub_only(pub, resp_suc)
+        user_collect_count = Collect.query.filter(Collect.user_id == 1).count()
+        if user_collect_count > 1:
+            user_collect = Collect.query.filter(Collect.user_id == 1).all()
+            for collect in user_collect:
+                if pub.id == collect.pub_id:
+                    pub.is_collect = True
+                else:
+                    pub.is_collect = False
+            pub_only(pub, resp_suc)
+        else:
+            user_collect = Collect.query.filter(Collect.user_id == 1).first()
+            if pub.id == user_collect.pub_id:
+                pub.is_collect = True
+            else:
+                pub.is_collect = False
+            pub_only(pub, resp_suc)
         resp_suc['pub_count'] = 1
         return resp_suc
 
