@@ -78,8 +78,9 @@ def to_pub_type(pub, obj_pic):
                 obj_pic['type_name'] = obj_pic['type_name'] + '/' + p_type.name
         else:
             pub_type = PubTypeMid.query.filter(PubTypeMid.pub_id == pub.id).first()
-            p_type = PubType.query.filter(PubType.id == pub_type.pub_type_id).first()
-            obj_pic['type_name'] = p_type.name
+            if pub_type:
+                p_type = PubType.query.filter(PubType.id == pub_type.pub_type_id).first()
+                obj_pic['type_name'] = p_type.name
 
 #
 #
@@ -380,14 +381,15 @@ class PubListDetail(restful.Resource):
         page = args['page']
         city_id = args.get('city_id', None)
         province_id = args.get('province_id', 0)
+        user_id = args.get('user_id', 1)
         type_picture(province_id, city_id, resp_suc, type_id)
         resp_suc['status'] = 0
-        resp_suc = by_type_id(type_id, resp_suc, page, city_id, province_id)
+        resp_suc = by_type_id(type_id, resp_suc, page, city_id, province_id, user_id)
         resp_suc = get_province_city_by_id(province_id, resp_suc)
         return resp_suc
 
 
-def check_province(province_id, pub_type_count, type_id, page, resp_suc, city_id):
+def check_province(province_id, pub_type_count, type_id, page, resp_suc, city_id, user_id):
     if province_id == 1 or province_id == 2 or province_id == 9 or province_id == 22:
         if pub_type_count > 1:
             temp_page = int(page)
@@ -395,125 +397,37 @@ def check_province(province_id, pub_type_count, type_id, page, resp_suc, city_id
             is_max = max_page(temp_page, max, resp_suc)
             if is_max:
                 return resp_suc
-            #pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).order_by(PubTypeMid.id).all()[per_page*(temp_page-1):per_page*temp_page]
-            #for pub_type in pub_types:
-            #    pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.county_id == city_id, Pub.stopped == 0).first()
-            #    pub_only(pub, resp_suc)
             pub = db.query(Pub).\
                 join(PubTypeMid).\
                 filter(PubTypeMid.pub_type_id == type_id, Pub.stopped == 0, Pub.county_id == city_id)[per_page*(temp_page-1):per_page*temp_page]
-            for p in pub:
-                pub_only(p, resp_suc)
+            is_collect_pub(pub, user_id, resp_suc)
             resp_suc['pub_count'] = len(pub)
-            return resp_suc
-        else:
-            temp_page = int(page)
-            page, per_page, max = page_utils(pub_type_count, page)
-            is_max = max_page(temp_page, max, resp_suc)
-            if is_max:
-                return resp_suc
-            pub = db.query(Pub).\
-                join(PubTypeMid).\
-                filter(PubTypeMid.pub_type_id == type_id, Pub.stopped == 0, Pub.county_id == city_id).first()
-            pub_only(pub, resp_suc)
-            resp_suc['pub_count'] = 1
             return resp_suc
     else:
-        if pub_type_count > 1:
-            temp_page = int(page)
-            page, per_page, max = page_utils(pub_type_count, page)
-            is_max = max_page(temp_page, max, resp_suc)
-            if is_max:
-                return resp_suc
-            #pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).order_by(PubTypeMid.id).all()[per_page*(temp_page-1):per_page*temp_page]
-            #for pub_type in pub_types:
-            #    pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.county_id == city_id, Pub.stopped == 0).first()
-            #    pub_only(pub, resp_suc)
-            pub = db.query(Pub).\
-                join(PubTypeMid).\
-                filter(PubTypeMid.pub_type_id == type_id, Pub.stopped == 0, Pub.city_id == city_id)[per_page*(temp_page-1):per_page*temp_page]
-            user_collect_count = Collect.query.filter(Collect.user_id == 1).count()
-            if user_collect_count > 1:
-                user_collect = Collect.query.filter(Collect.user_id == 1).all()
-                for collect in user_collect:
-                    for p in pub:
-                        if p.id == collect.pub_id:
-                            p.is_collect = True
-                        else:
-                            p.is_collect = False
-                        pub_only(p, resp_suc)
-            else:
-                user_collect = Collect.query.filter(Collect.user_id == 1).first()
-                for p in pub:
-                    if p.id == user_collect.pub_id:
-                        p.is_collect = True
-                    else:
-                        p.is_collect = False
-                    pub_only(p, resp_suc)
-            resp_suc['pub_count'] = len(pub)
+        temp_page = int(page)
+        page, per_page, max = page_utils(pub_type_count, page)
+        is_max = max_page(temp_page, max, resp_suc)
+        if is_max:
             return resp_suc
-        else:
-            temp_page = int(page)
-            page, per_page, max = page_utils(pub_type_count, page)
-            is_max = max_page(temp_page, max, resp_suc)
-            if is_max:
-                return resp_suc
-            pub = db.query(Pub).\
-                join(PubTypeMid).\
-                filter(PubTypeMid.pub_type_id == type_id, Pub.stopped == 0, Pub.city_id == city_id).first()
-            user_collect_count = Collect.query.filter(Collect.user_id == 1).count()
-            if user_collect_count > 1:
-                user_collect = Collect.query.filter(Collect.user_id == 1).all()
-                for collect in user_collect:
-                    if pub.id == collect.pub_id:
-                        pub.is_collect = True
-                    else:
-                        pub.is_collect = False
-                pub_only(pub, resp_suc)
-            else:
-                user_collect = Collect.query.filter(Collect.user_id == 1).first()
-                if pub.id == user_collect.pub_id:
-                    pub.is_collect = True
-                else:
-                    pub.is_collect = False
-                pub_only(pub, resp_suc)
-            pub_only(pub, resp_suc)
-            resp_suc['pub_count'] = 1
-            return resp_suc
+        pub = db.query(Pub).\
+            join(PubTypeMid).\
+            filter(PubTypeMid.pub_type_id == type_id, Pub.stopped == 0, Pub.city_id == city_id).first()
+        is_collect_pub(pub, user_id, resp_suc)
+        resp_suc['pub_count'] = 1
+        return resp_suc
 
 
-def check_city(type_id, city_id, pub_type_count, page, resp_suc, province_id):
+def check_city(type_id, city_id, pub_type_count, page, resp_suc, province_id, user_id):
     if pub_type_count > 1:
         temp_page = int(page)
         page, per_page, max = page_utils(pub_type_count, page)
         is_max = max_page(temp_page, max, resp_suc)
         if is_max:
             return resp_suc
-        #pub_types = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).order_by(PubTypeMid.id).all()[per_page*(temp_page-1):per_page*temp_page]
-        #for pub_type in pub_types:
-        #    pub = Pub.query.filter(Pub.id == pub_type.pub_id, Pub.county_id == city_id, Pub.stopped == 0).first()
-        #    pub_only(pub, resp_suc)
         pub = db.query(Pub).\
             join(PubTypeMid).\
             filter(PubTypeMid.pub_type_id == type_id, Pub.stopped == 0, Pub.province_id == province_id)[per_page*(temp_page-1):per_page*temp_page]
-        user_collect_count = Collect.query.filter(Collect.user_id == 1).count()
-        if user_collect_count > 1:
-            user_collect = Collect.query.filter(Collect.user_id == 1).all()
-            for collect in user_collect:
-                for p in pub:
-                    if p.id == collect.pub_id:
-                        p.is_collect = True
-                    else:
-                        p.is_collect = False
-                    pub_only(p, resp_suc)
-        else:
-            user_collect = Collect.query.filter(Collect.user_id == 1).first()
-            for p in pub:
-                if p.id == user_collect.pub_id:
-                    p.is_collect = True
-                else:
-                    p.is_collect = False
-                pub_only(p, resp_suc)
+        is_collect_pub(pub, user_id, resp_suc)
         resp_suc['pub_count'] = len(pub)
         return resp_suc
     else:
@@ -525,40 +439,24 @@ def check_city(type_id, city_id, pub_type_count, page, resp_suc, province_id):
         pub = db.query(Pub).\
             join(PubTypeMid).\
             filter(PubTypeMid.pub_type_id == type_id, Pub.stopped == 0, Pub.province_id == province_id).first()
-        user_collect_count = Collect.query.filter(Collect.user_id == 1).count()
-        if user_collect_count > 1:
-            user_collect = Collect.query.filter(Collect.user_id == 1).all()
-            for collect in user_collect:
-                if pub.id == collect.pub_id:
-                    pub.is_collect = True
-                else:
-                    pub.is_collect = False
-            pub_only(pub, resp_suc)
-        else:
-            user_collect = Collect.query.filter(Collect.user_id == 1).first()
-            if pub.id == user_collect.pub_id:
-                pub.is_collect = True
-            else:
-                pub.is_collect = False
-            pub_only(pub, resp_suc)
+        is_collect_pub(pub, user_id, resp_suc)
         resp_suc['pub_count'] = 1
         return resp_suc
 
 
-def by_type_id(type_id, resp_suc, page, city_id, province_id):
+def by_type_id(type_id, resp_suc, page, city_id, province_id, user_id):
     """
        根据type_id来获取酒吧
     """
+    pub_type_count = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).count()
     if city_id and city_id != '0':
         city_id = int(city_id)
         province_id = int(province_id)
-        pub_type_count = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).count()
         if province_id != 0:
-            resp_suc = check_province(province_id, pub_type_count, type_id, page, resp_suc, city_id)
+            resp_suc = check_province(province_id, pub_type_count, type_id, page, resp_suc, city_id, user_id)
             return resp_suc
     elif city_id == '0':
-        pub_type_count = PubTypeMid.query.filter(PubTypeMid.pub_type_id == type_id).count()
-        resp_suc = check_city(type_id, city_id, pub_type_count, page, resp_suc, province_id)
+        resp_suc = check_city(type_id, city_id, pub_type_count, page, resp_suc, province_id, user_id)
         return resp_suc
 
 
@@ -685,6 +583,68 @@ class PubPictureDetail(restful.Resource):
         return resp_suc
 
 
+def is_collect_pub(pub, user_id, resp_suc):
+    collect_count = Collect.query.filter(Collect.user_id == user_id).count()
+    if collect_count > 1:
+        collect = Collect.query.filter(Collect.user_id == user_id).all()
+        check_pub_list(pub, collect, resp_suc)
+    elif collect_count == 1:
+        collect = Collect.query.filter(Collect.user_id == user_id).first()
+        check_pub_list(pub, collect, resp_suc)
+    else:
+        check_pub_list(pub, None, resp_suc)
+
+
+def check_pub_list(pub, collect, resp_suc):
+    if type(pub) is list:
+        pub_is_list(pub, collect, resp_suc)
+    else:
+        pub_is_object(pub, collect, resp_suc)
+
+
+def pub_is_list(pub, collect, resp_suc):
+    if type(collect) is list:
+        for p in pub:
+            for c in collect:
+                if p.id == c.pub_id:
+                    p.is_collect = True
+                    break
+                else:
+                    p.is_collect = False
+            pub_only(p, resp_suc)
+    elif type(collect) is Collect:
+        for p in pub:
+            if p.id == collect.pub_id:
+                p.is_collect = True
+            else:
+                p.is_collect = False
+            pub_only(p, resp_suc)
+    else:
+        for p in pub:
+            p.is_collect = False
+            pub_only(p, resp_suc)
+
+
+def pub_is_object(pub, collect, resp_suc):
+    if type(collect) is list:
+        for c in collect:
+            if pub.id == c.pub_id:
+                pub.is_collect = True
+                break
+            else:
+                pub.is_collect = False
+        pub_only(pub, resp_suc)
+    elif type(collect) is Collect:
+        if pub.id == collect.pub_id:
+            pub.is_collect = True
+        else:
+            pub.is_collect = False
+        pub_only(pub, resp_suc)
+    else:
+        pub.is_collect = False
+        pub_only(pub, resp_suc)
+
+
 class PubSearch(restful.Resource):
     """
     搜索酒吧
@@ -699,6 +659,7 @@ class PubSearch(restful.Resource):
         parser.add_argument('content', type=str, required=True, help=u'content必须，搜索酒吧')
         parser.add_argument('type_id', type=str, required=False)
         parser.add_argument('page', type=str, required=True, help=u'分页page必须.')
+        parser.add_argument('user_id', type=str, required=False)
 
         args = parser.parse_args()
         resp_suc = {}
@@ -706,6 +667,7 @@ class PubSearch(restful.Resource):
         resp_fail = fail_dic().dic
         pub_pic = None
         page = args['page']
+        user_id = args.get('user_id', 0)
         if args['content']:
             content = str(args['content'])
             s = "%" + content + "%"
@@ -724,12 +686,12 @@ class PubSearch(restful.Resource):
                     pubs = db.query(Pub). \
                         join(PubTypeMid). \
                         filter(Pub.name.like(s), PubTypeMid.pub_type_id == int(args['type_id']))[per_page*(int(temp_page)-1):per_page*int(temp_page)]
-                    pub_list(pubs, resp_suc)
+                    is_collect_pub(pubs, user_id, resp_suc)
                 else:
                     pub = db.query(Pub). \
                         join(PubTypeMid). \
                         filter(Pub.name.like(s), PubTypeMid.pub_type_id == int(args['type_id'])).first()
-                    pub_only(pub, resp_suc)
+                    is_collect_pub(pub, user_id, resp_suc)
             else:
                 pub_count = Pub.query.filter(Pub.name.like(s)).count()
                 temp_page = page
@@ -741,10 +703,10 @@ class PubSearch(restful.Resource):
                     return resp_fail
                 if pub_count > 1:
                     pubs = Pub.query.filter(Pub.name.like(s))[per_page*(int(temp_page)- 1):per_page*int(temp_page)]
-                    pub_list(pubs, resp_suc)
+                    is_collect_pub(pubs, user_id, resp_suc)
                 else:
                     pub = Pub.query.filter(Pub.name.like(s)).first()
-                    pub_only(pub, resp_suc)
+                    is_collect_pub(pub, user_id, resp_suc)
 
             resp_suc['message'] = "success"
             resp_suc['status'] = 0
@@ -1003,12 +965,14 @@ class NearPub(restful.Resource):
         parser.add_argument('longitude', type=str, required=True, help=u'longitude必须')
         parser.add_argument('latitude', type=str, required=True, help=u'latitude必须')
         parser.add_argument('page', type=str, required=True, help=u'page当前页必须')
+        parser.add_argument('user_id', type=str, required=False)
 
         args = parser.parse_args()
 
         longitude = float(args['longitude'])
         latitude = float(args['latitude'])
         page = int(args['page'])
+        user_id = args.get('user_id', 0)
 
         resp_suc = success_dic().dic
         resp_suc['pub_list'] = []
@@ -1043,12 +1007,11 @@ class NearPub(restful.Resource):
         if pub_count > 1:
             pubs = Pub.query.filter(Pub.latitude > right_bottom[0], Pub.latitude < left_top[0],
                                 Pub.longitude > left_bottom[1], Pub.longitude < right_top[1], Pub.stopped == 0)[per_page*(int(temp_page)-1):per_page*int(temp_page)]
-            for pub in pubs:
-                pub_only(pub, resp_suc)
+            is_collect_pub(pubs, user_id, resp_suc)
         else:
             pub = Pub.query.filter(Pub.latitude > right_bottom[0], Pub.latitude < left_top[0],
                                 Pub.longitude > left_bottom[1], Pub.longitude < right_top[1], Pub.stopped == 0).first()
-            pub_only(pub, resp_suc)
+            is_collect_pub(pub, user_id, resp_suc)
 
         return resp_suc
 
