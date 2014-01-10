@@ -604,3 +604,58 @@ class PersonalPrivateLetter(restful.Resource):
         else:
             success['message'] = '没有数据'
             return success
+
+
+def get_reputation_difference(reputation):
+    '''获得当前经验值距离下一个等级还需经验值'''
+    level = Level.query.filter(Level.min <= reputation,Level.max >= reputation).order_by(desc(Level.level)).first()
+    next_level = Level.query.filter(Level.level == level.level + 1).first() # 得到下一等级
+    reputation_difference = next_level.min - reputation # 最小经验值减去当前经验值等于相差经验值
+    return reputation_difference
+
+
+def get_user_credit_reputation(user_id, success):
+    '''获取用户积分以及经验值'''
+    user_result = ModelUserInfo.query.filter(ModelUserInfo.user_id == user_id).first()
+    success['credit'] = 0
+    success['reputation'] = 0
+    success['reputation_difference'] = 0 # 距离下一等级还需经验值
+    if user_result:
+        credit = user_result.credit # 积分
+        reputation = user_result.reputation # 经验值
+        # 保存到返回客户端字典当中
+        success['credit'] = credit
+        success['reputation'] = reputation
+        success['reputation_difference'] = get_reputation_difference(reputation)
+        return True
+    else:
+        return False
+
+
+class CreditRule(restful.Resource):
+    """
+    积分规则
+       当前经验值，离下一等级还需经验值
+       当前拥有积分
+    """
+    @staticmethod
+    def get():
+        """
+        user_id: 登陆用户id
+        """
+        parser = reqparse.RequestParser()
+        # 定义客户端传入参数
+        parser.add_argument('user_id', type=str, required=True, help=u'user_id 必须')
+
+        args = parser.parse_args() # 得到参数对象
+
+        success = success_dic().dic # 返回客户端字典
+
+        user_id = args['user_id'] # 得到客户端传入参数
+        # 获取积分，经验，相差经验
+        is_true = get_user_credit_reputation(user_id, success)
+        if is_true:
+            return success
+        else:
+            success['message'] = '没有数据'
+            return success
