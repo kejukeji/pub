@@ -727,6 +727,11 @@ class PubSearchView(restful.Resource):
         所需参数：
             无
         """
+        parser = reqparse.RequestParser()
+        parser.add_argument('user_id', type=str, required=False)
+
+        args = parser.parse_args()
+        user_id = args.get('user_id', 0)
         pub_types = PubType.query.filter()
         resp_suc = {}
         resp_suc['pub_type_list'] = []
@@ -740,12 +745,11 @@ class PubSearchView(restful.Resource):
             resp_suc['message'] = 'error'
         pub_count = Pub.query.filter(Pub.recommend == 1, Pub.stopped == 0).count()
         if pub_count > 1:
-            pubs = Pub.query.filter(Pub.recommend == 1, Pub.stopped == 0)
-            pub_list(pubs, resp_suc)
-        
+            pubs = Pub.query.filter(Pub.recommend == 1, Pub.stopped == 0).all()
+            is_collect_pub(pubs, user_id, resp_suc)
         else:
             pub = Pub.query.filter(Pub.recommend == 1, Pub.stopped == 0).first()
-            pub_only(pub, resp_suc)
+            is_collect_pub(pub, user_id, resp_suc)
 
         resp_suc['status'] = 0
         resp_suc['message'] = 'success'
