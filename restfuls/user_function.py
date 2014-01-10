@@ -302,6 +302,7 @@ def traverse_collects(results, user_id, resp_suc):
             resp_suc: 列表
     """
     for result in results:
+        result.is_collect = True
         pub_type(result)
         collect = Collect.query.filter(Collect.user_id == user_id, Collect.pub_id == result.id).first()
         difference = time_diff(collect.time)
@@ -325,6 +326,7 @@ def traverse_collect(result, user_id, resp_suc):
             resp_suc: 列表
     """
     if result:
+        result.is_collect = True
         pub_type(result)
         collect = Collect.query.filter(Collect.user_id == user_id, Collect.pub_id == result.id).first()
         difference = time_diff(collect.time)
