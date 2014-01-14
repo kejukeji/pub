@@ -1,0 +1,25 @@
+#!/bin/bash
+#chkconfig:2345 80 05
+#description:pub_start service
+RETVAL=0
+start(){
+/usr/local/bin/uwsgi -s 127.0.0.1:8083 --master --process 4 --enable-threads --ini /var/www/weixin_pub/weixin_uwsgi.ini &
+}
+
+stop(){
+echo "pub_start service is stoped..."
+}
+
+case $1 in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    *）
+        echo "error"
+        ;;
+esac
+
+exit $RETVAL
