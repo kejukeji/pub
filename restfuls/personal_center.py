@@ -611,7 +611,10 @@ def get_reputation_difference(reputation):
     level = Level.query.filter(Level.min <= reputation,Level.max >= reputation).order_by(desc(Level.level)).first()
     next_level = Level.query.filter(Level.level == level.level + 1).first() # 得到下一等级
     reputation_difference = next_level.min - reputation # 最小经验值减去当前经验值等于相差经验值
-    return reputation_difference
+    short_name = 1
+    if level:
+        short_name = level.short_name
+    return reputation_difference, short_name
 
 
 def get_user_credit_reputation(user_id, success):
@@ -623,10 +626,12 @@ def get_user_credit_reputation(user_id, success):
     if user_result:
         credit = user_result.credit # 积分
         reputation = user_result.reputation # 经验值
+        reputation_difference, short_name = get_reputation_difference(reputation)
         # 保存到返回客户端字典当中
         success['credit'] = credit
         success['reputation'] = reputation
-        success['reputation_difference'] = get_reputation_difference(reputation)
+        success['reputation_difference'] = reputation_difference
+        success['short_name'] = short_name
         return True
     else:
         return False
