@@ -264,9 +264,11 @@ class PubGetType(restful.Resource):
             pub_type_pic = to_flatten(pub_type, pub_type)
             resp_suc['list'].append(pub_type_pic)
         resp_suc['advertising_picture'] = '/static/pub_type_picture/advertising.png'
+        resp_suc['advertising_url'] = ''
         advertisement = Advertisement.query.filter().first()
         if advertisement:
             resp_suc['advertising_picture'] = advertisement.rel_path + '/' +advertisement.picture_name
+            resp_suc['advertising_url'] = advertisement.url
         resp_suc['status'] = 0
         return resp_suc
 
