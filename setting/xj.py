@@ -37,6 +37,10 @@ PUB_TYPE_ALLOWED_EXTENSION = ('png', 'jpg', 'jpeg')
 GIFT_UPLOAD_FOLDER = '/static/gift_picture'
 GIFT_BASE_PATH = '/Users/X/Dropbox/Code/pub'
 GIFT_ALLOWED_EXTENSION = ('png', 'jpg', 'jpeg')
+# 礼物图片
+ADVERTISEMENT_UPLOAD_FOLDER = '/static/system/advertisement_picture'
+ADVERTISEMENT_BASE_PATH = '/Users/X/Documents/Code/pub_py'
+ADVERTISEMENT_ALLOWED_EXTENSION = ('png', 'jpg', 'jpeg')
 
 # 其他配置参数
 # ===============================================================

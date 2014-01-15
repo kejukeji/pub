@@ -20,6 +20,7 @@ from views.admin_login import login_view, logout_view, register_view
 from views.admin_view import HomeView
 from views.admin_system_message import SystemMessageView
 from views.admin_gift import GiftView
+from views.admin_advertisement import AdvertisementView
 
 # 用户登陆管理
 # 用户登陆
@@ -40,6 +41,7 @@ admin.add_view(PubView(db, name=u'酒吧详情', category=u'酒吧'))
 admin.add_view(SystemMessageView(db, name=u'系统消息'))
 admin.add_view(ActivityView(db, name=u'酒吧活动', category=u'酒吧'))
 admin.add_view(GiftView(db, name=u'礼物管理'))
+admin.add_view(AdvertisementView(db, name=u'广告管理'))
 
 ### 文件管理
 file_path = os.path.join(os.path.dirname(__file__), 'static')

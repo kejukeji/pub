@@ -10,6 +10,7 @@ from models.feature import (Collect, Comment, View, Message, FeedBack, ActivityC
 from models.ethnicity import Ethnicity
 from models.admin import SystemMessage, UserSystemMessage
 from models.activity import Activity, ActivityPicture
+from models.advertisement import Advertisement
 
 from models.database import db
 from models.database import Base, engine

@@ -268,7 +268,7 @@ class PubGetType(restful.Resource):
         return resp_suc
 
 
-def type_picture(province_id, city_id, resp_suc, type_id):
+def type_picture(province_id, city_id, resp_suc, type_id, user_id):
     if city_id and city_id != "0":
         if province_id != 0:
             province_id = int(province_id)
@@ -283,15 +283,15 @@ def type_picture(province_id, city_id, resp_suc, type_id):
                         join(Pub). \
                         join(PubTypeMid).\
                         filter(PubTypeMid.pub_type_id == type_id, Pub.recommend == 1, Pub.county_id == city_id).\
-                        group_by(PubPicture.pub_id)
-                    pub_list_picture(results, resp_suc)
+                        group_by(PubPicture.pub_id).all()
+                    is_collect_picture(results, user_id, resp_suc)
                 else:
                     result = db.query(PubPicture). \
                         join(Pub). \
                         join(PubTypeMid).\
                         filter(PubTypeMid.pub_type_id == type_id, Pub.recommend == 1, Pub.county_id == city_id).\
                         group_by(PubPicture.pub_id).first()
-                    pub_picture_only(result, resp_suc)
+                    is_collect_picture(result, user_id, resp_suc)
             else:
                 result_count = db.query(PubPicture).\
                     join(Pub).\
@@ -303,15 +303,15 @@ def type_picture(province_id, city_id, resp_suc, type_id):
                         join(Pub). \
                         join(PubTypeMid).\
                         filter(PubTypeMid.pub_type_id == type_id, Pub.recommend == 1, Pub.city_id == city_id).\
-                        group_by(PubPicture.pub_id)
-                    pub_list_picture(results, resp_suc)
+                        group_by(PubPicture.pub_id).all()
+                    is_collect_picture(results, user_id, resp_suc)
                 else:
                     result = db.query(PubPicture). \
                         join(Pub). \
                         join(PubTypeMid).\
                         filter(PubTypeMid.pub_type_id == type_id, Pub.recommend == 1, Pub.city_id == city_id).\
                         group_by(PubPicture.pub_id).first()
-                    pub_picture_only(result, resp_suc)
+                    is_collect_picture(result, user_id, resp_suc)
         else:
             result_count = db.query(PubPicture).\
                     join(Pub).\
@@ -323,15 +323,15 @@ def type_picture(province_id, city_id, resp_suc, type_id):
                     join(Pub). \
                     join(PubTypeMid).\
                     filter(PubTypeMid.pub_type_id == type_id, Pub.recommend == 1, Pub.city_id == city_id).\
-                    group_by(PubPicture.pub_id)
-                pub_list_picture(results, resp_suc)
+                    group_by(PubPicture.pub_id).all()
+                is_collect_picture(results, user_id, resp_suc)
             else:
                 result = db.query(PubPicture). \
                     join(Pub). \
                     join(PubTypeMid).\
                     filter(PubTypeMid.pub_type_id == type_id, Pub.recommend == 1, Pub.city_id == city_id).\
                     group_by(PubPicture.pub_id).first()
-                pub_picture_only(result, resp_suc)
+                is_collect_picture(result, user_id, resp_suc)
     else:
         result_count = db.query(PubPicture).\
                 join(Pub).\
@@ -343,15 +343,15 @@ def type_picture(province_id, city_id, resp_suc, type_id):
                 join(Pub). \
                 join(PubTypeMid).\
                 filter(PubTypeMid.pub_type_id == type_id, Pub.recommend == 1).\
-                group_by(PubPicture.pub_id)
-            pub_list_picture(results, resp_suc)
+                group_by(PubPicture.pub_id).all()
+            is_collect_picture(results, user_id, resp_suc)
         else:
             result = db.query(PubPicture). \
                 join(Pub). \
                 join(PubTypeMid).\
                 filter(PubTypeMid.pub_type_id == type_id, Pub.recommend == 1).\
                 group_by(PubPicture.pub_id).first()
-            pub_picture_only(result, resp_suc)
+            is_collect_picture(result, user_id, resp_suc)
 
 
 class PubListDetail(restful.Resource):
@@ -382,7 +382,7 @@ class PubListDetail(restful.Resource):
         city_id = args.get('city_id', None)
         province_id = args.get('province_id', 0)
         user_id = args.get('user_id', 1)
-        type_picture(province_id, city_id, resp_suc, type_id)
+        type_picture(province_id, city_id, resp_suc, type_id, user_id)
         resp_suc['status'] = 0
         resp_suc = by_type_id(type_id, resp_suc, page, city_id, province_id, user_id)
         resp_suc = get_province_city_by_id(province_id, resp_suc)
@@ -549,22 +549,7 @@ class PubPictureDetail(restful.Resource):
         resp_suc = {}
         pub_id = args['pub_id']
         resp_suc['picture_list'] = []
-        # result_count = db.query(UserInfo). \
-        #     join(User). \
-        #     join(View). \
-        #     filter(View.pub_id == pub_id).order_by(View.time.desc()).count()
-        # if result_count > 1:
-        #     results = db.query(UserInfo). \
-        #         join(User). \
-        #         join(View). \
-        #         filter(View.pub_id == pub_id).order_by(View.time.desc())
-        #     user_list_picture(results, resp_suc)
-        # else:
-        #     result = db.query(UserInfo). \
-        #         join(User). \
-        #         join(View). \
-        #         filter(View.pub_id == pub_id).order_by(View.time.desc()).first()
-        #     user_picture_only(result, resp_suc)
+
         if args['pub_id']:
             pub_id = int(args['pub_id'])
             pub_picture_count = PubPicture.query.filter(PubPicture.pub_id == pub_id).count()
@@ -595,11 +580,73 @@ def is_collect_pub(pub, user_id, resp_suc):
         check_pub_list(pub, None, resp_suc)
 
 
+def is_collect_picture(pub, user_id, resp_suc):
+    collect_count = Collect.query.filter(Collect.user_id == user_id).count()
+    if collect_count > 1:
+        collect = Collect.query.filter(Collect.user_id == user_id).all()
+        check_picture_list(pub, collect, resp_suc)
+    elif collect_count == 1:
+        collect = Collect.query.filter(Collect.user_id == user_id).first()
+        check_picture_list(pub, collect, resp_suc)
+    else:
+        check_picture_list(pub, None, resp_suc)
+
+
+def check_picture_list(pub, collect, resp_suc):
+    if type(pub) is list:
+        picture_is_list(pub, collect, resp_suc)
+    else:
+        picture_is_object(pub, collect, resp_suc)
+
+
 def check_pub_list(pub, collect, resp_suc):
     if type(pub) is list:
         pub_is_list(pub, collect, resp_suc)
     else:
         pub_is_object(pub, collect, resp_suc)
+
+
+def picture_is_list(pub, collect, resp_suc):
+    if type(collect) is list:
+        for p in pub:
+            for c in collect:
+                if p.pub_id == c.pub_id:
+                    p.is_collect = True
+                    break
+                else:
+                    p.is_collect = False
+            pub_picture_only(p, resp_suc)
+    elif type(collect) is Collect:
+        for p in pub:
+            if p.pub_id == collect.pub_id:
+                p.is_collect = True
+            else:
+                p.is_collect = False
+            pub_picture_only(p, resp_suc)
+    else:
+        for p in pub:
+            p.is_collect = False
+            pub_picture_only(p, resp_suc)
+
+
+def picture_is_object(pub, collect, resp_suc):
+    if type(collect) is list:
+        for c in collect:
+            if pub.pub_id == c.pub_id:
+                pub.is_collect = True
+                break
+            else:
+                pub.is_collect = False
+        pub_picture_only(pub, resp_suc)
+    elif type(collect) is Collect:
+        if pub.pub_id == collect.pub_id:
+            pub.is_collect = True
+        else:
+            pub.is_collect = False
+        pub_picture_only(pub, resp_suc)
+    else:
+        pub.is_collect = False
+        pub_picture_only(pub, resp_suc)
 
 
 def pub_is_list(pub, collect, resp_suc):

@@ -212,8 +212,8 @@ class UserInfo(Base):
         self.rel_path = kwargs.pop('rel_path', None)
         self.pic_name = kwargs.pop('pic_name', None)
         self.upload_name = kwargs.pop('upload_name', None)
-        self.credit = kwargs.pop('credit', '0')
-        self.reputation = kwargs.pop('reputation', '0')
+        self.credit = kwargs.pop('credit', '20')
+        self.reputation = kwargs.pop('reputation', '50')
 
     def update(self, **kwargs):
         self.user_id = kwargs.pop('user_id')
