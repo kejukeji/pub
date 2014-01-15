@@ -3,7 +3,7 @@
 
 from flask.ext import restful
 from models import Pub, PubType, PubTypeMid, PubPicture, engine, View, UserInfo, User, db, Activity,\
-    ActivityComment, Collect
+    ActivityComment, Collect, Advertisement
 from utils import pickler, page_utils
 from flask.ext.restful import reqparse
 from utils.others import success_dic, fail_dic, get_address, get_county, flatten, max_page
@@ -264,6 +264,9 @@ class PubGetType(restful.Resource):
             pub_type_pic = to_flatten(pub_type, pub_type)
             resp_suc['list'].append(pub_type_pic)
         resp_suc['advertising_picture'] = '/static/pub_type_picture/advertising.png'
+        advertisement = Advertisement.query.filter().first()
+        if advertisement:
+            resp_suc['advertising_picture'] = advertisement.rel_path + '/' +advertisement.picture_name
         resp_suc['status'] = 0
         return resp_suc
 
