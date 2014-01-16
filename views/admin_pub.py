@@ -367,13 +367,13 @@ def check_save_pub_type_pictures(pub_type_pictures, model=None, update=None):
                     os.remove(os.path.join(base_path+rel_path+'/', pic_name))
                     return False
             else:
-                if image.size != (211, 199):
-                    flash(u'图片需要固定大小的哦 211*170', 'error')
+                if image.size != (211, 119):
+                    flash(u'图片需要固定大小的哦 211*119', 'error')
                     os.remove(os.path.join(base_path+rel_path+'/', pic_name))
                     return False
         else:
-            if image.size != (211, 199):
-                flash(u'图片需要固定大小的哦 211*170', 'error')
+            if image.size != (211, 119):
+                flash(u'图片需要固定大小的哦 211*119', 'error')
                 os.remove(os.path.join(base_path+rel_path+'/', pic_name))
                 return False
         if (update is not None) and (model is not None):
