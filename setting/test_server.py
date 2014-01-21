@@ -37,7 +37,7 @@ GIFT_ALLOWED_EXTENSION = ('png', 'jpg', 'jpeg')
 # 广告图片
 ADVERTISEMENT_UPLOAD_FOLDER = '/static/system/advertisement_picture'
 ADVERTISEMENT_BASE_PATH = '/Users/K/Documents/Code/pub_py'
-ADVERTISEMENT_ALLOWED_EXTENSION = ('png', 'jpg', 'jpeg')
+ADVERTISEMENT_ALLOWED_EXTENSION = ('png', 'jpg', 'jpeg', 'pdf')
 
 # 其他配置参数
 # ===============================================================

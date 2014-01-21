@@ -635,23 +635,24 @@ def picture_is_list(pub, collect, resp_suc):
 
 
 def picture_is_object(pub, collect, resp_suc):
-    if type(collect) is list:
-        for c in collect:
-            if pub.pub_id == c.pub_id:
+    if pub and collect:
+        if type(collect) is list:
+            for c in collect:
+                if pub.pub_id == c.pub_id:
+                    pub.is_collect = True
+                    break
+                else:
+                    pub.is_collect = False
+            pub_picture_only(pub, resp_suc)
+        elif type(collect) is Collect:
+            if pub.pub_id == collect.pub_id:
                 pub.is_collect = True
-                break
             else:
                 pub.is_collect = False
-        pub_picture_only(pub, resp_suc)
-    elif type(collect) is Collect:
-        if pub.pub_id == collect.pub_id:
-            pub.is_collect = True
+            pub_picture_only(pub, resp_suc)
         else:
             pub.is_collect = False
-        pub_picture_only(pub, resp_suc)
-    else:
-        pub.is_collect = False
-        pub_picture_only(pub, resp_suc)
+            pub_picture_only(pub, resp_suc)
 
 
 def pub_is_list(pub, collect, resp_suc):
